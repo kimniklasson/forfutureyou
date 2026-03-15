@@ -36,8 +36,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        await migrateLocalDataToSupabase();
-        await reloadStores();
+        try {
+          await migrateLocalDataToSupabase();
+          await reloadStores();
+        } catch (e) {
+          console.error("Failed to initialise data:", e);
+        }
       }
       setLoading(false);
     });
@@ -50,8 +54,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        await migrateLocalDataToSupabase();
-        await reloadStores();
+        try {
+          await migrateLocalDataToSupabase();
+          await reloadStores();
+        } catch (e) {
+          console.error("Failed to reload data:", e);
+        }
       } else {
         // User signed out — reset stores
         useCategoryStore.getState().reset();
