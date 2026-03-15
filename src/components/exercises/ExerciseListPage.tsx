@@ -6,18 +6,20 @@ import { useSessionStore } from "../../stores/useSessionStore";
 import { ExerciseCard } from "./ExerciseCard";
 import { AddExerciseModal } from "./AddExerciseModal";
 import { EditExerciseModal } from "./EditExerciseModal";
+import { ConfirmDialog } from "../ui/ConfirmDialog";
 import { useDragSort } from "../../hooks/useDragSort";
 import type { Exercise } from "../../types/models";
 import type { ExerciseFormData } from "./ExerciseFormFields";
 
 export function ExerciseListPage() {
   const { id: categoryId } = useParams<{ id: string }>();
-  const { categories, loadCategories, addExercise, updateExercise, reorderExercises } =
+  const { categories, loadCategories, addExercise, updateExercise, deleteExercise, reorderExercises } =
     useCategoryStore();
   const { activeSession } = useSessionStore();
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     loadCategories();
@@ -46,6 +48,13 @@ export function ExerciseListPage() {
       baseWeight: data.baseWeight,
       isBodyweight: data.isBodyweight,
     });
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteId) {
+      deleteExercise(categoryId!, deleteId);
+      setDeleteId(null);
+    }
   };
 
   const handleEditExercise = (exerciseId: string, data: ExerciseFormData) => {
@@ -86,6 +95,7 @@ export function ExerciseListPage() {
             categoryId={category.id}
             categoryName={category.name}
             onEdit={setEditingExercise}
+            onDelete={setDeleteId}
             sessionBlocked={sessionBlocked}
             isDragging={draggingId === exercise.id}
             isDimmed={draggingId !== null && draggingId !== exercise.id}
@@ -94,6 +104,13 @@ export function ExerciseListPage() {
           />
         ))}
       </div>
+
+      <ConfirmDialog
+        isOpen={deleteId !== null}
+        message="Är du säker på att du vill ta bort denna övning?"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteId(null)}
+      />
 
       <AddExerciseModal
         isOpen={showAddModal}

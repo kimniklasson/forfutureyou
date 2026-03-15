@@ -1,23 +1,36 @@
-import { Pause, Play, Check } from "lucide-react";
+import { useState } from "react";
+import { Pause, Play, Check, X } from "lucide-react";
 import { useSessionStore } from "../../stores/useSessionStore";
 import { useTimer } from "../../hooks/useTimer";
 import { formatTime } from "../../utils/formatTime";
+import { ConfirmDialog } from "../ui/ConfirmDialog";
 
 export function SessionTimerBar() {
-  const { activeSession, isPaused, togglePause, finishSession } = useSessionStore();
+  const { activeSession, isPaused, togglePause, finishSession, cancelSession } = useSessionStore();
   const elapsed = useTimer();
+  const [confirmCancel, setConfirmCancel] = useState(false);
 
   if (!activeSession) return null;
 
   return (
+    <>
     <div className="fixed bottom-0 left-0 right-0 z-40 pointer-events-none">
       <div className="mx-auto max-w-[600px] pointer-events-auto">
         <div
-          className="flex items-start gap-2 p-6 backdrop-blur-lg transition-all duration-300"
+          className="flex items-center gap-2 p-6 backdrop-blur-lg transition-all duration-300"
           style={{ backgroundColor: "rgba(255, 217, 0, 0.7)" }}
         >
+          {/* Cancel */}
+          <button
+            onClick={() => setConfirmCancel(true)}
+            className="w-12 h-12 rounded-full flex items-center justify-center shrink-0"
+            style={{ border: "1px solid rgba(0,0,0,0.1)" }}
+          >
+            <X size={16} color="black" />
+          </button>
+
           {/* Timer info */}
-          <div className="flex-1 flex flex-col gap-2">
+          <div className="flex-1 flex flex-col gap-2 px-2">
             <span className="font-bold text-[12px] uppercase tracking-wider text-black">
               TIMER
             </span>
@@ -44,5 +57,13 @@ export function SessionTimerBar() {
         </div>
       </div>
     </div>
+
+    <ConfirmDialog
+      isOpen={confirmCancel}
+      message="Avbryta pågående pass? Dina loggade set sparas inte."
+      onConfirm={() => { cancelSession(); setConfirmCancel(false); }}
+      onCancel={() => setConfirmCancel(false)}
+    />
+    </>
   );
 }

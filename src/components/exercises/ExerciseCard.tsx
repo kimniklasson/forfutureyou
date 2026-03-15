@@ -1,4 +1,4 @@
-import { Pencil, GripVertical } from "lucide-react";
+import { Pencil, GripVertical, Trash2 } from "lucide-react";
 import type { Exercise } from "../../types/models";
 import { useSessionStore } from "../../stores/useSessionStore";
 import { RepWeightAdjuster } from "./RepWeightAdjuster";
@@ -9,6 +9,7 @@ interface ExerciseCardProps {
   categoryId: string;
   categoryName: string;
   onEdit: (exercise: Exercise) => void;
+  onDelete: (id: string) => void;
   sessionBlocked: boolean;
   isDragging?: boolean;
   isDimmed?: boolean;
@@ -21,6 +22,7 @@ export function ExerciseCard({
   categoryId,
   categoryName,
   onEdit,
+  onDelete,
   sessionBlocked,
   isDragging,
   isDimmed,
@@ -67,7 +69,7 @@ export function ExerciseCard({
       {...itemProps}
       className={[
         "bg-card rounded-card p-4 flex flex-col gap-3 animate-in select-none",
-        hasCompletedSets ? "border-2 border-accent" : "",
+        hasCompletedSets ? "ring-2 ring-accent" : "",
         isDragging ? "shadow-xl scale-[1.01]" : "",
         isDimmed ? "opacity-40" : "opacity-100",
         "transition-opacity transition-shadow duration-150",
@@ -88,17 +90,27 @@ export function ExerciseCard({
           />
         </div>
 
-        <div className="flex items-center flex-1 min-w-0">
-          <button
-            onClick={() => onEdit(exercise)}
-            className="w-8 flex items-center justify-center opacity-50 shrink-0"
-          >
+        <button
+          onClick={() => onEdit(exercise)}
+          className="flex items-center flex-1 min-w-0 gap-0 text-left"
+        >
+          <span className="w-8 flex items-center justify-center opacity-50 shrink-0">
             <Pencil size={16} />
-          </button>
+          </span>
           <span className="font-bold text-[15px] leading-[18px] truncate">
             {exercise.name}
           </span>
-        </div>
+        </button>
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(exercise.id);
+          }}
+          className="w-8 flex items-center justify-center opacity-50 shrink-0"
+        >
+          <Trash2 size={16} />
+        </button>
 
         <button
           onClick={handleSetPress}

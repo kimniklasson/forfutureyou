@@ -14,7 +14,12 @@ function saveCategories(categories: Category[]): void {
 
 export const categoryRepository: CategoryRepository = {
   getAll() {
-    return loadCategories().sort((a, b) => a.sortOrder - b.sortOrder);
+    return loadCategories()
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((cat) => ({
+        ...cat,
+        exercises: [...cat.exercises].sort((a, b) => a.sortOrder - b.sortOrder),
+      }));
   },
 
   getById(id: string) {
