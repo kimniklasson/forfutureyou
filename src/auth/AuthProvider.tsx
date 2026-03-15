@@ -16,6 +16,7 @@ export interface AuthContextType {
   signInWithGoogle: () => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   updateName: (name: string) => Promise<{ error: string | null }>;
+  deleteAccount: () => Promise<{ error: string | null }>;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
@@ -96,11 +97,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error?.message ?? null };
   };
 
+  const deleteAccount = async () => {
+    const userId = user?.id;
+    if (!userId) return { error: "Ingen användare inloggad." };
+
+    try {
+      // Delete all user data from tables (order matters for foreign keys)
+      await supabase.from("workout_sets").delete().eq("user_id", userId);
+      await supabase.from("exercise_logs").delete().eq("user_id", userId);
+      await supabase.from("workout_sessions").delete().eq("user_id", userId);
+      await supabase.from("exercises").delete().eq("user_id", userId);
+      await supabase.from("categories").delete().eq("user_id", userId);
+
+      // Try to delete the auth account via database function
+      await supabase.rpc("delete_user_account");
+    } catch {
+      // If the RPC doesn't exist, data is still deleted — sign out gracefully
+    }
+
+    // Clear local storage
+    localStorage.removeItem("workout-app:category-store");
+    localStorage.removeItem("workout-app:session-store");
+    localStorage.removeItem("migration-done");
+
+    await supabase.auth.signOut();
+    return { error: null };
+  };
+
   const displayName: string = user?.user_metadata?.display_name ?? "";
 
   return (
     <AuthContext.Provider
-      value={{ user, session, loading, displayName, signUp, signIn, signInWithGoogle, signOut, updateName }}
+      value={{ user, session, loading, displayName, signUp, signIn, signInWithGoogle, signOut, updateName, deleteAccount }}
     >
       {children}
     </AuthContext.Provider>

@@ -33,8 +33,10 @@ export function Header() {
             )}
           </div>
 
-          {/* Center logo */}
-          <Logo />
+          {/* Center logo — tap to go home */}
+          <button onClick={() => navigate("/")} className="!transform-none" aria-label="Hem">
+            <Logo />
+          </button>
 
           {/* Right */}
           <div className="flex-1 flex items-center justify-end gap-1">

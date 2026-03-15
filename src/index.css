@@ -36,6 +36,17 @@ textarea:focus::placeholder {
   color: transparent;
 }
 
+/* ── Page transitions ── */
+
+@keyframes page-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.page-transition {
+  animation: page-fade-in 0.2s ease both;
+}
+
 /* ── Microanimations ── */
 
 @keyframes slide-in {

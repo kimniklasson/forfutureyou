@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LogOut } from "lucide-react";
+import { LogOut, Trash2 } from "lucide-react";
 import { useAuth } from "../auth/useAuth";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 
@@ -14,13 +14,15 @@ function getProviderLabel(user: ReturnType<typeof useAuth>["user"]): string {
 }
 
 export function ProfilePage() {
-  const { user, displayName, updateName, signOut } = useAuth();
+  const { user, displayName, updateName, signOut, deleteAccount } = useAuth();
   const navigate = useNavigate();
 
   const [name, setName] = useState(displayName);
   const [nameError, setNameError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const hasChanged = name.trim() !== displayName && name.trim().length > 0;
 
@@ -49,6 +51,15 @@ export function ProfilePage() {
     setShowLogoutConfirm(false);
     await signOut();
     navigate("/login", { replace: true });
+  };
+
+  const handleConfirmDelete = async () => {
+    setDeleting(true);
+    const { error } = await deleteAccount();
+    setDeleting(false);
+    if (!error) {
+      navigate("/login", { replace: true });
+    }
   };
 
   const providerLabel = getProviderLabel(user);
@@ -129,12 +140,31 @@ export function ProfilePage() {
         </span>
       </div>
 
+      {/* Delete account */}
+      <button
+        type="button"
+        onClick={() => setShowDeleteConfirm(true)}
+        disabled={deleting}
+        className="flex items-center gap-2 text-[13px] text-red-500 opacity-70 hover:opacity-100 transition-opacity pt-4 self-start"
+      >
+        <Trash2 size={14} />
+        {deleting ? "Tar bort..." : "Ta bort mitt konto"}
+      </button>
+
       <ConfirmDialog
         isOpen={showLogoutConfirm}
         message="Är du säker på att du vill logga ut?"
         confirmLabel="Logga ut"
         onConfirm={handleConfirmSignOut}
         onCancel={() => setShowLogoutConfirm(false)}
+      />
+
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        message="Är du säker på att du vill ta bort ditt konto? All din data kommer att raderas permanent."
+        confirmLabel="Ta bort konto"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setShowDeleteConfirm(false)}
       />
     </div>
   );
