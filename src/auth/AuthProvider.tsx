@@ -44,6 +44,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
       setLoading(false);
+    }).catch(() => {
+      // Supabase call itself failed — ensure we still stop loading
+      setLoading(false);
     });
 
     // Listen for auth changes

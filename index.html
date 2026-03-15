@@ -12,6 +12,30 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Force stale service workers to update immediately on every page load.
+      // Without this, an old SW can keep serving outdated cached files forever.
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistration().then(function (reg) {
+          if (reg) {
+            reg.update();
+            if (reg.waiting) {
+              reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+            }
+            reg.addEventListener('updatefound', function () {
+              var newSW = reg.installing;
+              if (newSW) {
+                newSW.addEventListener('statechange', function () {
+                  if (newSW.state === 'activated') {
+                    window.location.reload();
+                  }
+                });
+              }
+            });
+          }
+        });
+      }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
