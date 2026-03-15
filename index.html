@@ -13,27 +13,17 @@
   <body>
     <div id="root"></div>
     <script>
-      // Force stale service workers to update immediately on every page load.
-      // Without this, an old SW can keep serving outdated cached files forever.
+      // Remove any leftover service workers and caches from the old PWA setup.
+      // Once all users have loaded this version, this script can be removed.
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistration().then(function (reg) {
-          if (reg) {
-            reg.update();
-            if (reg.waiting) {
-              reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-            }
-            reg.addEventListener('updatefound', function () {
-              var newSW = reg.installing;
-              if (newSW) {
-                newSW.addEventListener('statechange', function () {
-                  if (newSW.state === 'activated') {
-                    window.location.reload();
-                  }
-                });
-              }
-            });
-          }
+        navigator.serviceWorker.getRegistrations().then(function (regs) {
+          regs.forEach(function (r) { r.unregister(); });
         });
+        if ('caches' in window) {
+          caches.keys().then(function (keys) {
+            keys.forEach(function (k) { caches.delete(k); });
+          });
+        }
       }
     </script>
     <script type="module" src="/src/main.tsx"></script>
