@@ -1,4 +1,5 @@
-import { IconEdit, IconTrash, IconDrag } from "../ui/icons";
+import { useState, useRef, useEffect } from "react";
+import { IconTrash, IconDrag } from "../ui/icons";
 import type { Exercise } from "../../types/models";
 import { useSessionStore } from "../../stores/useSessionStore";
 import { RepWeightAdjuster } from "./RepWeightAdjuster";
@@ -8,9 +9,10 @@ interface ExerciseCardProps {
   exercise: Exercise;
   categoryId: string;
   categoryName: string;
-  onEdit: (exercise: Exercise) => void;
+  onRename: (id: string, name: string) => Promise<void>;
   onDelete: (id: string) => void;
   sessionBlocked: boolean;
+  isNew?: boolean;
   isDragging?: boolean;
   isDimmed?: boolean;
   dragHandleProps: React.HTMLAttributes<HTMLElement> & { style?: React.CSSProperties };
@@ -21,9 +23,10 @@ export function ExerciseCard({
   exercise,
   categoryId,
   categoryName,
-  onEdit,
+  onRename,
   onDelete,
   sessionBlocked,
+  isNew,
   isDragging,
   isDimmed,
   dragHandleProps,
@@ -37,6 +40,21 @@ export function ExerciseCard({
     setAdjustment,
     getExerciseSetCount,
   } = useSessionStore();
+
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editName, setEditName] = useState(exercise.name);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isEditingName) {
+      nameInputRef.current?.focus();
+      nameInputRef.current?.select();
+    }
+  }, [isEditingName]);
+
+  useEffect(() => {
+    if (!isEditingName) setEditName(exercise.name);
+  }, [exercise.name, isEditingName]);
 
   const adjustment = getAdjustment(exercise.id, exercise.baseReps, exercise.baseWeight);
   const setCount = getExerciseSetCount(exercise.id);
@@ -64,11 +82,30 @@ export function ExerciseCard({
     );
   };
 
+  const handleNameBlur = async () => {
+    const trimmed = editName.trim();
+    if (trimmed && trimmed !== exercise.name) {
+      await onRename(exercise.id, trimmed);
+    } else {
+      setEditName(exercise.name);
+    }
+    setIsEditingName(false);
+  };
+
+  const handleNameKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") nameInputRef.current?.blur();
+    if (e.key === "Escape") {
+      setEditName(exercise.name);
+      setIsEditingName(false);
+    }
+  };
+
   return (
     <div
       {...itemProps}
       className={[
-        "bg-card rounded-card p-4 flex flex-col gap-3 animate-in select-none",
+        "bg-card rounded-card p-4 flex flex-col gap-3 select-none",
+        isNew ? "animate-new-exercise" : "animate-in",
         hasCompletedSets ? "ring-2 ring-accent" : "",
         isDragging ? "shadow-xl scale-[1.01]" : "",
         isDimmed ? "opacity-40" : "opacity-100",
@@ -78,7 +115,7 @@ export function ExerciseCard({
         .join(" ")}
     >
       {/* Header row */}
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center gap-2">
         {/* Drag handle */}
         <div
           {...dragHandleProps}
@@ -90,17 +127,27 @@ export function ExerciseCard({
           />
         </div>
 
-        <button
-          onClick={() => onEdit(exercise)}
-          className="flex items-center flex-1 min-w-0 gap-0 text-left"
-        >
-          <span className="w-8 flex items-center justify-center opacity-50 shrink-0">
-            <IconEdit size={16} />
-          </span>
-          <span className="font-bold text-[15px] leading-[18px] truncate">
-            {exercise.name}
-          </span>
-        </button>
+        {/* Name — inline editable */}
+        <div className="flex-1 min-w-0">
+          {isEditingName ? (
+            <input
+              ref={nameInputRef}
+              type="text"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              onBlur={handleNameBlur}
+              onKeyDown={handleNameKeyDown}
+              className="w-full font-bold text-[15px] leading-[18px] bg-transparent outline-none border-b border-black/20 dark:border-white/20"
+            />
+          ) : (
+            <span
+              className="font-bold text-[15px] leading-[18px] truncate block cursor-text"
+              onClick={() => setIsEditingName(true)}
+            >
+              {exercise.name}
+            </span>
+          )}
+        </div>
 
         <button
           onClick={(e) => {

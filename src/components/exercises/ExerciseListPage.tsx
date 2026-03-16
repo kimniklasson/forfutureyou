@@ -1,15 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
-import { IconPlus } from "../ui/icons";
 import { useCategoryStore } from "../../stores/useCategoryStore";
 import { useSessionStore } from "../../stores/useSessionStore";
 import { ExerciseCard } from "./ExerciseCard";
-import { AddExerciseModal } from "./AddExerciseModal";
-import { EditExerciseModal } from "./EditExerciseModal";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
 import { useDragSort } from "../../hooks/useDragSort";
-import type { Exercise } from "../../types/models";
-import type { ExerciseFormData } from "./ExerciseFormFields";
 
 export function ExerciseListPage() {
   const { id: categoryId } = useParams<{ id: string }>();
@@ -17,9 +12,11 @@ export function ExerciseListPage() {
     useCategoryStore();
   const { activeSession } = useSessionStore();
 
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [newName, setNewName] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [newExerciseId, setNewExerciseId] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadCategories();
@@ -27,27 +24,44 @@ export function ExerciseListPage() {
 
   const category = categories.find((c) => c.id === categoryId);
 
+  // Put newly added exercise first for animation
+  const exercisesForSort = (() => {
+    const exs = category?.exercises ?? [];
+    if (!newExerciseId) return exs;
+    const newEx = exs.find((e) => e.id === newExerciseId);
+    const rest = exs.filter((e) => e.id !== newExerciseId);
+    return newEx ? [newEx, ...rest] : exs;
+  })();
+
   const { draggingId, displayItems, containerProps, getDragHandleProps, getItemProps } =
-    useDragSort(
-      category?.exercises ?? [],
-      (newIds) => reorderExercises(categoryId!, newIds)
-    );
+    useDragSort(exercisesForSort, (newIds) => reorderExercises(categoryId!, newIds));
 
   if (!category) {
     return <p className="text-center opacity-50 pt-10">Kategori hittades inte.</p>;
   }
 
-  const isEmpty = category.exercises.length === 0;
   const sessionBlocked =
     activeSession !== null && activeSession.categoryId !== categoryId;
 
-  const handleAddExercise = async (data: ExerciseFormData) => {
-    await addExercise(category.id, {
-      name: data.name,
-      baseReps: data.baseReps,
-      baseWeight: data.baseWeight,
-      isBodyweight: data.isBodyweight,
+  const handleAdd = async () => {
+    const name = newName.trim();
+    if (!name) return;
+    setSaving(true);
+    const exercise = await addExercise(category.id, {
+      name,
+      baseReps: 8,
+      baseWeight: 50,
+      isBodyweight: false,
     });
+    setNewExerciseId(exercise.id);
+    setNewName("");
+    setSaving(false);
+    setTimeout(() => setNewExerciseId(null), 800);
+    inputRef.current?.focus();
+  };
+
+  const handleRename = async (exerciseId: string, name: string) => {
+    await updateExercise(category.id, exerciseId, { name });
   };
 
   const handleConfirmDelete = async () => {
@@ -57,15 +71,6 @@ export function ExerciseListPage() {
     }
   };
 
-  const handleEditExercise = async (exerciseId: string, data: ExerciseFormData) => {
-    await updateExercise(category.id, exerciseId, {
-      name: data.name,
-      baseReps: data.baseReps,
-      baseWeight: data.baseWeight,
-      isBodyweight: data.isBodyweight,
-    });
-  };
-
   return (
     <div className="flex flex-col gap-6">
       {/* Category header */}
@@ -73,16 +78,36 @@ export function ExerciseListPage() {
         <div className="flex-1 flex flex-col">
           <span className="font-bold text-[15px] leading-[1.22]">{category.name}</span>
           <span className="text-[15px] leading-[1.22] opacity-50">
-            {isEmpty
-              ? "Börja med att lägga till en övning genom att trycka på +."
-              : "Lägg till de övningar du vill"}
+            Lägg till de övningar du vill
           </span>
         </div>
+      </div>
+
+      {/* Add exercise form */}
+      <div className="bg-card rounded-card flex items-center gap-2 pl-6 pr-2 py-2">
+        <input
+          ref={inputRef}
+          type="text"
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") handleAdd(); }}
+          placeholder="Lägg till övning"
+          className="flex-1 text-[15px] bg-transparent outline-none placeholder:opacity-30"
+        />
         <button
-          onClick={() => setShowAddModal(true)}
-          className="w-10 h-10 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shrink-0"
+          onClick={handleAdd}
+          disabled={!newName.trim() || saving}
+          className={`px-4 py-3 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 shrink-0 min-w-[72px] ${
+            newName.trim() && !saving
+              ? "bg-black dark:bg-white text-white dark:text-black"
+              : "bg-black/5 dark:bg-white/10 text-black/30 dark:text-white/30"
+          }`}
         >
-          <IconPlus size={16} />
+          {saving ? (
+            <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+          ) : (
+            "Skapa"
+          )}
         </button>
       </div>
 
@@ -94,9 +119,10 @@ export function ExerciseListPage() {
             exercise={exercise}
             categoryId={category.id}
             categoryName={category.name}
-            onEdit={setEditingExercise}
+            onRename={handleRename}
             onDelete={setDeleteId}
             sessionBlocked={sessionBlocked}
+            isNew={exercise.id === newExerciseId}
             isDragging={draggingId === exercise.id}
             isDimmed={draggingId !== null && draggingId !== exercise.id}
             dragHandleProps={getDragHandleProps(exercise.id)}
@@ -110,18 +136,6 @@ export function ExerciseListPage() {
         message="Är du säker på att du vill ta bort denna övning?"
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteId(null)}
-      />
-
-      <AddExerciseModal
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onAdd={handleAddExercise}
-      />
-      <EditExerciseModal
-        isOpen={editingExercise !== null}
-        exercise={editingExercise}
-        onClose={() => setEditingExercise(null)}
-        onSave={handleEditExercise}
       />
     </div>
   );
