@@ -142,13 +142,13 @@ export function ProfilePage() {
 
       {/* Delete account */}
       <button
-        type="button"
-        onClick={() => setShowDeleteConfirm(true)}
-        disabled={deleting}
-        className="flex items-center gap-2 text-[13px] text-red-500 opacity-70 hover:opacity-100 transition-opacity pt-4 self-start"
-      >
-        <Trash2 size={14} />
-        {deleting ? "Tar bort..." : "Ta bort mitt konto"}
+          type="button"
+          onClick={() => setShowDeleteConfirm(true)}
+          disabled={deleting}
+          className="w-full flex items-center justify-center gap-3 bg-black/5 rounded-card px-6 py-5 text-[13px] font-bold uppercase tracking-wider text-red-500 hover:bg-black/10 transition-colors"
+        >
+          {deleting ? "Tar bort..." : "Ta bort konto"}
+          <Trash2 size={18} />
       </button>
 
       <ConfirmDialog
