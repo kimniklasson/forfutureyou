@@ -28,7 +28,7 @@ export function WorkoutDetailView() {
   return (
     <div className="flex flex-col gap-8 px-2">
       {/* Session header */}
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1 items-center text-center">
         <div className="flex flex-col">
           <span className="text-[20px] font-bold leading-[25px]">
             {formatShortDate(session.startedAt)}
@@ -49,8 +49,8 @@ export function WorkoutDetailView() {
                 className="flex py-3 text-[15px] leading-[18px] border-b border-black/10 dark:border-white/20 last:border-0"
               >
                 <span className="flex-1 font-bold">S{set.setNumber}</span>
-                <span className="flex-1">{set.reps} rep</span>
-                <span className="flex-1">
+                <span className="flex-1 text-right">{set.reps} rep</span>
+                <span className="flex-1 text-right">
                   {log.isBodyweight && set.weight > 0
                     ? `+${set.weight} kg`
                     : `${set.weight} kg`}
