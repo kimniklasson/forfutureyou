@@ -15,7 +15,7 @@ export function BottomNav() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-60 pointer-events-none">
-      <div className="mx-auto max-w-[600px] pointer-events-auto">
+      <div className="mx-auto max-w-[600px]">
         <div
           className="flex items-end justify-around px-6 pb-12 pt-14"
           style={{ background: activeSession ? "transparent" : "var(--footer-bg)" }}
@@ -29,7 +29,7 @@ export function BottomNav() {
                 key={path}
                 onClick={() => navigate(path)}
                 aria-label={label}
-                className={`w-12 h-12 flex items-center justify-center transition-opacity text-black ${
+                className={`w-12 h-12 flex items-center justify-center transition-opacity text-black pointer-events-auto ${
                   isActive ? "opacity-100" : "opacity-50"
                 }`}
               >
