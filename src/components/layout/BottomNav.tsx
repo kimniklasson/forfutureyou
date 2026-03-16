@@ -4,8 +4,8 @@ import { useSessionStore } from "../../stores/useSessionStore";
 
 const NAV_ITEMS = [
   { path: "/", Icon: IconHome, label: "Hem" },
-  { path: "/profile", Icon: IconProfile, label: "Profil" },
   { path: "/history", Icon: IconSessions, label: "Historik" },
+  { path: "/profile", Icon: IconProfile, label: "Profil" },
 ];
 
 export function BottomNav() {
