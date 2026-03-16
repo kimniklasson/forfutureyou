@@ -1,4 +1,5 @@
-import { Pencil, GripVertical, Trash2 } from "lucide-react";
+import { GripVertical } from "lucide-react";
+import { IconEdit, IconTrash } from "../ui/icons";
 import type { Exercise } from "../../types/models";
 import { useSessionStore } from "../../stores/useSessionStore";
 import { RepWeightAdjuster } from "./RepWeightAdjuster";
@@ -95,7 +96,7 @@ export function ExerciseCard({
           className="flex items-center flex-1 min-w-0 gap-0 text-left"
         >
           <span className="w-8 flex items-center justify-center opacity-50 shrink-0">
-            <Pencil size={16} />
+            <IconEdit size={16} />
           </span>
           <span className="font-bold text-[15px] leading-[18px] truncate">
             {exercise.name}
@@ -109,7 +110,7 @@ export function ExerciseCard({
           }}
           className="w-8 flex items-center justify-center opacity-50 shrink-0"
         >
-          <Trash2 size={16} />
+          <IconTrash size={16} />
         </button>
 
         <button

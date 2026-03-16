@@ -1,4 +1,4 @@
-import { Minus, Plus } from "lucide-react";
+import { IconMinus, IconPlus } from "../ui/icons";
 
 interface RepWeightAdjusterProps {
   value: number;
@@ -27,7 +27,7 @@ export function RepWeightAdjuster({
         onClick={() => onChange(Math.max(0, value - step))}
         className="w-16 h-full flex items-center justify-center rounded-button"
       >
-        <Minus size={16} />
+        <IconMinus size={16} />
       </button>
       <div className="flex-1 flex items-center justify-center px-6">
         <span className="font-bold text-[12px] text-center whitespace-nowrap">
@@ -38,7 +38,7 @@ export function RepWeightAdjuster({
         onClick={() => onChange(value + step)}
         className="w-16 h-full flex items-center justify-center rounded-button"
       >
-        <Plus size={16} />
+        <IconPlus size={16} />
       </button>
     </div>
   );

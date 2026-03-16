@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LogOut, Trash2 } from "lucide-react";
+import { IconLogout, IconTrash } from "../components/ui/icons";
 import { useAuth } from "../auth/useAuth";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 
@@ -78,7 +78,7 @@ export function ProfilePage() {
           className="w-12 h-12 rounded-full bg-red-500 text-white flex items-center justify-center shrink-0 hover:bg-red-600 transition-colors"
           aria-label="Logga ut"
         >
-          <LogOut size={18} />
+          <IconLogout size={18} />
         </button>
       </div>
 
@@ -148,7 +148,7 @@ export function ProfilePage() {
           className="w-full flex items-center justify-center gap-3 bg-black/5 rounded-card px-6 py-5 text-[13px] font-bold uppercase tracking-wider text-red-500 hover:bg-black/10 transition-colors"
         >
           {deleting ? "Tar bort..." : "Ta bort konto"}
-          <Trash2 size={18} />
+          <IconTrash size={18} />
       </button>
 
       <ConfirmDialog
@@ -162,7 +162,7 @@ export function ProfilePage() {
       <ConfirmDialog
         isOpen={showDeleteConfirm}
         message="Är du säker på att du vill ta bort ditt konto? All din data kommer att raderas permanent."
-        confirmLabel="Ta bort konto"
+        confirmLabel="Ta bort"
         onConfirm={handleConfirmDelete}
         onCancel={() => setShowDeleteConfirm(false)}
       />

@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Pause, Play, Check, X } from "lucide-react";
 import { useSessionStore } from "../../stores/useSessionStore";
 import { useTimer } from "../../hooks/useTimer";
 import { formatTime } from "../../utils/formatTime";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
+import { IconClose, IconPlay, IconPause, IconCheck } from "../ui/icons";
 
 export function SessionTimerBar() {
   const { activeSession, isPaused, togglePause, finishSession, cancelSession } = useSessionStore();
@@ -26,7 +26,7 @@ export function SessionTimerBar() {
             className="w-12 h-12 rounded-full flex items-center justify-center shrink-0"
             style={{ border: "1px solid rgba(0,0,0,0.1)" }}
           >
-            <X size={16} color="black" />
+            <IconClose size={16} color="black" />
           </button>
 
           {/* Timer info */}
@@ -44,7 +44,7 @@ export function SessionTimerBar() {
             onClick={togglePause}
             className="w-12 h-12 rounded-full bg-white flex items-center justify-center shrink-0"
           >
-            {isPaused ? <Play size={16} fill="black" /> : <Pause size={16} />}
+            {isPaused ? <IconPlay size={16} /> : <IconPause size={16} />}
           </button>
 
           {/* Finish */}
@@ -52,7 +52,7 @@ export function SessionTimerBar() {
             onClick={finishSession}
             className="w-12 h-12 rounded-full bg-black flex items-center justify-center shrink-0"
           >
-            <Check size={16} color="white" />
+            <IconCheck size={16} color="white" />
           </button>
         </div>
       </div>

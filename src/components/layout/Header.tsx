@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, Clock, User } from "lucide-react";
 import { IconButton } from "../ui/IconButton";
+import { IconArrowLeft, IconProfile, IconSessions } from "../ui/icons";
 
 function Logo() {
   return (
@@ -28,7 +28,7 @@ export function Header() {
           <div className="flex-1 flex items-center gap-1">
             {!isHome && (
               <IconButton onClick={() => navigate(-1)}>
-                <ArrowLeft size={16} />
+                <IconArrowLeft size={16} />
               </IconButton>
             )}
           </div>
@@ -41,10 +41,10 @@ export function Header() {
           {/* Right */}
           <div className="flex-1 flex items-center justify-end gap-1">
             <IconButton onClick={() => navigate("/profile")}>
-              <User size={16} />
+              <IconProfile size={16} />
             </IconButton>
             <IconButton onClick={() => navigate("/history")}>
-              <Clock size={16} />
+              <IconSessions size={16} />
             </IconButton>
           </div>
         </div>

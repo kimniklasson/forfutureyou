@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Trash2 } from "lucide-react";
+import { IconTrash } from "../ui/icons";
 import type { WorkoutSession } from "../../types/models";
 import { formatShortDate } from "../../utils/formatDate";
 import { formatDuration } from "../../utils/formatTime";
@@ -35,7 +35,7 @@ export function CompletedWorkoutItem({ session, onDelete }: CompletedWorkoutItem
         }}
         className="w-8 flex items-center justify-center pt-1"
       >
-        <Trash2 size={16} />
+        <IconTrash size={16} />
       </button>
     </div>
   );

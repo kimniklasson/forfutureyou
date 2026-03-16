@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Plus } from "lucide-react";
+import { IconPlus } from "../ui/icons";
 import { useCategoryStore } from "../../stores/useCategoryStore";
 import { useSessionStore } from "../../stores/useSessionStore";
 import { ExerciseCard } from "./ExerciseCard";
@@ -82,7 +82,7 @@ export function ExerciseListPage() {
           onClick={() => setShowAddModal(true)}
           className="w-10 h-10 rounded-full bg-black flex items-center justify-center shrink-0"
         >
-          <Plus size={16} color="white" />
+          <IconPlus size={16} color="white" />
         </button>
       </div>
 

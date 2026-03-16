@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { Trash2, GripVertical } from "lucide-react";
+import { GripVertical } from "lucide-react";
+import { IconTrash } from "../ui/icons";
 import type { Category } from "../../types/models";
 
 interface CategoryListItemProps {
@@ -63,7 +64,7 @@ export function CategoryListItem({
         }}
         className="w-8 h-full flex items-center justify-center"
       >
-        <Trash2 size={16} />
+        <IconTrash size={16} />
       </button>
     </div>
   );

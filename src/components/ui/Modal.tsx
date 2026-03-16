@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from "react";
-import { X } from "lucide-react";
+import { IconClose } from "./icons";
 
 interface ModalProps {
   isOpen: boolean;
@@ -45,7 +45,7 @@ export function Modal({ isOpen, onClose, title, subtitle, children }: ModalProps
             onClick={onClose}
             className="w-12 h-12 shrink-0 flex items-center justify-center rounded-icon"
           >
-            <X size={16} />
+            <IconClose size={16} />
           </button>
         </div>
 
