@@ -25,13 +25,14 @@ export function Header() {
           className="flex items-center gap-2 px-6 py-8 justify-center"
           style={{ background: "var(--header-bg)" }}
         >
-          {/* Left — back arrow only when deeper than top-level */}
+          {/* Left — back arrow, hidden on top-level to keep header height stable */}
           <div className="flex-1 flex items-center gap-1">
-            {!isTopLevel && (
-              <IconButton onClick={() => navigate(-1)}>
-                <IconArrowLeft size={16} />
-              </IconButton>
-            )}
+            <IconButton
+              onClick={() => navigate(-1)}
+              className={isTopLevel ? "invisible pointer-events-none" : ""}
+            >
+              <IconArrowLeft size={16} />
+            </IconButton>
           </div>
 
           {/* Center logo — tap to go home */}
