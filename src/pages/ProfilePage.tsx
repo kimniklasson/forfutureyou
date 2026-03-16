@@ -80,18 +80,18 @@ export function ProfilePage() {
   return (
     <div className="flex flex-col gap-8">
       {/* Title row */}
-      <div className="flex items-start justify-between">
-        <div className="flex flex-col">
+      <div className="flex items-center gap-6">
+        <div className="flex-1 flex flex-col">
           <span className="text-[15px] font-bold leading-[18px]">Kontoöversikt</span>
           <span className="text-[15px] leading-[18px] opacity-50">{providerLabel}</span>
         </div>
         <button
           type="button"
           onClick={() => setShowLogoutConfirm(true)}
-          className="w-12 h-12 rounded-full bg-red-500 text-white flex items-center justify-center shrink-0 hover:bg-red-600 transition-colors"
+          className="w-10 h-10 rounded-full bg-red-500 text-white flex items-center justify-center shrink-0 hover:bg-red-600 transition-colors"
           aria-label="Logga ut"
         >
-          <IconLogout size={18} />
+          <IconLogout size={16} />
         </button>
       </div>
 

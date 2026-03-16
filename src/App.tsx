@@ -4,6 +4,7 @@ import { AuthGuard } from "./auth/AuthGuard";
 import { LoginPage } from "./pages/LoginPage";
 import { SignUpPage } from "./pages/SignUpPage";
 import { SetNamePage } from "./pages/SetNamePage";
+import { AuthCallbackPage } from "./pages/AuthCallbackPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { AppShell } from "./components/layout/AppShell";
 import { CategoryList } from "./components/categories/CategoryList";
@@ -21,6 +22,9 @@ function App() {
             {/* Public routes */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignUpPage />} />
+
+            {/* Auth email callback */}
+            <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
             {/* First-time onboarding (auth required, no name required) */}
             <Route path="/set-name" element={<SetNamePage />} />
