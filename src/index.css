@@ -63,7 +63,7 @@ textarea:focus::placeholder {
 
 input::placeholder,
 textarea::placeholder {
-  opacity: 0.4;
+  opacity: 0.5;
 }
 
 [data-theme=dark] input::placeholder,
