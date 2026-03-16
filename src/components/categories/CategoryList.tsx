@@ -13,6 +13,7 @@ export function CategoryList() {
   const { displayName } = useAuth();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [exitingId, setExitingId] = useState<string | null>(null);
+  const [newCategoryId, setNewCategoryId] = useState<string | null>(null);
 
   useEffect(() => {
     loadCategories();
@@ -20,6 +21,11 @@ export function CategoryList() {
 
   const { draggingId, displayItems, containerProps, getDragHandleProps, getItemProps } =
     useDragSort(categories, reorderCategories);
+
+  const handleCategoryCreated = (id: string) => {
+    setNewCategoryId(id);
+    setTimeout(() => setNewCategoryId(null), 800);
+  };
 
   const handleConfirmDelete = () => {
     if (deleteId) {
@@ -42,7 +48,7 @@ export function CategoryList() {
       </div>
 
       <div className="w-full flex flex-col gap-6">
-        <CreateCategoryInput />
+        <CreateCategoryInput onCreated={handleCategoryCreated} />
 
         {!isEmpty && (
           <div {...containerProps} className="flex flex-col gap-2">
@@ -52,6 +58,7 @@ export function CategoryList() {
                 category={category}
                 onDelete={setDeleteId}
                 hasActiveSession={activeSession?.categoryId === category.id}
+                isNew={category.id === newCategoryId}
                 isExiting={exitingId === category.id}
                 isDragging={draggingId === category.id}
                 isDimmed={draggingId !== null && draggingId !== category.id}

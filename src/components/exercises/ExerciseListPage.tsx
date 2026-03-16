@@ -53,17 +53,16 @@ export function ExerciseListPage() {
       baseWeight: 50,
       isBodyweight: false,
     });
-    // Reorder so new exercise is first — use getState() to get the updated list
-    const updatedExercises = useCategoryStore
-      .getState()
-      .categories.find((c) => c.id === categoryId)?.exercises ?? [];
-    const reordered = [exercise.id, ...updatedExercises.filter((e) => e.id !== exercise.id).map((e) => e.id)];
-    await reorderExercises(categoryId!, reordered);
+    // Exercise is already at top in local state (optimistic prepend in store).
+    // Set newExerciseId immediately so animation fires on first render.
     setNewExerciseId(exercise.id);
     setNewName("");
     setSaving(false);
-    setTimeout(() => setNewExerciseId(null), 800);
     inputRef.current?.focus();
+    setTimeout(() => setNewExerciseId(null), 800);
+    // Persist order to server in background (no await — don't block UI)
+    const exercises = useCategoryStore.getState().categories.find((c) => c.id === categoryId)?.exercises ?? [];
+    reorderExercises(categoryId!, exercises.map((e) => e.id));
   };
 
   const handleRename = async (exerciseId: string, name: string) => {

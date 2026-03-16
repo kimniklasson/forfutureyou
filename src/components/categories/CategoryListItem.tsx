@@ -6,6 +6,7 @@ interface CategoryListItemProps {
   category: Category;
   onDelete: (id: string) => void;
   hasActiveSession?: boolean;
+  isNew?: boolean;
   isExiting?: boolean;
   isDragging?: boolean;
   isDimmed?: boolean;
@@ -17,6 +18,7 @@ export function CategoryListItem({
   category,
   onDelete,
   hasActiveSession,
+  isNew,
   isExiting,
   isDragging,
   isDimmed,
@@ -33,7 +35,7 @@ export function CategoryListItem({
         hasActiveSession ? "border-2 border-accent" : "",
         isDragging ? "shadow-xl scale-[1.01]" : "",
         isDimmed ? "opacity-40" : "opacity-100",
-        isExiting ? "animate-out" : "animate-in",
+        isExiting ? "animate-out" : isNew ? "animate-new-exercise" : "animate-in",
         "transition-opacity transition-shadow duration-150",
       ]
         .filter(Boolean)

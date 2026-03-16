@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { useCategoryStore } from "../../stores/useCategoryStore";
 
-export function CreateCategoryInput() {
+interface CreateCategoryInputProps {
+  onCreated?: (id: string) => void;
+}
+
+export function CreateCategoryInput({ onCreated }: CreateCategoryInputProps) {
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
   const createCategory = useCategoryStore((s) => s.createCategory);
@@ -13,11 +17,13 @@ export function CreateCategoryInput() {
     if (!canCreate || saving) return;
     setSaving(true);
     const category = await createCategory(name.trim());
-    const updatedCategories = useCategoryStore.getState().categories;
-    const reordered = [category.id, ...updatedCategories.filter((c) => c.id !== category.id).map((c) => c.id)];
-    await reorderCategories(reordered);
+    // Category is already at top in local state (optimistic prepend in store).
     setName("");
     setSaving(false);
+    onCreated?.(category.id);
+    // Persist order to server in background (no await — don't block UI)
+    const categories = useCategoryStore.getState().categories;
+    reorderCategories(categories.map((c) => c.id));
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

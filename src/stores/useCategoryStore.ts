@@ -38,8 +38,8 @@ export const useCategoryStore = create<CategoryState>()(
       createCategory: async (name: string) => {
         const repo = getCategoryRepository();
         const category = await repo.create(name);
-        const categories = await repo.getAll();
-        set({ categories });
+        // Optimistically prepend so item appears at top immediately
+        set((state) => ({ categories: [category, ...state.categories] }));
         return category;
       },
 
@@ -53,8 +53,14 @@ export const useCategoryStore = create<CategoryState>()(
       addExercise: async (categoryId, data) => {
         const repo = getCategoryRepository();
         const exercise = await repo.addExercise(categoryId, data);
-        const categories = await repo.getAll();
-        set({ categories });
+        // Optimistically prepend so item appears at top immediately
+        set((state) => ({
+          categories: state.categories.map((c) =>
+            c.id === categoryId
+              ? { ...c, exercises: [exercise, ...c.exercises] }
+              : c
+          ),
+        }));
         return exercise;
       },
 
