@@ -42,6 +42,8 @@ export function CategoryList() {
       </div>
 
       <div className="w-full flex flex-col gap-6">
+        <CreateCategoryInput />
+
         {!isEmpty && (
           <div {...containerProps} className="flex flex-col gap-2">
             {displayItems.map((category) => (
@@ -59,8 +61,6 @@ export function CategoryList() {
             ))}
           </div>
         )}
-
-        <CreateCategoryInput />
 
         {isEmpty && (
           <p className="text-[15px] leading-[18px] opacity-50">
