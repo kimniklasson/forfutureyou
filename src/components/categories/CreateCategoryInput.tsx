@@ -3,14 +3,21 @@ import { useCategoryStore } from "../../stores/useCategoryStore";
 
 export function CreateCategoryInput() {
   const [name, setName] = useState("");
+  const [saving, setSaving] = useState(false);
   const createCategory = useCategoryStore((s) => s.createCategory);
+  const reorderCategories = useCategoryStore((s) => s.reorderCategories);
 
   const canCreate = name.trim().length > 0;
 
   const handleCreate = async () => {
-    if (!canCreate) return;
-    await createCategory(name.trim());
+    if (!canCreate || saving) return;
+    setSaving(true);
+    const category = await createCategory(name.trim());
+    const updatedCategories = useCategoryStore.getState().categories;
+    const reordered = [category.id, ...updatedCategories.filter((c) => c.id !== category.id).map((c) => c.id)];
+    await reorderCategories(reordered);
     setName("");
+    setSaving(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -29,13 +36,16 @@ export function CreateCategoryInput() {
       />
       <button
         onClick={handleCreate}
-        disabled={!canCreate}
-        className={`px-3 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors ${
-          canCreate
+        disabled={!canCreate || saving}
+        className={`px-3 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${
+          canCreate && !saving
             ? "bg-black dark:bg-white text-white dark:text-black"
             : "bg-black/5 dark:bg-white/10 text-black/30 dark:text-white/30"
         }`}
       >
+        {saving && (
+          <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+        )}
         Skapa
       </button>
     </div>

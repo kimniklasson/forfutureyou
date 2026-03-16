@@ -115,13 +115,16 @@ export function ProfilePage() {
               type="button"
               onClick={handleNameSave}
               disabled={!hasChanged || saving}
-              className={`px-3 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors ${
+              className={`px-3 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${
                 hasChanged && !saving
                   ? "bg-black dark:bg-white text-white dark:text-black"
                   : "bg-black/5 dark:bg-white/10 text-black/30 dark:text-white/30"
               }`}
             >
-              {saving ? "..." : "Spara"}
+              {saving && (
+                <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              )}
+              Spara
             </button>
           </div>
           {nameError && (
