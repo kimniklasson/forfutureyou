@@ -1,5 +1,4 @@
-import { GripVertical } from "lucide-react";
-import { IconEdit, IconTrash } from "../ui/icons";
+import { IconEdit, IconTrash, IconDrag } from "../ui/icons";
 import type { Exercise } from "../../types/models";
 import { useSessionStore } from "../../stores/useSessionStore";
 import { RepWeightAdjuster } from "./RepWeightAdjuster";
@@ -85,7 +84,7 @@ export function ExerciseCard({
           {...dragHandleProps}
           className="flex items-center justify-center opacity-25 hover:opacity-60 transition-opacity shrink-0"
         >
-          <GripVertical
+          <IconDrag
             size={16}
             className={isDragging ? "cursor-grabbing" : "cursor-grab"}
           />
