@@ -14,7 +14,7 @@ export function BottomNav() {
   const { activeSession } = useSessionStore();
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 pointer-events-none">
+    <div className="fixed bottom-0 left-0 right-0 z-60 pointer-events-none">
       <div className="mx-auto max-w-[600px] pointer-events-auto">
         <div
           className="flex items-end justify-around px-6 pb-12 pt-14"
@@ -27,7 +27,7 @@ export function BottomNav() {
                 key={path}
                 onClick={() => navigate(path)}
                 aria-label={label}
-                className={`w-12 h-12 flex items-center justify-center transition-opacity ${
+                className={`w-12 h-12 flex items-center justify-center transition-opacity text-black ${
                   isActive ? "opacity-100" : "opacity-50"
                 }`}
               >

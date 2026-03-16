@@ -17,7 +17,7 @@ export function SessionTimerBar() {
     <div className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
       <div className="mx-auto max-w-[600px] pointer-events-auto">
         <div
-          className="mx-4 flex items-center gap-2 px-6 pt-6 pb-24 rounded-card transition-all duration-300"
+          className="flex items-center gap-2 px-6 pt-6 pb-24 transition-all duration-300"
           style={{ backgroundColor: "rgba(255, 217, 0, 0.95)" }}
         >
           {/* Cancel */}
@@ -50,7 +50,7 @@ export function SessionTimerBar() {
           {/* Finish */}
           <button
             onClick={finishSession}
-            className="w-12 h-12 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shrink-0"
+            className="w-12 h-12 rounded-full bg-black text-white flex items-center justify-center shrink-0"
           >
             <IconCheck size={16} />
           </button>
