@@ -50,9 +50,9 @@ export function SessionTimerBar() {
           {/* Finish */}
           <button
             onClick={finishSession}
-            className="w-12 h-12 rounded-full bg-black flex items-center justify-center shrink-0"
+            className="w-12 h-12 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shrink-0"
           >
-            <IconCheck size={16} color="white" />
+            <IconCheck size={16} />
           </button>
         </div>
       </div>

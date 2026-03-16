@@ -15,7 +15,7 @@ export function ConfirmDialog({ isOpen, message, confirmLabel = "Ta bort", onCon
       onClick={onCancel}
     >
       <div
-        className="bg-white rounded-modal w-[300px] p-6 flex flex-col gap-4"
+        className="bg-white dark:bg-[#1c1c1e] rounded-modal w-[300px] p-6 flex flex-col gap-4"
         onClick={(e) => e.stopPropagation()}
       >
         <p className="text-[15px] text-center">{message}</p>
@@ -28,7 +28,7 @@ export function ConfirmDialog({ isOpen, message, confirmLabel = "Ta bort", onCon
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 py-3 px-4 rounded-button bg-black text-white text-[12px] font-bold uppercase tracking-wider"
+            className="flex-1 py-3 px-4 rounded-button bg-black dark:bg-white text-white dark:text-black text-[12px] font-bold uppercase tracking-wider"
           >
             {confirmLabel}
           </button>

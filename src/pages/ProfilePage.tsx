@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { IconLogout, IconTrash } from "../components/ui/icons";
 import { useAuth } from "../auth/useAuth";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
+import { useSettingsStore, type Appearance, type WeightUnit } from "../stores/useSettingsStore";
 
 const NAME_REGEX = /^[a-zA-ZåäöÅÄÖéèêëàâùûüïîçæœÉÈÊËÀÂÙÛÜÏÎÇÆŒ\s]+$/;
 
@@ -16,6 +17,7 @@ function getProviderLabel(user: ReturnType<typeof useAuth>["user"]): string {
 export function ProfilePage() {
   const { user, displayName, updateName, signOut, deleteAccount } = useAuth();
   const navigate = useNavigate();
+  const { appearance, weightUnit, setAppearance, setWeightUnit } = useSettingsStore();
 
   const [name, setName] = useState(displayName);
   const [nameError, setNameError] = useState<string | null>(null);
@@ -64,12 +66,23 @@ export function ProfilePage() {
 
   const providerLabel = getProviderLabel(user);
 
+  const appearanceOptions: { value: Appearance; label: string }[] = [
+    { value: "ljus", label: "Ljus" },
+    { value: "mörkt", label: "Mörkt" },
+    { value: "auto", label: "Auto" },
+  ];
+
+  const weightOptions: { value: WeightUnit; label: string }[] = [
+    { value: "kg", label: "KG" },
+    { value: "lbs", label: "LBS" },
+  ];
+
   return (
     <div className="flex flex-col gap-8">
       {/* Title row */}
       <div className="flex items-start justify-between">
         <div className="flex flex-col">
-          <span className="text-[15px] font-bold leading-[18px]">Kontooversikt</span>
+          <span className="text-[15px] font-bold leading-[18px]">Kontoöversikt</span>
           <span className="text-[15px] leading-[18px] opacity-50">{providerLabel}</span>
         </div>
         <button
@@ -88,7 +101,7 @@ export function ProfilePage() {
           <span className="text-[12px] font-bold uppercase tracking-wider opacity-50">
             Ditt namn
           </span>
-          <div className={`border rounded-card flex items-center gap-2 pl-6 pr-4 py-4 ${nameError ? "border-red-300" : "border-black/10"}`}>
+          <div className={`border rounded-card flex items-center gap-2 pl-6 pr-4 py-4 ${nameError ? "border-red-300" : "border-black/10 dark:border-white/20"}`}>
             <input
               type="text"
               value={name}
@@ -104,8 +117,8 @@ export function ProfilePage() {
               disabled={!hasChanged || saving}
               className={`px-3 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors ${
                 hasChanged && !saving
-                  ? "bg-black text-white"
-                  : "bg-black/5 text-black/30"
+                  ? "bg-black dark:bg-white text-white dark:text-black"
+                  : "bg-black/5 dark:bg-white/10 text-black/30 dark:text-white/30"
               }`}
             >
               {saving ? "..." : "Spara"}
@@ -121,13 +134,65 @@ export function ProfilePage() {
           <span className="text-[12px] font-bold uppercase tracking-wider opacity-50">
             Din e-postadress
           </span>
-          <div className="border border-black/10 rounded-card pl-6 pr-4 py-4 opacity-50">
+          <div className="border border-black/10 dark:border-white/20 rounded-card pl-6 pr-4 py-4 opacity-50">
             <input
               type="email"
               value={user?.email ?? ""}
               disabled
               className="w-full bg-transparent text-[15px] outline-none cursor-not-allowed"
             />
+          </div>
+        </div>
+      </div>
+
+      {/* Settings section */}
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
+          <span className="text-[15px] font-bold leading-[18px]">Inställningar</span>
+          <span className="text-[15px] leading-[18px] opacity-50">Så som du vill ha det</span>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          {/* Appearance row */}
+          <div className="border border-black/10 dark:border-white/20 rounded-card flex items-center pl-6 pr-4 py-4">
+            <span className="flex-1 text-[15px]">Utseende</span>
+            <div className="flex gap-1">
+              {appearanceOptions.map(({ value, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setAppearance(value)}
+                  className={`px-3 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors ${
+                    appearance === value
+                      ? "bg-black dark:bg-white text-white dark:text-black"
+                      : "bg-black/5 dark:bg-white/10 text-black/40 dark:text-white/40"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Weight unit row */}
+          <div className="border border-black/10 dark:border-white/20 rounded-card flex items-center pl-6 pr-4 py-4">
+            <span className="flex-1 text-[15px]">Viktmått</span>
+            <div className="flex gap-1">
+              {weightOptions.map(({ value, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setWeightUnit(value)}
+                  className={`px-3 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors ${
+                    weightUnit === value
+                      ? "bg-black dark:bg-white text-white dark:text-black"
+                      : "bg-black/5 dark:bg-white/10 text-black/40 dark:text-white/40"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -142,13 +207,13 @@ export function ProfilePage() {
 
       {/* Delete account */}
       <button
-          type="button"
-          onClick={() => setShowDeleteConfirm(true)}
-          disabled={deleting}
-          className="w-full flex items-center justify-center gap-3 bg-black/5 rounded-card px-6 py-5 text-[13px] font-bold uppercase tracking-wider text-red-500 hover:bg-black/10 transition-colors"
-        >
-          {deleting ? "Tar bort..." : "Ta bort konto"}
-          <IconTrash size={18} />
+        type="button"
+        onClick={() => setShowDeleteConfirm(true)}
+        disabled={deleting}
+        className="w-full flex items-center justify-center gap-3 bg-black/5 dark:bg-white/10 rounded-card px-6 py-5 text-[13px] font-bold uppercase tracking-wider text-red-500 hover:bg-black/10 dark:hover:bg-white/15 transition-colors"
+      >
+        {deleting ? "Tar bort..." : "Ta bort konto"}
+        <IconTrash size={18} />
       </button>
 
       <ConfirmDialog

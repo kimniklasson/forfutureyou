@@ -42,7 +42,7 @@ export function ExerciseFormFields({
         <label className="font-bold text-[12px] uppercase tracking-wider opacity-50">
           Namn på övning
         </label>
-        <div className="border border-black/10 rounded-card flex items-center pl-6 pr-4 py-4">
+        <div className="border border-black/10 dark:border-white/20 rounded-card flex items-center pl-6 pr-4 py-4">
           <input
             type="text"
             placeholder="Fyll i t.ex. Hantelpress"
@@ -58,7 +58,7 @@ export function ExerciseFormFields({
         <label className="font-bold text-[12px] uppercase tracking-wider opacity-50">
           Välj antal basrepetitioner
         </label>
-        <div className="border border-black/10 rounded-card flex items-center gap-6 pl-6 pr-4 py-4">
+        <div className="border border-black/10 dark:border-white/20 rounded-card flex items-center gap-6 pl-6 pr-4 py-4">
           <input
             type="number"
             placeholder="Fyll i t.ex. 8"
@@ -75,7 +75,7 @@ export function ExerciseFormFields({
         <label className="font-bold text-[12px] uppercase tracking-wider opacity-50">
           Välj en basvikt
         </label>
-        <div className="border border-black/10 rounded-card flex items-center gap-6 pl-6 pr-4 py-4">
+        <div className="border border-black/10 dark:border-white/20 rounded-card flex items-center gap-6 pl-6 pr-4 py-4">
           <input
             type="number"
             placeholder="Fyll i t.ex. 30"
@@ -96,14 +96,16 @@ export function ExerciseFormFields({
           </span>
           <div
             className={`w-5 h-5 rounded-button border flex items-center justify-center ${
-              isBodyweight ? "bg-black border-black" : "bg-white border-black/10"
+              isBodyweight
+                ? "bg-black dark:bg-white border-black dark:border-white text-white dark:text-black"
+                : "bg-white dark:bg-[#2c2c2e] border-black/10 dark:border-white/20"
             }`}
           >
             {isBodyweight && (
               <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
                 <path
                   d="M1 5L4.5 8.5L11 1.5"
-                  stroke="white"
+                  stroke="currentColor"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -120,8 +122,8 @@ export function ExerciseFormFields({
         disabled={!canSubmit}
         className={`w-full py-4 px-6 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors ${
           canSubmit
-            ? "bg-black text-white"
-            : "bg-black/5 text-black/30"
+            ? "bg-black dark:bg-white text-white dark:text-black"
+            : "bg-black/5 dark:bg-white/10 text-black/30 dark:text-white/30"
         }`}
       >
         {submitLabel}

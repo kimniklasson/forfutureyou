@@ -115,7 +115,7 @@ export function ExerciseCard({
 
         <button
           onClick={handleSetPress}
-          className="bg-black text-white px-3 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider shrink-0"
+          className="bg-black dark:bg-white text-white dark:text-black px-3 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider shrink-0"
         >
           SET {setCount + 1}
         </button>

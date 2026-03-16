@@ -22,7 +22,7 @@ export function RepWeightAdjuster({
     : `${value} ${label}`;
 
   return (
-    <div className="bg-white rounded-button flex items-center h-8">
+    <div className="bg-white dark:bg-[#2c2c2e] rounded-button flex items-center h-8">
       <button
         onClick={() => onChange(Math.max(0, value - step))}
         className="w-16 h-full flex items-center justify-center rounded-button"

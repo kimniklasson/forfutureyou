@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Dark mode variant — triggered by data-theme="dark" on any ancestor */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
 @theme {
   --color-card: #f5f5f5;
   --color-accent: #FFD900;
@@ -12,6 +15,22 @@
   --radius-card: 8px;
   --radius-modal: 16px;
   --radius-icon: 56px;
+}
+
+/* CSS custom properties that change per theme */
+:root {
+  --header-bg: linear-gradient(to bottom, white 26.9%, rgba(255, 255, 255, 0));
+}
+
+[data-theme=dark] {
+  --color-card: #1c1c1e;
+  --header-bg: linear-gradient(to bottom, #111111 26.9%, rgba(17, 17, 17, 0));
+  color-scheme: dark;
+}
+
+[data-theme=dark] body {
+  background-color: #111111;
+  color: white;
 }
 
 input, textarea, select {
@@ -29,6 +48,12 @@ div:has(input):focus-within,
 div:has(textarea):focus-within,
 div:has(select):focus-within {
   border-color: black !important;
+}
+
+[data-theme=dark] div:has(input):focus-within,
+[data-theme=dark] div:has(textarea):focus-within,
+[data-theme=dark] div:has(select):focus-within {
+  border-color: white !important;
 }
 
 input:focus::placeholder,

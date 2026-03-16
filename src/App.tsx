@@ -10,35 +10,38 @@ import { CategoryList } from "./components/categories/CategoryList";
 import { ExerciseListPage } from "./components/exercises/ExerciseListPage";
 import { CompletedWorkoutsList } from "./components/history/CompletedWorkoutsList";
 import { WorkoutDetailView } from "./components/history/WorkoutDetailView";
+import { ThemeProvider } from "./components/layout/ThemeProvider";
 
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignUpPage />} />
+      <ThemeProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignUpPage />} />
 
-          {/* First-time onboarding (auth required, no name required) */}
-          <Route path="/set-name" element={<SetNamePage />} />
+            {/* First-time onboarding (auth required, no name required) */}
+            <Route path="/set-name" element={<SetNamePage />} />
 
-          {/* Protected routes */}
-          <Route
-            element={
-              <AuthGuard>
-                <AppShell />
-              </AuthGuard>
-            }
-          >
-            <Route path="/" element={<CategoryList />} />
-            <Route path="/category/:id" element={<ExerciseListPage />} />
-            <Route path="/history" element={<CompletedWorkoutsList />} />
-            <Route path="/history/:sessionId" element={<WorkoutDetailView />} />
-            <Route path="/profile" element={<ProfilePage />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+            {/* Protected routes */}
+            <Route
+              element={
+                <AuthGuard>
+                  <AppShell />
+                </AuthGuard>
+              }
+            >
+              <Route path="/" element={<CategoryList />} />
+              <Route path="/category/:id" element={<ExerciseListPage />} />
+              <Route path="/history" element={<CompletedWorkoutsList />} />
+              <Route path="/history/:sessionId" element={<WorkoutDetailView />} />
+              <Route path="/profile" element={<ProfilePage />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </ThemeProvider>
     </AuthProvider>
   );
 }

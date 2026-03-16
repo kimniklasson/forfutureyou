@@ -18,7 +18,7 @@ export function CreateCategoryInput() {
   };
 
   return (
-    <div className="border border-black/10 rounded-card flex items-center gap-2 pl-6 pr-4 py-4">
+    <div className="border border-black/10 dark:border-white/20 rounded-card flex items-center gap-2 pl-6 pr-4 py-4">
       <input
         type="text"
         placeholder="Skapa en kategori"
@@ -32,8 +32,8 @@ export function CreateCategoryInput() {
         disabled={!canCreate}
         className={`px-3 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors ${
           canCreate
-            ? "bg-black text-white"
-            : "bg-black/5 text-black/30"
+            ? "bg-black dark:bg-white text-white dark:text-black"
+            : "bg-black/5 dark:bg-white/10 text-black/30 dark:text-white/30"
         }`}
       >
         Skapa

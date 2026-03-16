@@ -8,7 +8,7 @@ export function AppShell() {
   const location = useLocation();
 
   return (
-    <div className="mx-auto max-w-[600px] min-h-full bg-white relative">
+    <div className="mx-auto max-w-[600px] min-h-full bg-white dark:bg-[#111111] relative">
       <Header />
       <main className={`pt-32 px-8 pb-6 ${hasSession ? "pb-28" : "pb-6"}`}>
         <div key={location.pathname} className="page-transition">

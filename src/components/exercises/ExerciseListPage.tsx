@@ -80,9 +80,9 @@ export function ExerciseListPage() {
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="w-10 h-10 rounded-full bg-black flex items-center justify-center shrink-0"
+          className="w-10 h-10 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shrink-0"
         >
-          <IconPlus size={16} color="white" />
+          <IconPlus size={16} />
         </button>
       </div>
 

@@ -29,7 +29,7 @@ export function Modal({ isOpen, onClose, title, subtitle, children }: ModalProps
       onClick={onClose}
     >
       <div
-        className="modal-content bg-white rounded-modal w-[345px] max-h-[90vh] overflow-y-auto flex flex-col gap-6 pt-6 pb-8 px-4"
+        className="modal-content bg-white dark:bg-[#1c1c1e] rounded-modal w-[345px] max-h-[90vh] overflow-y-auto flex flex-col gap-6 pt-6 pb-8 px-4"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
