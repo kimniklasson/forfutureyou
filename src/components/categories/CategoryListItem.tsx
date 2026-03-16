@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { GripVertical } from "lucide-react";
-import { IconTrash } from "../ui/icons";
+import { IconTrash, IconDrag } from "../ui/icons";
 import type { Category } from "../../types/models";
 
 interface CategoryListItemProps {
@@ -45,7 +44,7 @@ export function CategoryListItem({
         {...dragHandleProps}
         className="pl-4 pr-1 self-stretch flex items-center justify-center opacity-25 hover:opacity-60 transition-opacity"
       >
-        <GripVertical size={16} className={isDragging ? "cursor-grabbing" : "cursor-grab"} />
+        <IconDrag size={16} className={isDragging ? "cursor-grabbing" : "cursor-grab"} />
       </div>
 
       {/* Name — tap navigates */}
