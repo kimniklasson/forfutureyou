@@ -15,7 +15,7 @@ export function BottomNav() {
     <div className="fixed bottom-0 left-0 right-0 z-40 pointer-events-none">
       <div className="mx-auto max-w-[600px] pointer-events-auto">
         <div
-          className="flex items-end justify-around px-6 pb-8 pt-10"
+          className="flex items-end justify-around px-6 pb-12 pt-14"
           style={{ background: "var(--footer-bg)" }}
         >
           {NAV_ITEMS.map(({ path, Icon, label }) => {
