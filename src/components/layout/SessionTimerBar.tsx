@@ -137,7 +137,7 @@ export function SessionTimerBar() {
 
     {/* Session summary modal */}
     {finishedSession && totals && (
-      <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-backdrop">
+      <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-backdrop" onClick={handleViewSession}>
         <div
           className="modal-content bg-white dark:bg-[#1c1c1e] rounded-modal w-[345px] max-h-[90vh] overflow-y-auto flex flex-col gap-8 py-10 px-8"
           onClick={(e) => e.stopPropagation()}
