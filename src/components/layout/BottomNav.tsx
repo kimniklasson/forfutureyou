@@ -29,9 +29,9 @@ export function BottomNav() {
                 key={path}
                 onClick={() => navigate(path)}
                 aria-label={label}
-                className={`w-12 h-12 flex items-center justify-center transition-opacity text-black pointer-events-auto ${
-                  isActive ? "opacity-100" : "opacity-50"
-                }`}
+                className={`w-12 h-12 flex items-center justify-center transition-opacity pointer-events-auto ${
+                  activeSession ? "text-black" : "text-black dark:text-white"
+                } ${isActive ? "opacity-100" : "opacity-50"}`}
               >
                 <Icon size={20} />
               </button>
