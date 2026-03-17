@@ -1,7 +1,7 @@
 import confetti from "canvas-confetti";
 
 export function firePBConfetti() {
-  const isDark = document.documentElement.classList.contains("dark");
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
   const defaults = {
     particleCount: 40,
     spread: 55,
