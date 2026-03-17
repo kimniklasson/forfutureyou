@@ -43,7 +43,7 @@ export function LoginPage() {
       <Header />
 
       {/* Form area */}
-      <div className="flex flex-col items-center px-8 pt-40 pb-40">
+      <div className="flex flex-col items-center px-8 pt-40 pb-32">
         <div className="w-full max-w-[345px] mb-8 text-center">
           <p className="text-[20px] font-bold">Välkommen till Allceps!</p>
           <p className="text-[20px]">Logga in eller skapa konto nedan</p>
