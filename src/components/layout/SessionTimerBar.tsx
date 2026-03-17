@@ -8,7 +8,7 @@ import { calculateWorkoutTotals } from "../../utils/calculations";
 import { computeHistoricalPBs } from "../../utils/personalBest";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
 import { IconClose, IconCheck } from "../ui/icons";
-import type { WorkoutSession, WorkoutSet } from "../../types/models";
+import type { WorkoutSession } from "../../types/models";
 
 interface PBSet {
   setNumber: number;
