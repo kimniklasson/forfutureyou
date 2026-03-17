@@ -41,7 +41,7 @@ export function WorkoutBarChart({ sessions }: Props) {
   return (
     <div ref={containerRef}>
       {/* Chart card — no bottom padding so bars are flush */}
-      <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-[#f5f5f5] dark:bg-[#1c1c1c] px-4 pt-4 overflow-hidden">
+      <div className="rounded-card border border-black/10 dark:border-white/10 px-4 pt-4 overflow-hidden">
         {/* Header */}
         <div className="flex justify-between items-baseline mb-4">
           <span className="text-[13px] font-medium opacity-50">{currentYear}</span>
