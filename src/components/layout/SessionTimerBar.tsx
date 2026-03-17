@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSessionStore } from "../../stores/useSessionStore";
 import { useHistoryStore } from "../../stores/useHistoryStore";
@@ -7,9 +7,16 @@ import { formatTime, formatDuration } from "../../utils/formatTime";
 import { calculateWorkoutTotals } from "../../utils/calculations";
 import { computeHistoricalPBs } from "../../utils/personalBest";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
-import { Modal } from "../ui/Modal";
 import { IconClose, IconCheck } from "../ui/icons";
-import type { WorkoutSession } from "../../types/models";
+import type { WorkoutSession, WorkoutSet } from "../../types/models";
+
+interface PBSet {
+  setNumber: number;
+  reps: number;
+  weight: number;
+  exerciseName: string;
+  isBodyweight: boolean;
+}
 
 export function SessionTimerBar() {
   const { activeSession, finishSession, cancelSession } = useSessionStore();
@@ -19,17 +26,35 @@ export function SessionTimerBar() {
   const [finishedSession, setFinishedSession] = useState<WorkoutSession | null>(null);
   const allSessions = useHistoryStore((s) => s.sessions);
 
-  // Compute PB count for the finished session
-  const pbCount = useMemo(() => {
-    if (!finishedSession) return 0;
-    let count = 0;
+  // Lock body scroll when summary modal is open
+  useEffect(() => {
+    if (finishedSession) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [finishedSession]);
+
+  // Collect PB sets for the finished session
+  const pbSets = useMemo(() => {
+    if (!finishedSession) return [];
+    const result: PBSet[] = [];
     for (const log of finishedSession.exerciseLogs) {
       const pbTimestamps = computeHistoricalPBs(log.exerciseId, allSessions);
       for (const set of log.sets) {
-        if (pbTimestamps.has(set.completedAt)) count++;
+        if (pbTimestamps.has(set.completedAt)) {
+          result.push({
+            setNumber: set.setNumber,
+            reps: set.reps,
+            weight: set.weight,
+            exerciseName: log.exerciseName,
+            isBodyweight: log.isBodyweight,
+          });
+        }
       }
     }
-    return count;
+    return result;
   }, [finishedSession, allSessions]);
 
   if (!activeSession && !finishedSession) return null;
@@ -47,10 +72,6 @@ export function SessionTimerBar() {
       setFinishedSession(null);
       navigate(`/history/${id}`);
     }
-  };
-
-  const handleCloseModal = () => {
-    setFinishedSession(null);
   };
 
   // Summary data
@@ -107,41 +128,54 @@ export function SessionTimerBar() {
     />
 
     {/* Session summary modal */}
-    <Modal
-      isOpen={finishedSession !== null}
-      onClose={handleCloseModal}
-      title="Bra jobbat!"
-      subtitle="Här är en summering av passet."
-    >
-      {totals && (
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <div className="flex justify-between text-[15px]">
-              <span className="opacity-50">Tid</span>
-              <span className="font-bold">{summaryDuration}</span>
+    {finishedSession && totals && (
+      <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-backdrop">
+        <div
+          className="modal-content bg-white dark:bg-[#1c1c1e] rounded-modal w-[345px] max-h-[90vh] overflow-y-auto flex flex-col gap-8 py-10 px-8"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Title */}
+          <div className="text-center flex flex-col gap-1">
+            <p className="font-bold text-[20px] leading-[1.22]">Bra jobbat!</p>
+            <p className="text-[20px] leading-[1.22] opacity-50">Här är en summering av passet.</p>
+          </div>
+
+          {/* Stats columns */}
+          <div className="flex justify-around text-center">
+            <div className="flex flex-col gap-1">
+              <span className="text-[13px] opacity-50">Tid</span>
+              <span className="font-bold text-[15px]">{summaryDuration}</span>
             </div>
-            <div className="flex justify-between text-[15px]">
-              <span className="opacity-50">Set</span>
-              <span className="font-bold">{totals.totalSets} set</span>
+            <div className="flex flex-col gap-1">
+              <span className="text-[13px] opacity-50">Set</span>
+              <span className="font-bold text-[15px]">{totals.totalSets} set</span>
             </div>
-            <div className="flex justify-between text-[15px]">
-              <span className="opacity-50">Reps</span>
-              <span className="font-bold">{totals.totalReps} rep</span>
-            </div>
-            <div className="flex justify-between text-[15px]">
-              <span className="opacity-50">Total vikt</span>
-              <span className="font-bold">{totals.totalWeight} kg</span>
+            <div className="flex flex-col gap-1">
+              <span className="text-[13px] opacity-50">Reps</span>
+              <span className="font-bold text-[15px]">{totals.totalReps} rep</span>
             </div>
           </div>
 
-          {pbCount > 0 && (
-            <div className="bg-accent text-black rounded-card px-4 py-3 text-center">
-              <span className="font-bold text-[15px]">
-                {pbCount} personbästa!
-              </span>
+          {/* PB sets */}
+          {pbSets.length > 0 && (
+            <div className="flex flex-col gap-2">
+              {pbSets.map((pb, i) => {
+                const weightDisplay = pb.isBodyweight ? `+${pb.weight}` : String(pb.weight);
+                return (
+                  <div
+                    key={i}
+                    className="bg-accent text-black rounded-card flex items-center py-3 px-4 text-[15px] leading-[18px]"
+                  >
+                    <span className="flex-1 font-bold">S{pb.setNumber}</span>
+                    <span className="flex-1 text-right">{pb.reps} rep</span>
+                    <span className="flex-1 text-right">{weightDisplay} kg</span>
+                  </div>
+                );
+              })}
             </div>
           )}
 
+          {/* View session button */}
           <button
             onClick={handleViewSession}
             className="w-full bg-black dark:bg-white text-white dark:text-black rounded-card px-6 py-5 text-[13px] font-bold uppercase tracking-wider"
@@ -149,8 +183,8 @@ export function SessionTimerBar() {
             Visa pass
           </button>
         </div>
-      )}
-    </Modal>
+      </div>
+    )}
     </>
   );
 }
