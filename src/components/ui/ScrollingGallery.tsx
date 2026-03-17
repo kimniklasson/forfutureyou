@@ -45,35 +45,15 @@ function Lightbox({ images, startIndex, onClose }: {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[200] bg-black flex flex-col"
-      style={{
-        opacity: visible ? 1 : 0,
-        transition: "opacity 0.2s ease",
-      }}
+      className="fixed inset-0 z-[200] bg-black/30 flex flex-col items-center justify-center"
+      style={{ opacity: visible ? 1 : 0, transition: "opacity 0.2s ease" }}
+      onClick={onClose}
     >
-      {/* Close button */}
-      <button
-        onClick={onClose}
-        className="absolute top-6 right-6 z-10 w-10 h-10 flex items-center justify-center text-white/70 text-2xl !transform-none"
-        aria-label="Stäng"
-      >
-        ✕
-      </button>
-
-      {/* Dot indicators */}
-      <div className="absolute bottom-10 left-0 right-0 flex justify-center gap-2 z-10">
-        {images.map((_, i) => (
-          <div
-            key={i}
-            className="w-1.5 h-1.5 rounded-full transition-all duration-200"
-            style={{ background: i === index ? "white" : "rgba(255,255,255,0.35)", transform: i === index ? "scale(1.3)" : "scale(1)" }}
-          />
-        ))}
-      </div>
-
-      {/* Swipeable carousel */}
+      {/* Swipeable carousel — 80vh, stops click propagation */}
       <div
-        className="flex-1 overflow-hidden cursor-grab active:cursor-grabbing"
+        className="w-full overflow-hidden cursor-grab active:cursor-grabbing"
+        style={{ height: "80vh" }}
+        onClick={(e) => e.stopPropagation()}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -95,12 +75,23 @@ function Lightbox({ images, startIndex, onClose }: {
             >
               <img
                 src={src}
-                className="max-h-full max-w-full object-contain select-none"
+                className="h-full w-auto object-contain select-none"
                 draggable={false}
               />
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Dot indicators */}
+      <div className="flex gap-2 mt-5" onClick={(e) => e.stopPropagation()}>
+        {images.map((_, i) => (
+          <div
+            key={i}
+            className="w-1.5 h-1.5 rounded-full transition-all duration-200"
+            style={{ background: i === index ? "white" : "rgba(255,255,255,0.4)", transform: i === index ? "scale(1.3)" : "scale(1)" }}
+          />
+        ))}
       </div>
     </div>,
     document.body
