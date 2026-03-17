@@ -78,7 +78,7 @@ export function SetNamePage() {
       )}
 
       <div className="w-full max-w-[345px]">
-        <div className="border border-black/10 rounded-card flex items-center gap-2 pl-6 pr-4 py-4">
+        <div className="border border-black/10 focus-within:border-black rounded-card flex items-center gap-2 pl-6 pr-4 py-4 transition-colors">
           <input
             type="text"
             placeholder="Fyll i ditt namn"
@@ -87,7 +87,7 @@ export function SetNamePage() {
             onKeyDown={handleKeyDown}
             maxLength={60}
             autoFocus
-            className="flex-1 text-[15px] bg-transparent outline-none"
+            className="flex-1 text-[15px] text-black bg-transparent outline-none placeholder:text-black/30"
           />
           <button
             type="button"
