@@ -73,7 +73,7 @@ export function ProfilePage() {
   ];
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-10">
       {/* Title row */}
       <div className="flex flex-col items-center text-center">
         <span className="text-[20px] font-bold leading-[1.22]">Kontoöversikt</span>
