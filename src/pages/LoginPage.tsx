@@ -42,8 +42,8 @@ export function LoginPage() {
     <div className="mx-auto max-w-[600px] min-h-screen bg-white dark:bg-[#111111] flex flex-col">
       <Header />
 
-      {/* Centered form area */}
-      <div className="flex-1 flex flex-col items-center justify-center px-8 py-16">
+      {/* Form area */}
+      <div className="flex flex-col items-center px-8 pt-40 pb-40">
         <div className="w-full max-w-[345px] mb-8 text-center">
           <p className="text-[20px] font-bold">Välkommen till Allceps!</p>
           <p className="text-[20px]">Logga in eller skapa konto nedan</p>
