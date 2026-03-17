@@ -67,64 +67,55 @@ function Lightbox({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[200] flex items-end"
+      className="fixed inset-0 z-[200] bg-[#1a1a1a] flex flex-col"
       style={{
-        background: visible ? "rgba(0,0,0,0.55)" : "rgba(0,0,0,0)",
-        transition: "background 0.35s ease",
+        transform: visible ? "translateY(0)" : "translateY(100%)",
+        transition: "transform 0.42s cubic-bezier(0.16, 1, 0.3, 1)",
       }}
-      onClick={onClose}
     >
-      {/* Bottom-sheet modal */}
-      <div
-        className="relative w-full bg-[#1a1a1a] rounded-t-3xl pt-3 pb-12 overflow-hidden"
-        style={{
-          transform: visible ? "translateY(0)" : "translateY(100%)",
-          transition: "transform 0.42s cubic-bezier(0.16, 1, 0.3, 1)",
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Handle bar */}
-        <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-6" />
+      {/* Handle bar */}
+      <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-4 mb-6 flex-shrink-0" />
 
-        {/* Carousel container — overflow hidden clips the peeking cards */}
-        <div ref={containerRef} className="overflow-hidden">
-          <div
-            className="flex items-end cursor-grab active:cursor-grabbing"
-            style={{
-              transform: `translateX(${trackOffset}px)`,
-              transition: dragging ? "none" : "transform 0.38s cubic-bezier(0.16, 1, 0.3, 1)",
-              gap: GAP,
-            }}
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerCancel={handlePointerUp}
-          >
-            {GALLERY_ITEMS.map((item, i) => (
-              <div
-                key={i}
-                className="flex-shrink-0 flex flex-col items-center"
-                style={{ width: cardWidth }}
-              >
-                <img
-                  src={item.src}
-                  className="w-full rounded-2xl object-contain select-none border border-white/10"
-                  style={{ height: "72vh" }}
-                  draggable={false}
-                />
-                <p
-                  className="mt-3 text-center text-sm text-white/70 px-2 transition-opacity duration-300"
-                  style={{ opacity: i === index ? 1 : 0 }}
-                >
-                  {item.caption}
-                </p>
-              </div>
-            ))}
-          </div>
+      {/* Carousel — fills remaining space */}
+      <div ref={containerRef} className="overflow-hidden flex-1">
+        <div
+          className="flex h-full cursor-grab active:cursor-grabbing"
+          style={{
+            transform: `translateX(${trackOffset}px)`,
+            transition: dragging ? "none" : "transform 0.38s cubic-bezier(0.16, 1, 0.3, 1)",
+            gap: GAP,
+          }}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+        >
+          {GALLERY_ITEMS.map((item, i) => (
+            <div
+              key={i}
+              className="flex-shrink-0 h-full flex items-center"
+              style={{ width: cardWidth }}
+            >
+              <img
+                src={item.src}
+                className="w-full h-full rounded-2xl object-contain select-none border border-white/10"
+                draggable={false}
+              />
+            </div>
+          ))}
         </div>
+      </div>
+
+      {/* Caption + dots + close — fixed bottom area */}
+      <div className="flex-shrink-0 flex flex-col items-center pb-10 pt-4 gap-4">
+        <p
+          className="text-center text-sm text-white/70 px-6 min-h-[20px] transition-opacity duration-300"
+        >
+          {GALLERY_ITEMS[index].caption}
+        </p>
 
         {/* Dot indicators */}
-        <div className="flex justify-center gap-2 mt-5">
+        <div className="flex justify-center gap-2">
           {GALLERY_ITEMS.map((_, i) => (
             <div
               key={i}
@@ -137,6 +128,14 @@ function Lightbox({
             />
           ))}
         </div>
+
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="mt-1 px-8 py-3 rounded-full border border-white/20 text-white/70 text-sm font-medium active:opacity-60 transition-opacity"
+        >
+          Stäng
+        </button>
       </div>
     </div>,
     document.body
