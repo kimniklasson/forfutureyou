@@ -8,6 +8,7 @@ export function SetNamePage() {
   const { user, loading, displayName, updateName } = useAuth();
   const navigate = useNavigate();
   const [name, setName] = useState("");
+  const [focused, setFocused] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -78,16 +79,18 @@ export function SetNamePage() {
       )}
 
       <div className="w-full max-w-[345px]">
-        <div className="border border-black/10 focus-within:border-black rounded-card flex items-center gap-2 pl-6 pr-4 py-4 transition-colors">
+        <div className={`border rounded-card flex items-center gap-2 pl-6 pr-4 py-4 transition-colors ${focused ? "border-black" : "border-black/10"}`}>
           <input
             type="text"
             placeholder="Fyll i ditt namn"
             value={name}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
             maxLength={60}
             autoFocus
-            className="flex-1 text-[15px] text-black bg-transparent outline-none placeholder:text-black/30"
+            className="flex-1 text-[15px] text-black bg-transparent outline-none placeholder:text-black/50"
           />
           <button
             type="button"
