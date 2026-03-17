@@ -75,19 +75,9 @@ export function ProfilePage() {
   return (
     <div className="flex flex-col gap-8">
       {/* Title row */}
-      <div className="flex items-center gap-6">
-        <div className="flex-1 flex flex-col items-center text-center">
-          <span className="text-[20px] font-bold leading-[1.22]">Kontoöversikt</span>
-          <span className="text-[20px] leading-[1.22] opacity-50">{providerLabel}</span>
-        </div>
-        <button
-          type="button"
-          onClick={() => setShowLogoutConfirm(true)}
-          className="w-10 h-10 rounded-full bg-red-500 text-white flex items-center justify-center shrink-0 hover:bg-red-600 transition-colors"
-          aria-label="Logga ut"
-        >
-          <IconLogout size={16} />
-        </button>
+      <div className="flex flex-col items-center text-center">
+        <span className="text-[20px] font-bold leading-[1.22]">Kontoöversikt</span>
+        <span className="text-[20px] leading-[1.22] opacity-50">{providerLabel}</span>
       </div>
 
       <div className="flex flex-col gap-6">
@@ -182,6 +172,16 @@ export function ProfilePage() {
           Den här appen är designad av Kim Niklasson och framtagen med hjälp av AI.
         </span>
       </div>
+
+      {/* Logout */}
+      <button
+        type="button"
+        onClick={() => setShowLogoutConfirm(true)}
+        className="w-full flex items-center justify-center gap-3 bg-red-500 hover:bg-red-600 rounded-card px-6 py-5 text-[13px] font-bold uppercase tracking-wider text-white transition-colors"
+      >
+        Logga ut
+        <IconLogout size={18} />
+      </button>
 
       {/* Delete account */}
       <button
