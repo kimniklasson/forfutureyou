@@ -4,6 +4,8 @@ import type { Exercise } from "../../types/models";
 import { useSessionStore } from "../../stores/useSessionStore";
 import { RepWeightAdjuster } from "./RepWeightAdjuster";
 import { ExerciseSetDisplay } from "./ExerciseSetDisplay";
+import { usePBTracker } from "../../hooks/usePBTracker";
+import { firePBConfetti } from "../../utils/confetti";
 
 interface ExerciseCardProps {
   exercise: Exercise;
@@ -61,6 +63,7 @@ export function ExerciseCard({
   const adjustment = getAdjustment(exercise.id, exercise.baseReps, exercise.baseWeight);
   const setCount = getExerciseSetCount(exercise.id);
   const isSessionActive = activeSession !== null;
+  const { checkIfPB, pbSetNumbers } = usePBTracker(exercise.id);
 
   const exerciseLog = activeSession?.exerciseLogs.find(
     (l) => l.exerciseId === exercise.id
@@ -72,6 +75,7 @@ export function ExerciseCard({
       alert("Du har redan ett aktivt pass. Avsluta det först innan du startar ett nytt.");
       return;
     }
+    const willBePB = checkIfPB(adjustment.currentReps, adjustment.currentWeight);
     if (!isSessionActive) {
       startSession(categoryId, categoryName);
     }
@@ -82,6 +86,9 @@ export function ExerciseCard({
       adjustment.currentReps,
       adjustment.currentWeight
     );
+    if (willBePB) {
+      firePBConfetti();
+    }
   };
 
   const handleNameBlur = async () => {
@@ -202,6 +209,7 @@ export function ExerciseCard({
         <ExerciseSetDisplay
           sets={exerciseLog.sets}
           isBodyweight={exercise.isBodyweight}
+          pbSetNumbers={pbSetNumbers}
         />
       )}
     </div>

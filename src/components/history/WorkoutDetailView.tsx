@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useHistoryStore } from "../../stores/useHistoryStore";
 import { formatShortDate } from "../../utils/formatDate";
 import { formatDuration } from "../../utils/formatTime";
 import { calculateWorkoutTotals } from "../../utils/calculations";
+import { computeHistoricalPBs } from "../../utils/personalBest";
 import { IconTrash } from "../ui/icons";
 import type { WorkoutSession } from "../../types/models";
 
@@ -109,13 +110,22 @@ function InlineEdit({
 export function WorkoutDetailView() {
   const { sessionId } = useParams<{ sessionId: string }>();
   const { loadSessions, updateSession } = useHistoryStore();
-  const session = useHistoryStore((state) =>
-    state.sessions.find((s) => s.id === sessionId)
-  );
+  const allSessions = useHistoryStore((state) => state.sessions);
+  const session = allSessions.find((s) => s.id === sessionId);
 
   useEffect(() => {
     loadSessions();
   }, [loadSessions]);
+
+  // Compute PB flags for each exercise in this session
+  const pbMap = useMemo(() => {
+    const map = new Map<string, Set<string>>();
+    if (!session) return map;
+    for (const log of session.exerciseLogs) {
+      map.set(log.exerciseId, computeHistoricalPBs(log.exerciseId, allSessions));
+    }
+    return map;
+  }, [session, allSessions]);
 
   if (!session) {
     return <p className="text-center opacity-50 pt-10">Träningspass hittades inte.</p>;
@@ -213,10 +223,14 @@ export function WorkoutDetailView() {
         <div key={log.exerciseId} className="flex flex-col gap-2">
           <span className="font-bold text-[15px] leading-[18px]">{log.exerciseName}</span>
           <div className="flex flex-col">
-            {log.sets.map((set, setIdx) => (
+            {log.sets.map((set, setIdx) => {
+              const isPB = pbMap.get(log.exerciseId)?.has(set.completedAt) ?? false;
+              return (
               <div
                 key={set.setNumber}
-                className="flex items-center py-3 text-[15px] leading-[18px] border-b border-black/10 dark:border-white/20 last:border-0"
+                className={`flex items-center py-3 text-[15px] leading-[18px] border-b border-black/10 dark:border-white/20 last:border-0 ${
+                  isPB ? "bg-accent text-black rounded-lg px-2 -mx-2" : ""
+                }`}
               >
                 <span className="flex-1 font-bold">S{set.setNumber}</span>
 
@@ -255,7 +269,8 @@ export function WorkoutDetailView() {
                   <IconTrash size={14} />
                 </button>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       ))}
