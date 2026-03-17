@@ -31,7 +31,7 @@ export function Header() {
               onClick={() => navigate(-1)}
               className={isTopLevel ? "invisible pointer-events-none" : ""}
             >
-              <IconArrowLeft size={16} />
+              <IconArrowLeft size={20} />
             </IconButton>
           </div>
 
