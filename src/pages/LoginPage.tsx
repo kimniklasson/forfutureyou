@@ -11,8 +11,8 @@ export function LoginPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-[600px] min-h-screen bg-white flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin" />
+      <div className="mx-auto max-w-[600px] min-h-screen bg-white dark:bg-[#111111] flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-black dark:border-white border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -37,7 +37,7 @@ export function LoginPage() {
   };
 
   return (
-    <div className="mx-auto max-w-[600px] min-h-screen bg-white flex flex-col items-center justify-center px-8">
+    <div className="mx-auto max-w-[600px] min-h-screen bg-white dark:bg-[#111111] flex flex-col items-center justify-center px-8">
       {/* Logo */}
       <svg
         width="48"
@@ -49,7 +49,7 @@ export function LoginPage() {
       >
         <path
           d="M6 0V16H4V0H6ZM10 0V7H38V0H40V16H38V9H10V16H8V0H10ZM44 0V16H42V0H44ZM2 4V12H0V4H2ZM48 4V12H46V4H48Z"
-          fill="black"
+          className="fill-black dark:fill-white"
         />
       </svg>
 
@@ -87,16 +87,16 @@ export function LoginPage() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full py-4 bg-black text-white text-[12px] font-bold uppercase tracking-wider rounded-button disabled:opacity-50"
+          className="w-full py-4 bg-black dark:bg-white text-white dark:text-black text-[12px] font-bold uppercase tracking-wider rounded-button disabled:opacity-50"
         >
           {submitting ? "Loggar in..." : "Logga in"}
         </button>
       </form>
 
       <div className="w-full max-w-[345px] flex items-center gap-4 my-6">
-        <div className="flex-1 h-px bg-black/10" />
-        <span className="text-[12px] text-black/40 uppercase tracking-wider">eller</span>
-        <div className="flex-1 h-px bg-black/10" />
+        <div className="flex-1 h-px bg-black/10 dark:bg-white/10" />
+        <span className="text-[12px] text-black/40 dark:text-white/40 uppercase tracking-wider">eller</span>
+        <div className="flex-1 h-px bg-black/10 dark:bg-white/10" />
       </div>
 
       <button
@@ -124,9 +124,9 @@ export function LoginPage() {
         Fortsätt med Google
       </button>
 
-      <p className="mt-8 text-[13px] text-black/50">
+      <p className="mt-8 text-[13px] text-black/50 dark:text-white/50">
         Inget konto?{" "}
-        <Link to="/signup" className="text-black font-bold underline">
+        <Link to="/signup" className="text-black dark:text-white font-bold underline">
           Skapa konto
         </Link>
       </p>
