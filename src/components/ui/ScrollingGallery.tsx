@@ -108,7 +108,8 @@ function Lightbox({
               >
                 <img
                   src={item.src}
-                  className="h-[58vh] w-auto rounded-2xl object-contain select-none border border-white/10 mx-auto"
+                  className="w-full rounded-2xl object-contain select-none border border-white/10"
+                  style={{ height: "58vh" }}
                   draggable={false}
                 />
                 <p
