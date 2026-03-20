@@ -74,12 +74,14 @@ async function getUserId(): Promise<string> {
 let saveQueue: Promise<void> = Promise.resolve();
 
 /**
- * Deduplicate exercise_logs for a session in the database.
- * If multiple rows share the same (session_id, exercise_id), keep the oldest
- * one and migrate all workout_sets from the duplicates into it, then delete
- * the duplicate logs.
+ * Deduplicate exercise_logs AND workout_sets for a session.
+ *
+ * Handles two kinds of corruption from the race condition:
+ * 1. Multiple exercise_log rows for the same exercise — merges into one.
+ * 2. Multiple workout_set rows with the same set_number within a single
+ *    exercise_log — keeps only the first occurrence of each set_number.
  */
-async function deduplicateExerciseLogs(sessionId: string): Promise<void> {
+async function deduplicateSession(sessionId: string): Promise<void> {
   const { data: logs, error } = await supabase
     .from("exercise_logs")
     .select("id, exercise_id, workout_sets(id, set_number, reps, weight, completed_at)")
@@ -97,13 +99,10 @@ async function deduplicateExerciseLogs(sessionId: string): Promise<void> {
   }
 
   for (const [, group] of grouped) {
-    if (group.length <= 1) continue;
-
-    // Keep the first log, merge sets from the rest
     const keepLog = group[0];
     const duplicateLogs = group.slice(1);
 
-    // Collect all sets across all logs, deduplicate by set_number (keep earliest)
+    // Collect all sets across all logs, deduplicate by set_number (keep first)
     const allSets: Array<{ set_number: number; reps: number; weight: number; completed_at: string }> = [];
     const seenSetNumbers = new Set<number>();
 
@@ -122,14 +121,24 @@ async function deduplicateExerciseLogs(sessionId: string): Promise<void> {
       }
     }
 
-    // Delete sets from duplicates (cascade might handle this, but be safe)
-    const duplicateIds = duplicateLogs.map((l) => l.id);
-    await supabase.from("workout_sets").delete().in("exercise_log_id", duplicateIds);
+    // Check if anything actually needs fixing
+    const originalSetCount = group.reduce(
+      (sum, log) => sum + ((log as any).workout_sets?.length ?? 0),
+      0
+    );
+    const hasDuplicateLogs = duplicateLogs.length > 0;
+    const hasDuplicateSets = originalSetCount !== allSets.length;
 
-    // Delete the duplicate exercise_logs
-    await supabase.from("exercise_logs").delete().in("id", duplicateIds);
+    if (!hasDuplicateLogs && !hasDuplicateSets) continue;
 
-    // Rewrite the kept log's sets with the merged, deduplicated set
+    // Delete sets and logs from duplicates
+    if (hasDuplicateLogs) {
+      const duplicateIds = duplicateLogs.map((l) => l.id);
+      await supabase.from("workout_sets").delete().in("exercise_log_id", duplicateIds);
+      await supabase.from("exercise_logs").delete().in("id", duplicateIds);
+    }
+
+    // Rewrite the kept log's sets with deduplicated data
     await supabase.from("workout_sets").delete().eq("exercise_log_id", keepLog.id);
 
     if (allSets.length > 0) {
@@ -286,7 +295,7 @@ export const supabaseSessionRepository: SessionRepository = {
    */
   async cleanup(sessionId?: string) {
     if (sessionId) {
-      await deduplicateExerciseLogs(sessionId);
+      await deduplicateSession(sessionId);
       return;
     }
     // Clean all sessions
@@ -295,7 +304,7 @@ export const supabaseSessionRepository: SessionRepository = {
       .select("id");
     if (sessions) {
       for (const s of sessions) {
-        await deduplicateExerciseLogs(s.id);
+        await deduplicateSession(s.id);
       }
     }
   },
