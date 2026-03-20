@@ -152,7 +152,7 @@ export function ImportExercisesModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0">
+        <div className="flex items-center justify-between px-8 pt-4 pb-2 shrink-0">
           <span className="font-bold text-[15px] leading-[1.22]">
             Välj övningar
           </span>
@@ -165,7 +165,7 @@ export function ImportExercisesModal({
         </div>
 
         {/* Exercise list */}
-        <div className="flex-1 overflow-y-auto px-4 pb-4">
+        <div className="flex-1 overflow-y-auto px-8 pb-4">
           <div className="flex flex-col gap-2">
             {uniqueExercises.length === 0 ? (
               <p className="text-center opacity-50 py-8 text-[15px]">
@@ -208,7 +208,7 @@ export function ImportExercisesModal({
         </div>
 
         {/* Sticky footer */}
-        <div className="px-4 pt-4 pb-8 shrink-0">
+        <div className="px-8 pt-4 pb-8 shrink-0">
           <button
             onClick={handleSave}
             disabled={!hasChanges || saving}
