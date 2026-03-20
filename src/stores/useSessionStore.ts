@@ -86,25 +86,34 @@ export const useSessionStore = create<SessionState>()(
         const { activeSession } = get();
         if (!activeSession) return;
 
-        const updatedLogs = [...activeSession.exerciseLogs];
-        let exerciseLog = updatedLogs.find((l) => l.exerciseId === exerciseId);
+        const existingIdx = activeSession.exerciseLogs.findIndex(
+          (l) => l.exerciseId === exerciseId
+        );
 
-        if (!exerciseLog) {
-          exerciseLog = {
-            exerciseId,
-            exerciseName,
-            isBodyweight,
-            sets: [],
-          };
-          updatedLogs.push(exerciseLog);
-        }
-
-        exerciseLog.sets.push({
-          setNumber: exerciseLog.sets.length + 1,
+        const newSet = {
+          setNumber:
+            existingIdx >= 0
+              ? activeSession.exerciseLogs[existingIdx].sets.length + 1
+              : 1,
           reps,
           weight,
           completedAt: new Date().toISOString(),
-        });
+        };
+
+        let updatedLogs;
+        if (existingIdx >= 0) {
+          // Clone the log immutably — no mutation of existing state
+          updatedLogs = activeSession.exerciseLogs.map((log, i) =>
+            i === existingIdx
+              ? { ...log, sets: [...log.sets, newSet] }
+              : log
+          );
+        } else {
+          updatedLogs = [
+            ...activeSession.exerciseLogs,
+            { exerciseId, exerciseName, isBodyweight, sets: [newSet] },
+          ];
+        }
 
         const updatedSession = { ...activeSession, exerciseLogs: updatedLogs };
         getSessionRepository().save(updatedSession);

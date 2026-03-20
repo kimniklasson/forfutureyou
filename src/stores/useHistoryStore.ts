@@ -18,11 +18,25 @@ interface HistoryState {
   reset: () => void;
 }
 
+// Run cleanup only once per app session
+let sessionCleanupDone = false;
+
 export const useHistoryStore = create<HistoryState>()((set, get) => ({
   sessions: [],
 
   loadSessions: async () => {
     const repo = getSessionRepository();
+
+    // Run one-time deduplication cleanup if the repo supports it
+    if (repo.cleanup && !sessionCleanupDone) {
+      sessionCleanupDone = true;
+      try {
+        await repo.cleanup();
+      } catch {
+        // Cleanup is best-effort — don't block loading
+      }
+    }
+
     const all = await repo.getAll();
     set({ sessions: all.filter((s) => s.status === "completed") });
   },

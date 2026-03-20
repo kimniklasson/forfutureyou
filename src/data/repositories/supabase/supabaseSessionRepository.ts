@@ -69,6 +69,84 @@ async function getUserId(): Promise<string> {
   return user.id;
 }
 
+// Save queue: serializes all save() calls to prevent race conditions
+// where concurrent saves create duplicate exercise_logs or workout_sets.
+let saveQueue: Promise<void> = Promise.resolve();
+
+/**
+ * Deduplicate exercise_logs for a session in the database.
+ * If multiple rows share the same (session_id, exercise_id), keep the oldest
+ * one and migrate all workout_sets from the duplicates into it, then delete
+ * the duplicate logs.
+ */
+async function deduplicateExerciseLogs(sessionId: string): Promise<void> {
+  const { data: logs, error } = await supabase
+    .from("exercise_logs")
+    .select("id, exercise_id, workout_sets(id, set_number, reps, weight, completed_at)")
+    .eq("session_id", sessionId)
+    .order("id", { ascending: true });
+
+  if (error || !logs) return;
+
+  // Group by exercise_id
+  const grouped = new Map<string, typeof logs>();
+  for (const log of logs) {
+    const key = log.exercise_id;
+    if (!grouped.has(key)) grouped.set(key, []);
+    grouped.get(key)!.push(log);
+  }
+
+  for (const [, group] of grouped) {
+    if (group.length <= 1) continue;
+
+    // Keep the first log, merge sets from the rest
+    const keepLog = group[0];
+    const duplicateLogs = group.slice(1);
+
+    // Collect all sets across all logs, deduplicate by set_number (keep earliest)
+    const allSets: Array<{ set_number: number; reps: number; weight: number; completed_at: string }> = [];
+    const seenSetNumbers = new Set<number>();
+
+    for (const log of group) {
+      const sets = (log as any).workout_sets || [];
+      for (const s of sets) {
+        if (!seenSetNumbers.has(s.set_number)) {
+          seenSetNumbers.add(s.set_number);
+          allSets.push({
+            set_number: s.set_number,
+            reps: s.reps,
+            weight: s.weight,
+            completed_at: s.completed_at,
+          });
+        }
+      }
+    }
+
+    // Delete sets from duplicates (cascade might handle this, but be safe)
+    const duplicateIds = duplicateLogs.map((l) => l.id);
+    await supabase.from("workout_sets").delete().in("exercise_log_id", duplicateIds);
+
+    // Delete the duplicate exercise_logs
+    await supabase.from("exercise_logs").delete().in("id", duplicateIds);
+
+    // Rewrite the kept log's sets with the merged, deduplicated set
+    await supabase.from("workout_sets").delete().eq("exercise_log_id", keepLog.id);
+
+    if (allSets.length > 0) {
+      const userId = await getUserId();
+      const setsToInsert = allSets.map((s) => ({
+        user_id: userId,
+        exercise_log_id: keepLog.id,
+        set_number: s.set_number,
+        reps: s.reps,
+        weight: s.weight,
+        completed_at: s.completed_at,
+      }));
+      await supabase.from("workout_sets").insert(setsToInsert);
+    }
+  }
+}
+
 export const supabaseSessionRepository: SessionRepository = {
   async getAll() {
     const { data, error } = await supabase
@@ -108,83 +186,117 @@ export const supabaseSessionRepository: SessionRepository = {
   },
 
   async save(session: WorkoutSession) {
-    const userId = await getUserId();
+    // Queue saves so only one runs at a time — prevents duplicate rows
+    const doSave = async () => {
+      const userId = await getUserId();
 
-    // Upsert the session
-    const { error: sessionError } = await supabase
-      .from("workout_sessions")
-      .upsert({
-        id: session.id,
-        user_id: userId,
-        category_id: session.categoryId,
-        category_name: session.categoryName,
-        started_at: session.startedAt,
-        finished_at: session.finishedAt,
-        paused_duration: session.pausedDuration,
-        status: session.status,
-      });
-
-    if (sessionError) throw sessionError;
-
-    // Sync exercise logs and sets
-    for (const log of session.exerciseLogs) {
-      // Check if log exists
-      const { data: existingLog } = await supabase
-        .from("exercise_logs")
-        .select("id")
-        .eq("session_id", session.id)
-        .eq("exercise_id", log.exerciseId)
-        .maybeSingle();
-
-      let logId: string;
-
-      if (existingLog) {
-        logId = existingLog.id;
-      } else {
-        const { data: newLog, error: logError } = await supabase
-          .from("exercise_logs")
-          .insert({
-            user_id: userId,
-            session_id: session.id,
-            exercise_id: log.exerciseId,
-            exercise_name: log.exerciseName,
-            is_bodyweight: log.isBodyweight,
-          })
-          .select("id")
-          .single();
-
-        if (logError) throw logError;
-        logId = newLog.id;
-      }
-
-      // Upsert sets — delete existing and re-insert for simplicity
-      await supabase
-        .from("workout_sets")
-        .delete()
-        .eq("exercise_log_id", logId);
-
-      if (log.sets.length > 0) {
-        const setsToInsert = log.sets.map((s) => ({
+      // Upsert the session
+      const { error: sessionError } = await supabase
+        .from("workout_sessions")
+        .upsert({
+          id: session.id,
           user_id: userId,
-          exercise_log_id: logId,
-          set_number: s.setNumber,
-          reps: s.reps,
-          weight: s.weight,
-          completed_at: s.completedAt,
-        }));
+          category_id: session.categoryId,
+          category_name: session.categoryName,
+          started_at: session.startedAt,
+          finished_at: session.finishedAt,
+          paused_duration: session.pausedDuration,
+          status: session.status,
+        });
 
-        const { error: setsError } = await supabase
+      if (sessionError) throw sessionError;
+
+      // Sync exercise logs and sets
+      for (const log of session.exerciseLogs) {
+        // Check if log exists — may return multiple due to past race conditions
+        const { data: existingLogs } = await supabase
+          .from("exercise_logs")
+          .select("id")
+          .eq("session_id", session.id)
+          .eq("exercise_id", log.exerciseId)
+          .order("id", { ascending: true });
+
+        let logId: string;
+
+        if (existingLogs && existingLogs.length > 0) {
+          logId = existingLogs[0].id;
+
+          // Clean up any duplicate logs from past race conditions
+          if (existingLogs.length > 1) {
+            const duplicateIds = existingLogs.slice(1).map((l) => l.id);
+            await supabase.from("workout_sets").delete().in("exercise_log_id", duplicateIds);
+            await supabase.from("exercise_logs").delete().in("id", duplicateIds);
+          }
+        } else {
+          const { data: newLog, error: logError } = await supabase
+            .from("exercise_logs")
+            .insert({
+              user_id: userId,
+              session_id: session.id,
+              exercise_id: log.exerciseId,
+              exercise_name: log.exerciseName,
+              is_bodyweight: log.isBodyweight,
+            })
+            .select("id")
+            .single();
+
+          if (logError) throw logError;
+          logId = newLog.id;
+        }
+
+        // Upsert sets — delete existing and re-insert for simplicity
+        await supabase
           .from("workout_sets")
-          .insert(setsToInsert);
+          .delete()
+          .eq("exercise_log_id", logId);
 
-        if (setsError) throw setsError;
+        if (log.sets.length > 0) {
+          const setsToInsert = log.sets.map((s) => ({
+            user_id: userId,
+            exercise_log_id: logId,
+            set_number: s.setNumber,
+            reps: s.reps,
+            weight: s.weight,
+            completed_at: s.completedAt,
+          }));
+
+          const { error: setsError } = await supabase
+            .from("workout_sets")
+            .insert(setsToInsert);
+
+          if (setsError) throw setsError;
+        }
       }
-    }
+    };
+
+    // Chain onto the queue so saves are serialized
+    saveQueue = saveQueue.then(doSave, doSave);
+    return saveQueue;
   },
 
   async delete(id: string) {
     // Cascade will handle exercise_logs and workout_sets
     const { error } = await supabase.from("workout_sessions").delete().eq("id", id);
     if (error) throw error;
+  },
+
+  /**
+   * Run deduplication cleanup on all sessions (or a specific one).
+   * Call this once to fix data corrupted by the race condition bug.
+   */
+  async cleanup(sessionId?: string) {
+    if (sessionId) {
+      await deduplicateExerciseLogs(sessionId);
+      return;
+    }
+    // Clean all sessions
+    const { data: sessions } = await supabase
+      .from("workout_sessions")
+      .select("id");
+    if (sessions) {
+      for (const s of sessions) {
+        await deduplicateExerciseLogs(s.id);
+      }
+    }
   },
 };

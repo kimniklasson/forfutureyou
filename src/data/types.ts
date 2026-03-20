@@ -26,4 +26,6 @@ export interface SessionRepository {
   getActive(): Promise<WorkoutSession | null>;
   save(session: WorkoutSession): Promise<void>;
   delete(id: string): Promise<void>;
+  /** Optional: deduplicate exercise_logs corrupted by race conditions */
+  cleanup?(sessionId?: string): Promise<void>;
 }
