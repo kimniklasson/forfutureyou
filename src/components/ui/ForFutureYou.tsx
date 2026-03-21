@@ -20,7 +20,7 @@ export function ForFutureYou() {
       viewBox="0 0 535 441"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className="w-[300px] h-auto"
+      className="w-[260px] h-auto"
       style={{ overflow: "visible" }}
     >
       {PATHS.map((d, i) => (
