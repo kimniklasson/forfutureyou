@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useCategoryStore } from "../../stores/useCategoryStore";
 import { useSessionStore } from "../../stores/useSessionStore";
+import { useHistoryStore } from "../../stores/useHistoryStore";
 import { CategoryListItem } from "./CategoryListItem";
 import { CreateCategoryInput } from "./CreateCategoryInput";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
@@ -8,9 +9,37 @@ import { ForFutureYou } from "../ui/ForFutureYou";
 import { useDragSort } from "../../hooks/useDragSort";
 import { useAuth } from "../../auth/useAuth";
 
+function formatTimeSince(isoDate: string): string {
+  const diff = Date.now() - new Date(isoDate).getTime();
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(hours / 24);
+  const weeks = Math.floor(days / 7);
+
+  if (weeks >= 1) {
+    const remainingDays = days - weeks * 7;
+    return remainingDays > 0
+      ? `${weeks} ${weeks === 1 ? "vecka" : "veckor"} och ${remainingDays} ${remainingDays === 1 ? "dag" : "dagar"}`
+      : `${weeks} ${weeks === 1 ? "vecka" : "veckor"}`;
+  }
+
+  if (days >= 1) {
+    const remainingHours = hours - days * 24;
+    return remainingHours > 0
+      ? `${days} ${days === 1 ? "dag" : "dagar"} och ${remainingHours} ${remainingHours === 1 ? "timme" : "timmar"}`
+      : `${days} ${days === 1 ? "dag" : "dagar"}`;
+  }
+
+  if (hours >= 1) {
+    return `${hours} ${hours === 1 ? "timme" : "timmar"}`;
+  }
+
+  return "mindre än en timme";
+}
+
 export function CategoryList() {
   const { categories, loadCategories, deleteCategory, reorderCategories } = useCategoryStore();
   const activeSession = useSessionStore((s) => s.activeSession);
+  const { sessions, loadSessions } = useHistoryStore();
   useAuth();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [exitingId, setExitingId] = useState<string | null>(null);
@@ -18,7 +47,11 @@ export function CategoryList() {
 
   useEffect(() => {
     loadCategories();
-  }, [loadCategories]);
+    loadSessions();
+  }, [loadCategories, loadSessions]);
+
+  const lastSession = sessions.length > 0 ? sessions[0] : null;
+  const lastTrainedDate = lastSession?.finishedAt ?? lastSession?.startedAt;
 
   const { draggingId, displayItems, containerProps, getDragHandleProps, getItemProps } =
     useDragSort(categories, reorderCategories);
@@ -76,6 +109,12 @@ export function CategoryList() {
           </p>
         )}
       </div>
+
+      {lastTrainedDate && (
+        <p className="text-[13px] opacity-40 text-center">
+          Senaste träningen var {formatTimeSince(lastTrainedDate)} sedan
+        </p>
+      )}
 
       <ConfirmDialog
         isOpen={deleteId !== null}
