@@ -1,9 +1,3 @@
-import { useMemo } from "react";
-
-const GREY_LIGHT = "#f5f5f5";
-const GREY_DARK = "#2a2a2a";
-const YELLOW = "#F5C800";
-
 const PATHS = [
   "M217.8 25.5996H154V60.4004H211.4V86H154V143.2H127V0H217.8V25.5996Z",
   "M274.379 146.4C263.713 146.4 254.246 144.067 245.979 139.4C237.846 134.6 231.446 128.133 226.779 120C222.246 111.733 219.979 102.467 219.979 92.2C219.979 81.9333 222.246 72.7333 226.779 64.6C231.446 56.3333 237.846 49.8667 245.979 45.2C254.246 40.4 263.713 38 274.379 38C285.046 38 294.446 40.4 302.579 45.2C310.713 50 317.046 56.4667 321.579 64.6C326.246 72.7333 328.579 81.9333 328.579 92.2C328.579 102.467 326.246 111.733 321.579 120C317.046 128.133 310.713 134.6 302.579 139.4C294.446 144.067 285.046 146.4 274.379 146.4ZM274.379 122C279.446 122 284.046 120.867 288.18 118.6C292.446 116.2 295.846 112.8 298.379 108.4C301.046 103.867 302.379 98.4667 302.379 92.2C302.379 85.9333 301.046 80.6 298.379 76.2C295.846 71.8 292.446 68.4 288.18 66C284.046 63.6 279.446 62.4 274.379 62.4C269.446 62.4 264.78 63.6 260.38 66C256.113 68.4 252.646 71.8 249.979 76.2C247.446 80.6 246.179 85.9333 246.179 92.2C246.179 98.4667 247.446 103.867 249.979 108.4C252.646 112.8 256.113 116.2 260.38 118.6C264.78 120.867 269.446 122 274.379 122Z",
@@ -20,207 +14,18 @@ const PATHS = [
   "M429.749 398.4C424.949 398.4 420.815 396.733 417.349 393.4C414.015 389.933 412.349 385.8 412.349 381C412.349 376.2 414.015 372.133 417.349 368.8C420.815 365.467 424.949 363.8 429.749 363.8C434.549 363.8 438.615 365.467 441.949 368.8C445.415 372.133 447.149 376.2 447.149 381C447.149 385.8 445.415 389.933 441.949 393.4C438.615 396.733 434.549 398.4 429.749 398.4Z",
 ];
 
-/* ── Glitch config (tuned values) ────────────────────────────── */
-
-const CONFIG = {
-  duration: 2450,
-  greyHold: 400,
-  flickerCount: 14,
-  jitterX: 100,
-  sliceMinH: 1,
-  sliceMaxH: 76,
-  seed: 6703,
-};
-
-/* ── Seeded random ───────────────────────────────────────────── */
-
-function mulberry32(a: number) {
-  return () => {
-    let t = (a += 0x6d2b79f5);
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-/* ── Build CSS keyframes from config ─────────────────────────── */
-
-function buildKeyframes(grey: string): {
-  baseKeyframes: string;
-  overlayKeyframes: string;
-  clipKeyframes: string;
-  offsetKeyframes: string;
-} {
-  const rand = mulberry32(CONFIG.seed);
-  const dur = CONFIG.duration;
-  const holdPct = (CONFIG.greyHold / dur) * 100;
-
-  const baseStops: string[] = [];
-  const overlayStops: string[] = [];
-  const clipStops: string[] = [];
-  const offsetStops: string[] = [];
-
-  // Grey hold phase
-  baseStops.push(`0% { fill: ${grey} }`);
-  baseStops.push(`${holdPct.toFixed(2)}% { fill: ${grey} }`);
-  overlayStops.push(`0% { opacity: 0 }`);
-  overlayStops.push(`${holdPct.toFixed(2)}% { opacity: 0 }`);
-  clipStops.push(`0% { y: 0; height: 0 }`);
-  clipStops.push(`${holdPct.toFixed(2)}% { y: 0; height: 0 }`);
-  offsetStops.push(`0% { transform: translateX(0px) }`);
-  offsetStops.push(`${holdPct.toFixed(2)}% { transform: translateX(0px) }`);
-
-  // Flicker phase
-  const flickerWindow = dur - CONFIG.greyHold;
-  for (let i = 0; i < CONFIG.flickerCount; i++) {
-    const t = CONFIG.greyHold + (flickerWindow * i) / CONFIG.flickerCount;
-    const pct = ((t / dur) * 100).toFixed(2);
-
-    const offsetX = (rand() - 0.5) * CONFIG.jitterX;
-    const sliceCenter = rand() * 100;
-    const sliceHeight = CONFIG.sliceMinH + rand() * (CONFIG.sliceMaxH - CONFIG.sliceMinH);
-    const clipTop = Math.max(0, sliceCenter - sliceHeight / 2);
-    const clipBottom = Math.min(100, sliceCenter + sliceHeight / 2);
-    const svgH = 441;
-    const y = (clipTop / 100) * svgH;
-    const h = ((clipBottom - clipTop) / 100) * svgH;
-
-    // Base stays grey during glitch
-    baseStops.push(`${pct}% { fill: ${grey} }`);
-    overlayStops.push(`${pct}% { opacity: 1 }`);
-    clipStops.push(`${pct}% { y: ${y.toFixed(1)}px; height: ${h.toFixed(1)}px }`);
-    offsetStops.push(`${pct}% { transform: translateX(${offsetX.toFixed(1)}px) }`);
-
-    // Between flickers: briefly show the color
-    // The overlay fill changes per frame
-    // Since we can't animate fill per-frame easily in one keyframe,
-    // we handle it by toggling overlay opacity + fill color
-  }
-
-  // Final: solid yellow
-  baseStops.push(`100% { fill: ${YELLOW} }`);
-  overlayStops.push(`99.9% { opacity: 1 }`);
-  overlayStops.push(`100% { opacity: 0 }`);
-  clipStops.push(`100% { y: 0; height: 441px }`);
-  offsetStops.push(`100% { transform: translateX(0px) }`);
-
-  return {
-    baseKeyframes: `@keyframes ffy-base { ${baseStops.join(" ")} }`,
-    overlayKeyframes: `@keyframes ffy-overlay { ${overlayStops.join(" ")} }`,
-    clipKeyframes: `@keyframes ffy-clip { ${clipStops.join(" ")} }`,
-    offsetKeyframes: `@keyframes ffy-offset { ${offsetStops.join(" ")} }`,
-  };
-}
-
-/* ── Build per-frame overlay fill keyframes ──────────────────── */
-
-function buildOverlayFillKeyframes(grey: string): string {
-  const rand = mulberry32(CONFIG.seed);
-  const dur = CONFIG.duration;
-  const holdPct = (CONFIG.greyHold / dur) * 100;
-  const stops: string[] = [];
-
-  stops.push(`0% { fill: ${YELLOW} }`);
-  stops.push(`${holdPct.toFixed(2)}% { fill: ${YELLOW} }`);
-
-  const flickerWindow = dur - CONFIG.greyHold;
-  for (let i = 0; i < CONFIG.flickerCount; i++) {
-    const t = CONFIG.greyHold + (flickerWindow * i) / CONFIG.flickerCount;
-    const pct = ((t / dur) * 100).toFixed(2);
-
-    const isYellow = i % 2 === 0;
-    const forceYellow = i >= CONFIG.flickerCount - 3;
-    const color = forceYellow || isYellow ? YELLOW : grey;
-
-    // consume the same random values to stay in sync
-    rand(); // offsetX
-    rand(); // sliceCenter
-    rand(); // sliceHeight
-
-    stops.push(`${pct}% { fill: ${color} }`);
-  }
-
-  stops.push(`100% { fill: ${YELLOW} }`);
-  return `@keyframes ffy-overlay-fill { ${stops.join(" ")} }`;
-}
-
-/* ── Component ───────────────────────────────────────────────── */
-
-export function ForFutureYou({ dark = false }: { dark?: boolean }) {
-  const grey = dark ? GREY_DARK : GREY_LIGHT;
-  const animDuration = `${CONFIG.duration}ms`;
-
-  const styleTag = useMemo(() => {
-    const kf = buildKeyframes(grey);
-    const ofKf = buildOverlayFillKeyframes(grey);
-    return [
-      kf.baseKeyframes,
-      kf.overlayKeyframes,
-      kf.clipKeyframes,
-      kf.offsetKeyframes,
-      ofKf,
-    ].join("\n");
-  }, [grey]);
-
+export function ForFutureYou() {
   return (
-    <>
-      <style>{styleTag}</style>
-      <svg
-        viewBox="0 0 535 441"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className="w-[200px] h-auto"
-        style={{ overflow: "visible" }}
-      >
-        <defs>
-          <clipPath id="ffy-glitch-clip">
-            <rect
-              x="-50"
-              width="635"
-              style={{
-                animation: `ffy-clip ${animDuration} linear forwards`,
-              }}
-            />
-          </clipPath>
-        </defs>
-
-        {/* Base layer — animated grey → yellow */}
-        {PATHS.map((d, i) => (
-          <path
-            key={`base-${i}`}
-            d={d}
-            style={{
-              fill: grey,
-              animation: `ffy-base ${animDuration} linear forwards`,
-            }}
-          />
-        ))}
-
-        {/* Glitch overlay — clipped, offset, with fill color changes */}
-        <g
-          clipPath="url(#ffy-glitch-clip)"
-          style={{
-            animation: `ffy-offset ${animDuration} linear forwards`,
-          }}
-        >
-          <g
-            style={{
-              animation: `ffy-overlay ${animDuration} linear forwards`,
-              opacity: 0,
-            }}
-          >
-            {PATHS.map((d, i) => (
-              <path
-                key={`glitch-${i}`}
-                d={d}
-                style={{
-                  animation: `ffy-overlay-fill ${animDuration} linear forwards`,
-                }}
-              />
-            ))}
-          </g>
-        </g>
-      </svg>
-    </>
+    <svg
+      viewBox="0 0 535 441"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="w-[200px] h-auto"
+      style={{ overflow: "visible" }}
+    >
+      {PATHS.map((d, i) => (
+        <path key={i} d={d} fill="#F5C800" />
+      ))}
+    </svg>
   );
 }
