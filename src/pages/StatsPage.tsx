@@ -2,7 +2,6 @@ import { useEffect, useMemo } from "react";
 import { useHistoryStore } from "../stores/useHistoryStore";
 import { useCategoryStore } from "../stores/useCategoryStore";
 import { StatsPersonalRecords } from "../components/stats/StatsPersonalRecords";
-import { StatsProgressCharts } from "../components/stats/StatsProgressCharts";
 import { StatsStreaks } from "../components/stats/StatsStreaks";
 import { StatsSessionOverview } from "../components/stats/StatsSessionOverview";
 import { StatsExerciseInsights } from "../components/stats/StatsExerciseInsights";
@@ -59,7 +58,6 @@ export function StatsPage() {
             setsRecord={setsRecord}
             longestWorkout={longestWorkout}
           />
-          <StatsProgressCharts sessions={sessions} prs={prs} />
           <StatsStreaks streaks={streaks} />
           <StatsSessionOverview stats={sessionStats} />
           <StatsExerciseInsights insights={insights} />

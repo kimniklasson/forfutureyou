@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { ExercisePR, SessionRecord } from "../../utils/statistics";
 import { formatKg } from "../../utils/formatNumber";
+import { IconChevronRight } from "../ui/icons";
 
 interface Props {
   prs: ExercisePR[];
@@ -19,6 +21,7 @@ function formatDurationFromMs(ms: number): string {
 
 export function StatsPersonalRecords({ prs, volumeRecord, setsRecord, longestWorkout }: Props) {
   const [showAll, setShowAll] = useState(false);
+  const navigate = useNavigate();
   const displayPrs = showAll ? prs : prs.slice(0, 5);
 
   return (
@@ -49,26 +52,30 @@ export function StatsPersonalRecords({ prs, volumeRecord, setsRecord, longestWor
       {/* Exercise PR list */}
       <div className="flex flex-col gap-2">
         {displayPrs.map((pr, i) => (
-          <div
+          <button
             key={pr.exerciseId}
-            className="bg-card rounded-card p-4 animate-in"
+            onClick={() => navigate(`/stats/exercise/${pr.exerciseId}`)}
+            className="bg-card rounded-card p-4 flex items-center gap-3 w-full text-left animate-in"
             style={{ animationDelay: `${(i + 3) * 0.04}s` }}
           >
-            <div className="text-[15px] font-bold leading-[18px]">{pr.exerciseName}</div>
-            <div className="text-[13px] opacity-50 mt-1">
-              {pr.isBodyweight ? (
-                <>
-                  {pr.maxRepsBodyweight} reps
-                  {pr.maxWeight > 0 && ` · ${pr.maxWeight} kg extra`}
-                </>
-              ) : (
-                <>
-                  {pr.maxWeight} kg · {pr.maxRepsAtMaxWeight} reps
-                  {pr.estimated1RM > 0 && ` · 1RM: ${pr.estimated1RM} kg`}
-                </>
-              )}
+            <div className="flex-1 min-w-0">
+              <div className="text-[15px] font-bold leading-[18px]">{pr.exerciseName}</div>
+              <div className="text-[13px] opacity-50 mt-1">
+                {pr.isBodyweight ? (
+                  <>
+                    {pr.maxRepsBodyweight} reps
+                    {pr.maxWeight > 0 && ` · ${pr.maxWeight} kg extra`}
+                  </>
+                ) : (
+                  <>
+                    {pr.maxWeight} kg · {pr.maxRepsAtMaxWeight} reps
+                    {pr.estimated1RM > 0 && ` · 1RM: ${pr.estimated1RM} kg`}
+                  </>
+                )}
+              </div>
             </div>
-          </div>
+            <IconChevronRight size={16} className="opacity-30 shrink-0" />
+          </button>
         ))}
       </div>
 

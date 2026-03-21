@@ -268,6 +268,40 @@ export function computeVolumeProgression(sessions: WorkoutSession[]): MonthlyPoi
     });
 }
 
+// ── Per-event progression ─────────────────────────────────
+
+export interface EventPoint {
+  date: string;   // ISO date from session.startedAt
+  label: string;  // short Swedish date e.g. "21 mar"
+  value: number;
+}
+
+export function computeEventProgression(
+  exerciseId: string,
+  sessions: WorkoutSession[],
+  isBodyweight: boolean
+): EventPoint[] {
+  const points: EventPoint[] = [];
+
+  for (const session of sessions) {
+    for (const log of session.exerciseLogs) {
+      if (log.exerciseId !== exerciseId) continue;
+      let best = 0;
+      for (const set of log.sets) {
+        const v = isBodyweight ? set.reps : set.weight;
+        if (v > best) best = v;
+      }
+      if (best > 0) {
+        const d = new Date(session.startedAt);
+        const label = `${d.getDate()} ${SHORT_MONTHS[d.getMonth()].toLowerCase()}`;
+        points.push({ date: session.startedAt, label, value: best });
+      }
+    }
+  }
+
+  return points.sort((a, b) => a.date.localeCompare(b.date));
+}
+
 // ── Streaks & Consistency ──────────────────────────────────
 
 export function computeStreaks(sessions: WorkoutSession[]): StreakInfo {

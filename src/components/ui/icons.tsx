@@ -162,6 +162,14 @@ export function IconStats({ size = 16, className, color }: IconProps) {
   );
 }
 
+export function IconChevronRight({ size = 16, className, color }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} style={color ? { color } : undefined}>
+      <path d="M6.47 3.53L10.94 8L6.47 12.47L5.41 11.41L8.82 8L5.41 4.59L6.47 3.53Z" fill="currentColor"/>
+    </svg>
+  );
+}
+
 export function IconDrag({ size = 16, className, color }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} style={color ? { color } : undefined}>

@@ -7,6 +7,7 @@ import { SetNamePage } from "./pages/SetNamePage";
 import { AuthCallbackPage } from "./pages/AuthCallbackPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { StatsPage } from "./pages/StatsPage";
+import { ExerciseProgressPage } from "./pages/ExerciseProgressPage";
 import { AppShell } from "./components/layout/AppShell";
 import { CategoryList } from "./components/categories/CategoryList";
 import { ExerciseListPage } from "./components/exercises/ExerciseListPage";
@@ -43,6 +44,7 @@ function App() {
               <Route path="/history" element={<CompletedWorkoutsList />} />
               <Route path="/history/:sessionId" element={<WorkoutDetailView />} />
               <Route path="/stats" element={<StatsPage />} />
+              <Route path="/stats/exercise/:exerciseId" element={<ExerciseProgressPage />} />
               <Route path="/profile" element={<ProfilePage />} />
             </Route>
           </Routes>
