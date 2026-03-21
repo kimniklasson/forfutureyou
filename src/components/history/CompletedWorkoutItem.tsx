@@ -18,7 +18,7 @@ export function CompletedWorkoutItem({ session, onDelete }: CompletedWorkoutItem
 
   return (
     <div
-      className="bg-card rounded-card p-6 flex items-start gap-2 cursor-pointer"
+      className="bg-card rounded-card p-6 flex items-start gap-2 cursor-pointer animate-in"
       onClick={() => navigate(`/history/${session.id}`)}
     >
       <div className="flex-1 flex flex-col gap-1">
