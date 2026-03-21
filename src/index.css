@@ -87,8 +87,8 @@ textarea::placeholder {
 /* ── Microanimations ── */
 
 @keyframes slide-in {
-  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
-  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+  from { opacity: 0; transform: translateY(24px) scale(0.8); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);   }
 }
 
 @keyframes slide-out {
@@ -107,8 +107,18 @@ textarea::placeholder {
 }
 
 .animate-in {
-  animation: slide-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+
+/* Staggered entrance delay per category item */
+.animate-in:nth-child(1) { animation-delay: 0ms; }
+.animate-in:nth-child(2) { animation-delay: 70ms; }
+.animate-in:nth-child(3) { animation-delay: 140ms; }
+.animate-in:nth-child(4) { animation-delay: 210ms; }
+.animate-in:nth-child(5) { animation-delay: 280ms; }
+.animate-in:nth-child(6) { animation-delay: 350ms; }
+.animate-in:nth-child(7) { animation-delay: 420ms; }
+.animate-in:nth-child(8) { animation-delay: 490ms; }
 
 @keyframes new-item-in {
   from { opacity: 0; transform: translateY(-10px) scale(0.96); }
