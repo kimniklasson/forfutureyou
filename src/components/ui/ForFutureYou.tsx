@@ -76,10 +76,6 @@ function buildKeyframes(grey: string): {
     const t = CONFIG.greyHold + (flickerWindow * i) / CONFIG.flickerCount;
     const pct = ((t / dur) * 100).toFixed(2);
 
-    const isYellow = i % 2 === 0;
-    const forceYellow = i >= CONFIG.flickerCount - 3;
-    const color = forceYellow || isYellow ? YELLOW : grey;
-
     const offsetX = (rand() - 0.5) * CONFIG.jitterX;
     const sliceCenter = rand() * 100;
     const sliceHeight = CONFIG.sliceMinH + rand() * (CONFIG.sliceMaxH - CONFIG.sliceMinH);
