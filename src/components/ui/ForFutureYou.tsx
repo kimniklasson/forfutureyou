@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
-const GREY = "#f5f5f5";
+const GREY_LIGHT = "#f5f5f5";
+const GREY_DARK = "#2a2a2a";
 const YELLOW = "#F5C800";
 
 const PATHS = [
@@ -53,14 +54,16 @@ interface FrameState {
   clipH: number;
 }
 
-const INITIAL: FrameState = {
-  baseFill: GREY,
-  overlayVisible: false,
-  overlayFill: YELLOW,
-  offsetX: 0,
-  clipY: 0,
-  clipH: 441,
-};
+function initialState(grey: string): FrameState {
+  return {
+    baseFill: grey,
+    overlayVisible: false,
+    overlayFill: YELLOW,
+    offsetX: 0,
+    clipY: 0,
+    clipH: 441,
+  };
+}
 
 interface GlitchFrame {
   time: number;
@@ -70,7 +73,7 @@ interface GlitchFrame {
   clipBottom: number;
 }
 
-function buildGlitchFrames(): GlitchFrame[] {
+function buildGlitchFrames(grey: string): GlitchFrame[] {
   const rand = mulberry32(CONFIG.seed);
   const frames: GlitchFrame[] = [];
   const flickerWindow = CONFIG.duration - CONFIG.greyHold;
@@ -89,7 +92,7 @@ function buildGlitchFrames(): GlitchFrame[] {
 
     frames.push({
       time: t,
-      color: forceYellow || isYellow ? YELLOW : GREY,
+      color: forceYellow || isYellow ? YELLOW : grey,
       offsetX,
       clipTop,
       clipBottom,
@@ -109,16 +112,17 @@ function buildGlitchFrames(): GlitchFrame[] {
 
 /* ── Component ───────────────────────────────────────────────── */
 
-export function ForFutureYou() {
-  const [frame, setFrame] = useState<FrameState>(INITIAL);
+export function ForFutureYou({ dark = false }: { dark?: boolean }) {
+  const grey = dark ? GREY_DARK : GREY_LIGHT;
+  const [frame, setFrame] = useState<FrameState>(() => initialState(grey));
   const rafRef = useRef<number>(0);
 
   useEffect(() => {
-    const frames = buildGlitchFrames();
+    const frames = buildGlitchFrames(grey);
     let startTime: number | null = null;
     let cancelled = false;
 
-    setFrame(INITIAL);
+    setFrame(initialState(grey));
 
     function tick(now: number) {
       if (cancelled) return;
@@ -144,13 +148,13 @@ export function ForFutureYou() {
       }
 
       if (elapsed < CONFIG.greyHold) {
-        // no-op, stay at INITIAL
+        // no-op, stay at initial
       } else {
         const svgH = 441;
         const top = (active.clipTop / 100) * svgH;
         const bottom = (active.clipBottom / 100) * svgH;
         setFrame({
-          baseFill: GREY,
+          baseFill: grey,
           overlayVisible: true,
           overlayFill: active.color,
           offsetX: active.offsetX,
