@@ -4,13 +4,14 @@ import { useSessionStore } from "../../stores/useSessionStore";
 import { CategoryListItem } from "./CategoryListItem";
 import { CreateCategoryInput } from "./CreateCategoryInput";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
+import { ForFutureYou } from "../ui/ForFutureYou";
 import { useDragSort } from "../../hooks/useDragSort";
 import { useAuth } from "../../auth/useAuth";
 
 export function CategoryList() {
   const { categories, loadCategories, deleteCategory, reorderCategories } = useCategoryStore();
   const activeSession = useSessionStore((s) => s.activeSession);
-  const { displayName } = useAuth();
+  useAuth();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [exitingId, setExitingId] = useState<string | null>(null);
   const [newCategoryId, setNewCategoryId] = useState<string | null>(null);
@@ -42,10 +43,7 @@ export function CategoryList() {
 
   return (
     <div className="flex flex-col gap-10 items-center">
-      <div className="text-center text-[20px] leading-[1.22]">
-        <p className="font-bold">Hej {displayName}!</p>
-        <p>Vad har du gjort idag?</p>
-      </div>
+      <ForFutureYou />
 
       <div className="w-full flex flex-col gap-6">
         <CreateCategoryInput onCreated={handleCategoryCreated} />
