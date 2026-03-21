@@ -12,7 +12,7 @@ interface Props {
 
 const CHART_HEIGHT = 120;
 const PADDING_TOP = 16;
-const PADDING_BOTTOM = 4;
+const PADDING_BOTTOM = 16;
 const PADDING_LEFT = 36;
 const PADDING_RIGHT = 12;
 
@@ -20,6 +20,7 @@ export function StatsLineChart({ data, unit = "kg" }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
   const [animate, setAnimate] = useState(false);
+  const [selectedDot, setSelectedDot] = useState<number | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -33,10 +34,21 @@ export function StatsLineChart({ data, unit = "kg" }: Props) {
   }, []);
 
   useEffect(() => {
-    // Trigger animation after mount
     const timer = setTimeout(() => setAnimate(true), 50);
     return () => clearTimeout(timer);
   }, [data]);
+
+  // Dismiss tooltip on outside click
+  useEffect(() => {
+    if (selectedDot === null) return;
+    const handler = (e: PointerEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setSelectedDot(null);
+      }
+    };
+    document.addEventListener("pointerdown", handler);
+    return () => document.removeEventListener("pointerdown", handler);
+  }, [selectedDot]);
 
   if (data.length === 0) {
     return (
@@ -62,20 +74,17 @@ export function StatsLineChart({ data, unit = "kg" }: Props) {
 
   const polyline = points.map((p) => `${p.x},${p.y}`).join(" ");
 
-  // Area polygon (line + close to bottom)
   const areaPoints = [
     `${points[0].x},${PADDING_TOP + chartH}`,
     ...points.map((p) => `${p.x},${p.y}`),
     `${points[points.length - 1].x},${PADDING_TOP + chartH}`,
   ].join(" ");
 
-  // Y-axis grid lines (3 lines)
   const gridLines = [0, 0.5, 1].map((frac) => ({
     y: PADDING_TOP + chartH - frac * chartH,
     value: Math.round(minVal + frac * range),
   }));
 
-  // Calculate total line length for stroke animation
   let lineLength = 0;
   for (let i = 1; i < points.length; i++) {
     const dx = points[i].x - points[i - 1].x;
@@ -83,13 +92,28 @@ export function StatsLineChart({ data, unit = "kg" }: Props) {
     lineLength += Math.sqrt(dx * dx + dy * dy);
   }
 
-  // Show max ~8 labels to avoid crowding
-  const labelStep = Math.max(1, Math.ceil(data.length / 8));
+  // Tooltip sizing
+  const TOOLTIP_PADDING_X = 8;
+  const TOOLTIP_PADDING_Y = 5;
+  const TOOLTIP_FONT_SIZE = 11;
+  const TOOLTIP_CHAR_WIDTH = 6.2;
+  const TOOLTIP_HEIGHT = TOOLTIP_FONT_SIZE + TOOLTIP_PADDING_Y * 2;
+  const ARROW_SIZE = 5;
+  const DOT_R = 4;
+  const HIT = 12; // half of 24px hit area
 
   return (
-    <div ref={containerRef} className="rounded-card border border-black/10 dark:border-white/10 p-4 overflow-hidden">
+    <div
+      ref={containerRef}
+      className="rounded-card border border-black/10 dark:border-white/10 p-4 overflow-hidden"
+    >
       {width > 0 && (
-        <svg width={width} height={CHART_HEIGHT} className="block">
+        <svg
+          width={width}
+          height={CHART_HEIGHT}
+          className="block overflow-visible"
+          onPointerDown={() => setSelectedDot(null)}
+        >
           {/* Grid lines */}
           {gridLines.map((gl) => (
             <g key={gl.y}>
@@ -133,41 +157,80 @@ export function StatsLineChart({ data, unit = "kg" }: Props) {
             strokeLinejoin="round"
             strokeDasharray={lineLength}
             strokeDashoffset={animate ? 0 : lineLength}
-            style={{
-              transition: `stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1)`,
-            }}
+            style={{ transition: `stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1)` }}
           />
 
-          {/* Dots */}
-          {points.map((p, i) => (
-            <circle
-              key={i}
-              cx={p.x}
-              cy={p.y}
-              r={3}
-              fill="#F5C800"
-              opacity={animate ? 1 : 0}
-              style={{
-                transition: `opacity 0.3s ease ${0.3 + i * 0.03}s`,
-              }}
-            />
-          ))}
+          {/* Dots + hit areas + tooltips */}
+          {points.map((p, i) => {
+            const isSelected = selectedDot === i;
+            const d = data[i];
+            const tooltipText = `${d.label} · ${d.value} ${unit}`;
+            const tooltipW = tooltipText.length * TOOLTIP_CHAR_WIDTH + TOOLTIP_PADDING_X * 2;
+            // Clamp tooltip so it doesn't overflow chart width
+            const rawTx = p.x - tooltipW / 2;
+            const tx = Math.max(0, Math.min(rawTx, width - tooltipW));
+            const ty = p.y - DOT_R - ARROW_SIZE - TOOLTIP_HEIGHT;
 
-          {/* X labels */}
-          {data.map((d, i) => {
-            if (i % labelStep !== 0 && i !== data.length - 1) return null;
             return (
-              <text
-                key={i}
-                x={points[i].x}
-                y={CHART_HEIGHT}
-                textAnchor="middle"
-                fill="currentColor"
-                fillOpacity={0.4}
-                fontSize={10}
-              >
-                {d.label}
-              </text>
+              <g key={i}>
+                {/* Visible dot */}
+                <circle
+                  cx={p.x}
+                  cy={p.y}
+                  r={DOT_R}
+                  fill="currentColor"
+                  opacity={animate ? 1 : 0}
+                  style={{ transition: `opacity 0.3s ease ${0.3 + i * 0.03}s` }}
+                />
+
+                {/* Transparent 24×24 hit area */}
+                <rect
+                  x={p.x - HIT}
+                  y={p.y - HIT}
+                  width={HIT * 2}
+                  height={HIT * 2}
+                  fill="transparent"
+                  style={{ cursor: "pointer" }}
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                    setSelectedDot(isSelected ? null : i);
+                  }}
+                />
+
+                {/* Tooltip */}
+                {isSelected && (
+                  <g pointerEvents="none">
+                    {/* Background */}
+                    <rect
+                      x={tx}
+                      y={ty}
+                      width={tooltipW}
+                      height={TOOLTIP_HEIGHT}
+                      rx={6}
+                      fill="black"
+                      className="dark:fill-white"
+                    />
+                    {/* Text */}
+                    <text
+                      x={tx + tooltipW / 2}
+                      y={ty + TOOLTIP_PADDING_Y + TOOLTIP_FONT_SIZE - 1}
+                      textAnchor="middle"
+                      fill="white"
+                      className="dark:fill-black"
+                      fontSize={TOOLTIP_FONT_SIZE}
+                      fontWeight={600}
+                    >
+                      {tooltipText}
+                    </text>
+                    {/* Arrow */}
+                    <polygon
+                      points={`${p.x - ARROW_SIZE},${p.y - DOT_R - ARROW_SIZE} ${p.x + ARROW_SIZE},${p.y - DOT_R - ARROW_SIZE} ${p.x},${p.y - DOT_R}`}
+                      fill="black"
+                      className="dark:fill-white"
+                    />
+                  </g>
+                )}
+              </g>
             );
           })}
         </svg>
