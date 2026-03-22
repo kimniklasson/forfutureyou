@@ -119,11 +119,8 @@ export function ExerciseCard({
 
   const settingsModal = createPortal(
     <Modal isOpen={showSettings} onClose={() => setShowSettings(false)} title="Inställningar">
-      {/* Name field */}
       <div className="flex flex-col gap-2">
-        <span className="text-[12px] font-bold uppercase tracking-wider opacity-50">
-          Övningsnamn
-        </span>
+        {/* Name field */}
         <div className="border border-black/10 dark:border-white/20 rounded-card flex items-center gap-2 pl-6 pr-4 py-4">
           <input
             type="text"
@@ -150,26 +147,26 @@ export function ExerciseCard({
             }
           </button>
         </div>
-      </div>
 
-      {/* Bodyweight toggle */}
-      <button
-        onClick={handleBodyweightToggle}
-        className="w-full border border-black/10 dark:border-white/20 rounded-card flex items-center px-6 py-4"
-      >
-        <span className="flex-1 text-left text-[15px]">Kroppsvikt</span>
-        <div
-          className={`w-5 h-5 rounded-[4px] flex items-center justify-center ${
-            exercise.isBodyweight
-              ? "bg-black dark:bg-white"
-              : "border-2 border-black/20 dark:border-white/20"
-          }`}
+        {/* Bodyweight toggle */}
+        <button
+          onClick={handleBodyweightToggle}
+          className="w-full border border-black/10 dark:border-white/20 rounded-card flex items-center px-6 py-4"
         >
-          {exercise.isBodyweight && (
-            <IconCheck size={12} className="text-white dark:text-black" />
-          )}
-        </div>
-      </button>
+          <span className="flex-1 text-left text-[15px]">Kroppsvikt</span>
+          <div
+            className={`w-5 h-5 rounded-[4px] flex items-center justify-center ${
+              exercise.isBodyweight
+                ? "bg-black dark:bg-white"
+                : "border-2 border-black/20 dark:border-white/20"
+            }`}
+          >
+            {exercise.isBodyweight && (
+              <IconCheck size={12} className="text-white dark:text-black" />
+            )}
+          </div>
+        </button>
+      </div>
     </Modal>,
     document.body
   );
