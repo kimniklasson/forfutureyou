@@ -26,7 +26,7 @@ export function CompletedWorkoutItem({ session, onDelete }: CompletedWorkoutItem
         onClick={() => navigate(`/history/${session.id}`)}
       >
         <div className="flex-1 flex flex-col gap-0.5">
-          <span className="font-bold text-[15px] leading-[18px]">
+          <span className="font-bold text-[20px] leading-[24px]">
             {formatShortDate(session.startedAt)}
           </span>
           <span className="font-mono text-[15px] leading-[18px] uppercase">{session.categoryName}</span>
