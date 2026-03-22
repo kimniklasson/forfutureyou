@@ -11,6 +11,16 @@ interface CategoryListItemProps {
   isDragging?: boolean;
   isDimmed?: boolean;
   itemProps: Record<string, unknown>;
+  lastSessionDate?: string;
+}
+
+function formatLastSession(isoDate: string): string {
+  const hours = Math.floor((Date.now() - new Date(isoDate).getTime()) / 3_600_000);
+  if (hours < 72) return `>${hours} h`;
+  const days = Math.floor(hours / 24);
+  if (days < 14) return `>${days} ${days === 1 ? "dag" : "dagar"}`;
+  const weeks = Math.floor(days / 7);
+  return `>${weeks} ${weeks === 1 ? "vecka" : "veckor"}`;
 }
 
 export function CategoryListItem({
@@ -22,8 +32,11 @@ export function CategoryListItem({
   isDragging,
   isDimmed,
   itemProps,
+  lastSessionDate,
 }: CategoryListItemProps) {
   const navigate = useNavigate();
+  const exerciseCount = category.exercises.length;
+  const lastSessionLabel = lastSessionDate ? formatLastSession(lastSessionDate) : null;
 
   return (
     <div
@@ -44,18 +57,31 @@ export function CategoryListItem({
       >
         <div
           className={[
-            "bg-card rounded-card flex items-center px-4 py-6",
+            "bg-card rounded-card flex items-start gap-2 px-4 py-4",
             hasActiveSession ? "border-2 border-accent" : "",
           ]
             .filter(Boolean)
             .join(" ")}
         >
-          <p
-            className="flex-1 font-mono font-normal text-[15px] leading-[16px] uppercase cursor-pointer"
+          {/* Name + exercise count */}
+          <div
+            className="flex-1 flex flex-col gap-0.5 cursor-pointer"
             onClick={() => !isDragging && navigate(`/category/${category.id}`)}
           >
-            {category.name}
-          </p>
+            <p className="font-mono font-normal text-[15px] leading-[16px] uppercase">
+              {category.name}
+            </p>
+            <span className="text-[11px] opacity-40">
+              ({exerciseCount} {exerciseCount === 1 ? "övning" : "övningar"})
+            </span>
+          </div>
+
+          {/* Time since last session */}
+          {lastSessionLabel && (
+            <span className="text-[11px] opacity-40 shrink-0 pt-0.5">
+              {lastSessionLabel}
+            </span>
+          )}
         </div>
       </SwipeActions>
     </div>

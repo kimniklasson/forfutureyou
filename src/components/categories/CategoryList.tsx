@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useCategoryStore } from "../../stores/useCategoryStore";
 import { useExerciseStore } from "../../stores/useExerciseStore";
 import { useSessionStore } from "../../stores/useSessionStore";
@@ -54,6 +54,18 @@ export function CategoryList() {
   const lastSession = sessions.length > 0 ? sessions[0] : null;
   const lastTrainedDate = lastSession?.finishedAt ?? lastSession?.startedAt;
 
+  // Map categoryId → ISO date of most recent completed session
+  const lastSessionByCategory = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const session of sessions) {
+      if (session.status !== "completed") continue;
+      const date = session.finishedAt ?? session.startedAt;
+      const existing = map.get(session.categoryId);
+      if (!existing || date > existing) map.set(session.categoryId, date);
+    }
+    return map;
+  }, [sessions]);
+
   const { draggingId, displayItems, containerProps, getItemProps } =
     useDragSort(categories, reorderCategories);
 
@@ -94,6 +106,7 @@ export function CategoryList() {
                 isDragging={draggingId === category.id}
                 isDimmed={draggingId !== null && draggingId !== category.id}
                 itemProps={getItemProps(category.id)}
+                lastSessionDate={lastSessionByCategory.get(category.id)}
               />
             ))}
           </div>
