@@ -74,14 +74,14 @@ export function CategoryListItem({
             <p className="font-mono font-normal text-[15px] leading-[16px] uppercase">
               {category.name}
             </p>
-            <span className="text-[11px] opacity-60">
+            <span className="text-[12px] opacity-60">
               ({exerciseCount} {exerciseCount === 1 ? "övning" : "övningar"})
             </span>
           </div>
 
           {/* Time since last session */}
           {lastSessionLabel && (
-            <span className="text-[11px] opacity-60 shrink-0 pt-0.5">
+            <span className="text-[12px] opacity-60 shrink-0 pt-0.5">
               {lastSessionLabel}
             </span>
           )}
