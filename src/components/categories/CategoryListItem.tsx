@@ -44,7 +44,7 @@ export function CategoryListItem({
       className={[
         "rounded-card select-none",
         isDragging ? "shadow-xl scale-[1.01]" : "",
-        isDimmed ? "opacity-40" : "opacity-100",
+        isDimmed ? "opacity-60" : "opacity-100",
         isExiting ? "animate-out" : isNew ? "animate-new-exercise" : "animate-in",
         "transition-opacity transition-shadow duration-150",
       ]
@@ -71,14 +71,14 @@ export function CategoryListItem({
             <p className="font-mono font-normal text-[15px] leading-[16px] uppercase">
               {category.name}
             </p>
-            <span className="text-[11px] opacity-40">
+            <span className="text-[11px] opacity-60">
               ({exerciseCount} {exerciseCount === 1 ? "övning" : "övningar"})
             </span>
           </div>
 
           {/* Time since last session */}
           {lastSessionLabel && (
-            <span className="text-[11px] opacity-40 shrink-0 pt-0.5">
+            <span className="text-[11px] opacity-60 shrink-0 pt-0.5">
               {lastSessionLabel}
             </span>
           )}
