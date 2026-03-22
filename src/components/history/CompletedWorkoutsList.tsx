@@ -1,12 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useHistoryStore } from "../../stores/useHistoryStore";
 import { CompletedWorkoutItem } from "./CompletedWorkoutItem";
-import { ConfirmDialog } from "../ui/ConfirmDialog";
 import { WorkoutBarChart } from "./WorkoutBarChart";
 
 export function CompletedWorkoutsList() {
   const { loadSessions, getGroupedByMonth, deleteSession } = useHistoryStore();
-  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     loadSessions();
@@ -15,13 +13,6 @@ export function CompletedWorkoutsList() {
   const { sessions } = useHistoryStore();
   const groups = getGroupedByMonth();
   const isEmpty = groups.length === 0;
-
-  const handleConfirmDelete = async () => {
-    if (deleteId) {
-      await deleteSession(deleteId);
-      setDeleteId(null);
-    }
-  };
 
   return (
     <div className="flex flex-col gap-10">
@@ -53,19 +44,13 @@ export function CompletedWorkoutsList() {
               <CompletedWorkoutItem
                 key={session.id}
                 session={session}
-                onDelete={setDeleteId}
+                onDelete={deleteSession}
               />
             ))}
           </div>
         </div>
       ))}
 
-      <ConfirmDialog
-        isOpen={deleteId !== null}
-        message="Är du säker på att du vill ta bort detta träningspass?"
-        onConfirm={handleConfirmDelete}
-        onCancel={() => setDeleteId(null)}
-      />
     </div>
   );
 }

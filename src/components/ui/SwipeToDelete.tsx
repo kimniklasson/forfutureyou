@@ -4,7 +4,7 @@ import { IconTrash, IconDuplicate } from "./icons";
 interface SwipeActionsProps {
   children: ReactNode;
   onDelete: () => void;
-  onDuplicate: () => void;
+  onDuplicate?: () => void;
   confirmMessage: string;
 }
 
@@ -74,7 +74,7 @@ export function SwipeActions({ children, onDelete, onDuplicate, confirmMessage }
     if (delta < 0 && Math.abs(delta) >= threshold) {
       // Swiped left past threshold → show delete confirm
       setShowConfirm(true);
-    } else if (delta > 0 && delta >= threshold) {
+    } else if (delta > 0 && delta >= threshold && onDuplicate) {
       // Swiped right past threshold → duplicate immediately
       resetPosition();
       onDuplicate();
@@ -150,7 +150,7 @@ export function SwipeActions({ children, onDelete, onDuplicate, confirmMessage }
         )}
 
         {/* Yellow background for duplicate (swipe right) */}
-        {swipingRight && (
+        {swipingRight && onDuplicate && (
           <div
             className="absolute inset-0 flex items-center justify-start rounded-card"
             style={{

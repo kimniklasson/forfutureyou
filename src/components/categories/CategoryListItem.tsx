@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { IconTrash } from "../ui/icons";
 import type { Category } from "../../types/models";
+import { SwipeActions } from "../ui/SwipeToDelete";
 
 interface CategoryListItemProps {
   category: Category;
@@ -29,8 +29,7 @@ export function CategoryListItem({
     <div
       {...itemProps}
       className={[
-        "bg-card rounded-card flex items-center gap-2 px-4 py-6 select-none",
-        hasActiveSession ? "border-2 border-accent" : "",
+        "rounded-card select-none",
         isDragging ? "shadow-xl scale-[1.01]" : "",
         isDimmed ? "opacity-40" : "opacity-100",
         isExiting ? "animate-out" : isNew ? "animate-new-exercise" : "animate-in",
@@ -39,24 +38,26 @@ export function CategoryListItem({
         .filter(Boolean)
         .join(" ")}
     >
-      {/* Name — tap navigates */}
-      <p
-        className="flex-1 font-mono font-normal text-[15px] leading-[16px] uppercase cursor-pointer"
-        onClick={() => !isDragging && navigate(`/category/${category.id}`)}
+      <SwipeActions
+        onDelete={() => onDelete(category.id)}
+        confirmMessage={`Är du säker på att du vill ta bort kategorin "${category.name}"?`}
       >
-        {category.name}
-      </p>
-
-      {/* Delete */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onDelete(category.id);
-        }}
-        className="w-8 h-full flex items-center justify-center"
-      >
-        <IconTrash size={16} />
-      </button>
+        <div
+          className={[
+            "bg-card rounded-card flex items-center px-4 py-6",
+            hasActiveSession ? "border-2 border-accent" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          <p
+            className="flex-1 font-mono font-normal text-[15px] leading-[16px] uppercase cursor-pointer"
+            onClick={() => !isDragging && navigate(`/category/${category.id}`)}
+          >
+            {category.name}
+          </p>
+        </div>
+      </SwipeActions>
     </div>
   );
 }

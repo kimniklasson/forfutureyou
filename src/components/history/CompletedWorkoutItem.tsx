@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { IconTrash } from "../ui/icons";
 import type { WorkoutSession } from "../../types/models";
 import { formatShortDate } from "../../utils/formatDate";
 import { formatDuration } from "../../utils/formatTime";
+import { SwipeActions } from "../ui/SwipeToDelete";
 
 interface CompletedWorkoutItemProps {
   session: WorkoutSession;
@@ -17,26 +17,20 @@ export function CompletedWorkoutItem({ session, onDelete }: CompletedWorkoutItem
     : "–";
 
   return (
-    <div
-      className="bg-card rounded-card p-6 flex items-start gap-2 cursor-pointer animate-in"
-      onClick={() => navigate(`/history/${session.id}`)}
+    <SwipeActions
+      onDelete={() => onDelete(session.id)}
+      confirmMessage="Är du säker på att du vill ta bort detta träningspass?"
     >
-      <div className="flex-1 flex flex-col gap-1">
+      <div
+        className="bg-card rounded-card p-6 flex flex-col gap-1 cursor-pointer animate-in"
+        onClick={() => navigate(`/history/${session.id}`)}
+      >
         <span className="font-bold text-[15px] leading-[18px]">
           {formatShortDate(session.startedAt)}
         </span>
         <span className="font-mono text-[15px] leading-[18px] uppercase">{session.categoryName}</span>
         <span className="text-[12px] opacity-50 uppercase tracking-wider">{duration}</span>
       </div>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onDelete(session.id);
-        }}
-        className="w-8 flex items-center justify-center pt-1"
-      >
-        <IconTrash size={16} />
-      </button>
-    </div>
+    </SwipeActions>
   );
 }

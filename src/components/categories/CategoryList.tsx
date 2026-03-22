@@ -5,7 +5,6 @@ import { useSessionStore } from "../../stores/useSessionStore";
 import { useHistoryStore } from "../../stores/useHistoryStore";
 import { CategoryListItem } from "./CategoryListItem";
 import { CreateCategoryInput } from "./CreateCategoryInput";
-import { ConfirmDialog } from "../ui/ConfirmDialog";
 import { ForFutureYou } from "../ui/ForFutureYou";
 import { useDragSort } from "../../hooks/useDragSort";
 import { useAuth } from "../../auth/useAuth";
@@ -43,7 +42,6 @@ export function CategoryList() {
   const activeSession = useSessionStore((s) => s.activeSession);
   const { sessions, loadSessions } = useHistoryStore();
   useAuth();
-  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [exitingId, setExitingId] = useState<string | null>(null);
   const [newCategoryId, setNewCategoryId] = useState<string | null>(null);
 
@@ -64,15 +62,12 @@ export function CategoryList() {
     setTimeout(() => setNewCategoryId(null), 800);
   };
 
-  const handleConfirmDelete = () => {
-    if (deleteId) {
-      setExitingId(deleteId);
-      setDeleteId(null);
-      setTimeout(async () => {
-        await deleteCategory(deleteId);
-        setExitingId(null);
-      }, 180);
-    }
+  const handleDelete = (id: string) => {
+    setExitingId(id);
+    setTimeout(async () => {
+      await deleteCategory(id);
+      setExitingId(null);
+    }, 180);
   };
 
   const isEmpty = categories.length === 0;
@@ -92,7 +87,7 @@ export function CategoryList() {
               <CategoryListItem
                 key={category.id}
                 category={category}
-                onDelete={setDeleteId}
+                onDelete={handleDelete}
                 hasActiveSession={activeSession?.categoryId === category.id}
                 isNew={category.id === newCategoryId}
                 isExiting={exitingId === category.id}
@@ -118,12 +113,6 @@ export function CategoryList() {
         </p>
       )}
 
-      <ConfirmDialog
-        isOpen={deleteId !== null}
-        message="Är du säker på att du vill ta bort denna kategori?"
-        onConfirm={handleConfirmDelete}
-        onCancel={() => setDeleteId(null)}
-      />
     </div>
   );
 }
