@@ -187,3 +187,21 @@ body {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* ── Modal fade edges ── */
+
+.modal-header-fade {
+  background: linear-gradient(to bottom, white 50%, rgba(255, 255, 255, 0));
+}
+
+.modal-footer-fade {
+  background: linear-gradient(to top, white 50%, rgba(255, 255, 255, 0));
+}
+
+[data-theme=dark] .modal-header-fade {
+  background: linear-gradient(to bottom, #1c1c1e 50%, rgba(28, 28, 30, 0));
+}
+
+[data-theme=dark] .modal-footer-fade {
+  background: linear-gradient(to top, #1c1c1e 50%, rgba(28, 28, 30, 0));
+}

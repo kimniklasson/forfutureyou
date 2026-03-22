@@ -208,6 +208,7 @@ export function ExerciseListPage() {
         isOpen={importOpen}
         onClose={() => setImportOpen(false)}
         categoryId={category.id}
+        categoryName={category.name}
         currentExerciseNames={new Set(category.exercises.map((e) => e.name.trim().toLowerCase()))}
       />
     </div>

@@ -8,6 +8,7 @@ interface ImportExercisesModalProps {
   isOpen: boolean;
   onClose: () => void;
   categoryId: string;
+  categoryName: string;
   currentExerciseNames: Set<string>;
 }
 
@@ -22,6 +23,7 @@ export function ImportExercisesModal({
   isOpen,
   onClose,
   categoryId,
+  categoryName,
   currentExerciseNames,
 }: ImportExercisesModalProps) {
   const { categories, addExercise, deleteExercise, reorderExercises } = useCategoryStore();
@@ -152,9 +154,15 @@ export function ImportExercisesModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-8 pt-4 pb-2 shrink-0">
+        <div
+          className="flex items-center justify-between px-8 pt-4 pb-2 shrink-0 relative z-10 modal-header-fade"
+          style={{
+            paddingBottom: "32px",
+            marginBottom: "-24px",
+          }}
+        >
           <span className="font-bold text-[15px] leading-[1.22]">
-            Välj övningar
+            Välj övningar till {categoryName}
           </span>
           <button
             onClick={onClose}
@@ -207,33 +215,28 @@ export function ImportExercisesModal({
           </div>
         </div>
 
-        {/* Sticky footer */}
-        <div
-          className="px-8 pb-8 shrink-0"
-          style={{
-            paddingTop: "16px",
-            background: "var(--footer-bg)",
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
-            marginTop: "-24px",
-          }}
-        >
-          <button
-            onClick={handleSave}
-            disabled={!hasChanges || saving}
-            className={`w-full py-3 rounded-card font-bold text-[15px] uppercase tracking-wider transition-colors ${
-              hasChanges && !saving
-                ? "bg-black dark:bg-white text-white dark:text-black"
-                : "bg-black/10 dark:bg-white/10 text-black/30 dark:text-white/30"
-            }`}
+        {/* Sticky footer — only visible when changes exist */}
+        {hasChanges && (
+          <div
+            className="px-8 pb-8 shrink-0 modal-footer-fade"
+            style={{
+              paddingTop: "16px",
+              marginTop: "-24px",
+            }}
           >
-            {saving ? (
-              <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin inline-block" />
-            ) : (
-              "SPARA"
-            )}
-          </button>
-        </div>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="w-full py-3 rounded-card font-bold text-[15px] uppercase tracking-wider transition-colors bg-black dark:bg-white text-white dark:text-black"
+            >
+              {saving ? (
+                <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin inline-block" />
+              ) : (
+                "SPARA"
+              )}
+            </button>
+          </div>
+        )}
       </div>
     </div>,
     document.body
