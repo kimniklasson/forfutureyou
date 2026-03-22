@@ -49,7 +49,7 @@ export function Header() {
           <div className="flex-1 flex justify-end">
             {isCategoryPage && (
               <IconButton onClick={handleAddExercise} aria-label="Lägg till övning">
-                <IconPlus size={18} />
+                <IconPlus size={20} />
               </IconButton>
             )}
           </div>
