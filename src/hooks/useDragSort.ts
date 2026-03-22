@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 
 interface ActiveDrag {
   id: string;
@@ -9,7 +9,8 @@ interface ActiveDrag {
 
 /**
  * Zero-dependency drag-to-reorder hook using native Pointer Events.
- * - Long press (longPressDelay ms) on the drag handle activates drag
+ * - Long press (longPressDelay ms) anywhere on the item activates drag
+ * - Touch-friendly: uses touchmove listener to detect scroll vs hold
  * - Live reorder preview as the pointer moves
  * - Commits new order on pointerup
  */
@@ -18,16 +19,35 @@ export function useDragSort<T extends { id: string }>(
   onReorder: (newIds: string[]) => void,
   longPressDelay = 600
 ) {
-  // State for rendering: draggingId + live overIndex
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [overIndex, setOverIndex] = useState<number | null>(null);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Ref keeps the latest overIndex for pointerup handler without stale closures
   const activeRef = useRef<ActiveDrag | null>(null);
+  const preventScrollRef = useRef<((e: TouchEvent) => void) | null>(null);
+  const cancelTouchRef = useRef<((e: TouchEvent) => void) | null>(null);
+  const startYRef = useRef(0);
 
-  // Find the closest item index to a given clientY by querying the container
+  // Clean up listeners on unmount
+  useEffect(() => {
+    return () => {
+      cleanupTouchListeners();
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
+
+  function cleanupTouchListeners() {
+    if (preventScrollRef.current) {
+      window.removeEventListener("touchmove", preventScrollRef.current);
+      preventScrollRef.current = null;
+    }
+    if (cancelTouchRef.current) {
+      window.removeEventListener("touchmove", cancelTouchRef.current);
+      cancelTouchRef.current = null;
+    }
+  }
+
   function findOverIndex(clientY: number): number {
     if (!containerRef.current || !activeRef.current) return 0;
     const nodes = containerRef.current.querySelectorAll<HTMLElement>("[data-sort-id]");
@@ -45,22 +65,62 @@ export function useDragSort<T extends { id: string }>(
     return best;
   }
 
-  // Called from each item's onPointerDown (long-press on whole card)
-  function onItemPointerDown(e: React.PointerEvent, id: string) {
-    // Don't start a new drag if one is already active
+  function cancelPendingTimer() {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    cleanupTouchListeners();
+  }
+
+  // Called from each item's onPointerDown
+  const onItemPointerDown = useCallback((e: React.PointerEvent, id: string) => {
     if (activeRef.current) return;
-    // Don't hijack interactions on buttons, inputs, etc.
     const tag = (e.target as HTMLElement).tagName;
     if (tag === "BUTTON" || tag === "INPUT" || tag === "TEXTAREA") return;
-    // Don't call preventDefault here — allow normal touch scrolling until long press fires
+
     const target = e.currentTarget as Element;
     const pointerId = e.pointerId;
     const fromIndex = items.findIndex((item) => item.id === id);
+    startYRef.current = e.clientY;
+
+    // On touch devices, listen for touchmove to cancel if user scrolls.
+    // Pointer events may stop firing once the browser takes over for scroll.
+    const cancelOnScroll = (te: TouchEvent) => {
+      const dy = Math.abs(te.touches[0].clientY - startYRef.current);
+      if (dy > 8) {
+        cancelPendingTimer();
+      }
+    };
+    cancelTouchRef.current = cancelOnScroll;
+    window.addEventListener("touchmove", cancelOnScroll, { passive: true });
 
     timerRef.current = setTimeout(() => {
       timerRef.current = null;
+      // Remove the cancel-on-scroll listener
+      if (cancelTouchRef.current) {
+        window.removeEventListener("touchmove", cancelTouchRef.current);
+        cancelTouchRef.current = null;
+      }
+
       const drag: ActiveDrag = { id, pointerId, fromIndex, overIndex: fromIndex };
       activeRef.current = drag;
+
+      // Prevent scroll for the rest of this touch gesture
+      const preventScroll = (te: TouchEvent) => {
+        te.preventDefault();
+        // Also update drag position from touch
+        if (activeRef.current) {
+          const newIndex = findOverIndex(te.touches[0].clientY);
+          if (newIndex !== activeRef.current.overIndex) {
+            activeRef.current.overIndex = newIndex;
+            setOverIndex(newIndex);
+          }
+        }
+      };
+      preventScrollRef.current = preventScroll;
+      window.addEventListener("touchmove", preventScroll, { passive: false });
+
       try {
         target.setPointerCapture(pointerId);
       } catch (_) {
@@ -69,18 +129,7 @@ export function useDragSort<T extends { id: string }>(
       setDraggingId(id);
       setOverIndex(fromIndex);
     }, longPressDelay);
-  }
-
-  // Cancel long-press timer if pointer moves before activation
-  function onItemPointerMove(e: React.PointerEvent) {
-    if (timerRef.current && !activeRef.current) {
-      // Pointer moved before long-press activated — cancel
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-    // Forward to container move handler for active drag
-    onContainerPointerMove(e);
-  }
+  }, [items, longPressDelay]);
 
   function onContainerPointerMove(e: React.PointerEvent) {
     if (!activeRef.current) return;
@@ -92,10 +141,7 @@ export function useDragSort<T extends { id: string }>(
   }
 
   function onContainerPointerUp() {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
+    cancelPendingTimer();
     if (!activeRef.current) return;
 
     const { fromIndex, overIndex: toIndex } = activeRef.current;
@@ -111,7 +157,6 @@ export function useDragSort<T extends { id: string }>(
     }
   }
 
-  // Compute display order with live reordering during drag
   const displayItems: T[] =
     draggingId !== null && overIndex !== null
       ? (() => {
@@ -133,8 +178,7 @@ export function useDragSort<T extends { id: string }>(
   const getItemProps = (id: string) => ({
     "data-sort-id": id,
     onPointerDown: (e: React.PointerEvent) => onItemPointerDown(e, id),
-    onPointerMove: onItemPointerMove,
-    style: { touchAction: draggingId !== null ? "none" : "auto" } as React.CSSProperties,
+    style: { touchAction: "auto" } as React.CSSProperties,
   });
 
   return { draggingId, displayItems, containerProps, getItemProps };
