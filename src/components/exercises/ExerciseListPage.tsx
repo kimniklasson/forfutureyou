@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useCategoryStore } from "../../stores/useCategoryStore";
 import { useSessionStore } from "../../stores/useSessionStore";
 import { ExerciseCard } from "./ExerciseCard";
-import { ConfirmDialog } from "../ui/ConfirmDialog";
+import { SwipeActions } from "../ui/SwipeToDelete";
 import { ImportExercisesModal } from "./ImportExercisesModal";
 import { IconList } from "../ui/icons";
 import { useDragSort } from "../../hooks/useDragSort";
@@ -14,7 +14,6 @@ export function ExerciseListPage() {
     useCategoryStore();
   const { activeSession } = useSessionStore();
 
-  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [newName, setNewName] = useState("");
   const [saving, setSaving] = useState(false);
   const [newExerciseId, setNewExerciseId] = useState<string | null>(null);
@@ -107,13 +106,6 @@ export function ExerciseListPage() {
     await updateExercise(category.id, exerciseId, { name });
   };
 
-  const handleConfirmDelete = async () => {
-    if (deleteId) {
-      await deleteExercise(categoryId!, deleteId);
-      setDeleteId(null);
-    }
-  };
-
   return (
     <div className="flex flex-col gap-10">
       {/* Category header */}
@@ -164,31 +156,28 @@ export function ExerciseListPage() {
       {/* Exercise list */}
       <div {...containerProps} className="flex flex-col gap-2">
         {displayItems.map((exercise) => (
-          <ExerciseCard
+          <SwipeActions
             key={exercise.id}
-            exercise={exercise}
-            categoryId={category.id}
-            categoryName={category.name}
-            onRename={handleRename}
-            onDelete={setDeleteId}
-            onDuplicate={handleDuplicate}
-            sessionBlocked={sessionBlocked}
-            isNew={exercise.id === newExerciseId}
-            isDragging={draggingId === exercise.id}
-            isDimmed={draggingId !== null && draggingId !== exercise.id}
-            dragHandleProps={getDragHandleProps(exercise.id)}
-            itemProps={getItemProps(exercise.id)}
-          />
+            onDelete={() => deleteExercise(categoryId!, exercise.id)}
+            onDuplicate={() => handleDuplicate(exercise.id)}
+            confirmMessage={`Är du säker på att du vill ta bort övningen från kategorin ${category.name}?`}
+          >
+            <ExerciseCard
+              exercise={exercise}
+              categoryId={category.id}
+              categoryName={category.name}
+              onRename={handleRename}
+              sessionBlocked={sessionBlocked}
+              isNew={exercise.id === newExerciseId}
+              isDragging={draggingId === exercise.id}
+              isDimmed={draggingId !== null && draggingId !== exercise.id}
+              dragHandleProps={getDragHandleProps(exercise.id)}
+              itemProps={getItemProps(exercise.id)}
+            />
+          </SwipeActions>
         ))}
       </div>
       </div>
-
-      <ConfirmDialog
-        isOpen={deleteId !== null}
-        message="Är du säker på att du vill ta bort denna övning?"
-        onConfirm={handleConfirmDelete}
-        onCancel={() => setDeleteId(null)}
-      />
 
       <ImportExercisesModal
         isOpen={importOpen}
