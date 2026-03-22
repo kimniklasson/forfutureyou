@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useHistoryStore } from "../stores/useHistoryStore";
+import { useSettingsStore } from "../stores/useSettingsStore";
 import { computeExercisePRs, computeEventProgression, computeEventVolume } from "../utils/statistics";
 import { StatsLineChart } from "../components/stats/StatsLineChart";
 import { IconArrowLeft } from "../components/ui/icons";
@@ -13,6 +14,7 @@ const MONTHS_SV = [
 export function ExerciseProgressPage() {
   const { exerciseId } = useParams<{ exerciseId: string }>();
   const { sessions, loadSessions } = useHistoryStore();
+  const userWeight = useSettingsStore((s) => s.userWeight);
 
   useEffect(() => {
     loadSessions();
@@ -30,8 +32,8 @@ export function ExerciseProgressPage() {
 
   const allVolumePoints = useMemo(() => {
     if (!exerciseId) return [];
-    return computeEventVolume(exerciseId, sessions, isBodyweight);
-  }, [exerciseId, sessions, isBodyweight]);
+    return computeEventVolume(exerciseId, sessions, isBodyweight, userWeight);
+  }, [exerciseId, sessions, isBodyweight, userWeight]);
 
   const [viewMode, setViewMode] = useState<"year" | "month">("year");
   const [offset, setOffset] = useState(0);

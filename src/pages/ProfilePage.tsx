@@ -17,11 +17,16 @@ function getProviderLabel(user: ReturnType<typeof useAuth>["user"]): string {
 export function ProfilePage() {
   const { user, displayName, updateName, signOut, deleteAccount } = useAuth();
   const navigate = useNavigate();
-  const { appearance, setAppearance } = useSettingsStore();
+  const { appearance, setAppearance, userWeight, setUserWeight } = useSettingsStore();
 
   const [name, setName] = useState(displayName);
   const [nameError, setNameError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [weightInput, setWeightInput] = useState(userWeight > 0 ? String(userWeight) : "");
+  const [savingWeight, setSavingWeight] = useState(false);
+
+  const weightValue = parseFloat(weightInput) || 0;
+  const weightChanged = weightValue !== userWeight;
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -47,6 +52,13 @@ export function ProfilePage() {
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") handleNameSave();
+  };
+
+  const handleWeightSave = () => {
+    if (!weightChanged) return;
+    setSavingWeight(true);
+    setUserWeight(weightValue);
+    setTimeout(() => setSavingWeight(false), 300);
   };
 
   const handleConfirmSignOut = async () => {
@@ -115,6 +127,42 @@ export function ProfilePage() {
           {nameError && (
             <span className="text-[12px] text-red-500">{nameError}</span>
           )}
+        </div>
+
+        {/* Weight field */}
+        <div className="flex flex-col gap-2">
+          <span className="text-[12px] font-bold uppercase tracking-wider opacity-50">
+            Din vikt
+          </span>
+          <div className="border border-black/10 dark:border-white/20 rounded-card flex items-center gap-2 pl-6 pr-4 py-4">
+            <div className="flex-1 flex items-center gap-1">
+              <input
+                type="number"
+                inputMode="decimal"
+                value={weightInput}
+                onChange={(e) => setWeightInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleWeightSave(); }}
+                placeholder="0"
+                className="flex-1 text-[15px] bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+              <span className="text-[15px] opacity-50">kg</span>
+            </div>
+            <button
+              type="button"
+              onClick={handleWeightSave}
+              disabled={!weightChanged || savingWeight}
+              className={`px-3 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center ${
+                weightChanged && !savingWeight
+                  ? "bg-black dark:bg-white text-white dark:text-black"
+                  : "bg-black/5 dark:bg-white/10 text-black/30 dark:text-white/30"
+              }`}
+            >
+              {savingWeight
+                ? <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                : "Spara"
+              }
+            </button>
+          </div>
         </div>
 
         {/* Email field */}

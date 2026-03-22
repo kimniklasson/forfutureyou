@@ -6,7 +6,7 @@ export interface WorkoutTotals {
   totalWeight: number;
 }
 
-export function calculateWorkoutTotals(session: WorkoutSession): WorkoutTotals {
+export function calculateWorkoutTotals(session: WorkoutSession, userWeight: number = 0): WorkoutTotals {
   let totalSets = 0;
   let totalReps = 0;
   let totalWeight = 0;
@@ -15,7 +15,9 @@ export function calculateWorkoutTotals(session: WorkoutSession): WorkoutTotals {
     for (const set of log.sets) {
       totalSets++;
       totalReps += set.reps;
-      totalWeight += set.reps * set.weight;
+      totalWeight += log.isBodyweight
+        ? (userWeight + set.weight) * set.reps
+        : set.weight * set.reps;
     }
   }
 

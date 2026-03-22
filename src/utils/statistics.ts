@@ -305,7 +305,8 @@ export function computeEventProgression(
 export function computeEventVolume(
   exerciseId: string,
   sessions: WorkoutSession[],
-  isBodyweight: boolean
+  isBodyweight: boolean,
+  userWeight: number = 0
 ): EventPoint[] {
   const points: EventPoint[] = [];
 
@@ -314,7 +315,9 @@ export function computeEventVolume(
       if (log.exerciseId !== exerciseId) continue;
       let total = 0;
       for (const set of log.sets) {
-        total += isBodyweight ? set.reps : set.weight * set.reps;
+        total += isBodyweight
+          ? (userWeight + set.weight) * set.reps
+          : set.weight * set.reps;
       }
       if (total > 0) {
         const d = new Date(session.startedAt);
