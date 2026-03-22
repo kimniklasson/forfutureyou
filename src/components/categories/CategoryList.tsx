@@ -41,7 +41,7 @@ export function CategoryList() {
   const { loadExercises } = useExerciseStore();
   const activeSession = useSessionStore((s) => s.activeSession);
   const { sessions, loadSessions } = useHistoryStore();
-  useAuth();
+  const { displayName } = useAuth();
   const [exitingId, setExitingId] = useState<string | null>(null);
   const [newCategoryId, setNewCategoryId] = useState<string | null>(null);
 
@@ -120,11 +120,24 @@ export function CategoryList() {
         )}
       </div>
 
-      {lastTrainedDate && (
-        <p className="text-[15px] text-center">
-          Senaste träningen var {formatTimeSince(lastTrainedDate)} sedan
-        </p>
-      )}
+      {lastTrainedDate && (() => {
+        const daysSince = (Date.now() - new Date(lastTrainedDate).getTime()) / 86_400_000;
+        const firstName = displayName?.split(" ")[0] ?? "";
+        const motivation =
+          daysSince < 4
+            ? `Starkt jobbat${firstName ? ` ${firstName}` : ""}!`
+            : daysSince < 14
+            ? `Kom igen nu${firstName ? ` ${firstName}` : ""}!`
+            : `Dags att ta tag i det${firstName ? ` ${firstName}` : ""}!`;
+        return (
+          <div className="flex flex-col gap-1 text-center">
+            <p className="text-[15px] font-bold">{motivation}</p>
+            <p className="text-[15px]">
+              Senaste träningen var {formatTimeSince(lastTrainedDate)} sedan
+            </p>
+          </div>
+        );
+      })()}
 
     </div>
   );
