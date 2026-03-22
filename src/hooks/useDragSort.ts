@@ -134,7 +134,7 @@ export function useDragSort<T extends { id: string }>(
     "data-sort-id": id,
     onPointerDown: (e: React.PointerEvent) => onItemPointerDown(e, id),
     onPointerMove: onItemPointerMove,
-    style: { touchAction: "none" } as React.CSSProperties,
+    style: { touchAction: draggingId !== null ? "none" : "auto" } as React.CSSProperties,
   });
 
   return { draggingId, displayItems, containerProps, getItemProps };
