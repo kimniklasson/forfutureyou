@@ -37,7 +37,7 @@ function formatTimeSince(isoDate: string): string {
 }
 
 export function CategoryList() {
-  const { categories, loadCategories, deleteCategory, reorderCategories } = useCategoryStore();
+  const { categories, loadCategories, deleteCategory, duplicateCategory, reorderCategories } = useCategoryStore();
   const { loadExercises } = useExerciseStore();
   const activeSession = useSessionStore((s) => s.activeSession);
   const { sessions, loadSessions } = useHistoryStore();
@@ -74,6 +74,10 @@ export function CategoryList() {
     setTimeout(() => setNewCategoryId(null), 800);
   };
 
+  const handleDuplicate = (id: string) => {
+    duplicateCategory(id);
+  };
+
   const handleDelete = (id: string) => {
     setExitingId(id);
     setTimeout(async () => {
@@ -100,6 +104,7 @@ export function CategoryList() {
                 key={category.id}
                 category={category}
                 onDelete={handleDelete}
+                onDuplicate={handleDuplicate}
                 hasActiveSession={activeSession?.categoryId === category.id}
                 isNew={category.id === newCategoryId}
                 isExiting={exitingId === category.id}

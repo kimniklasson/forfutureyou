@@ -57,9 +57,12 @@ export function SwipeActions({ children, onDelete, onDuplicate, confirmMessage }
     // If vertical scroll, don't interfere
     if (directionLockedRef.current === "vertical") return;
 
+    // If no duplicate handler, block rightward movement entirely
+    const clampedDeltaX = !onDuplicate && deltaX > 0 ? 0 : deltaX;
+
     isDraggingRef.current = true;
-    currentXRef.current = deltaX;
-    setOffsetX(deltaX);
+    currentXRef.current = clampedDeltaX;
+    setOffsetX(clampedDeltaX);
   }, [showConfirm]);
 
   const handleEnd = useCallback(() => {

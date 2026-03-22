@@ -7,6 +7,7 @@ interface CategoryState {
   categories: Category[];
   loadCategories: () => Promise<void>;
   createCategory: (name: string) => Promise<Category>;
+  duplicateCategory: (id: string) => Promise<void>;
   deleteCategory: (id: string) => Promise<void>;
   addExerciseToCategory: (categoryId: string, exerciseId: string) => Promise<void>;
   removeExerciseFromCategory: (categoryId: string, exerciseId: string) => Promise<void>;
@@ -32,6 +33,18 @@ export const useCategoryStore = create<CategoryState>()(
         const category = await repo.create(name);
         set((state) => ({ categories: [category, ...state.categories] }));
         return category;
+      },
+
+      duplicateCategory: async (id: string) => {
+        const repo = getCategoryRepository();
+        const original = get().categories.find((c) => c.id === id);
+        if (!original) return;
+        const newCategory = await repo.create(`${original.name} (kopia)`);
+        for (const exercise of original.exercises) {
+          await repo.addExerciseToCategory(newCategory.id, exercise.id);
+        }
+        const categories = await repo.getAll();
+        set({ categories });
       },
 
       deleteCategory: async (id: string) => {

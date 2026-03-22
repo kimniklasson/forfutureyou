@@ -5,6 +5,7 @@ import { SwipeActions } from "../ui/SwipeToDelete";
 interface CategoryListItemProps {
   category: Category;
   onDelete: (id: string) => void;
+  onDuplicate: (id: string) => void;
   hasActiveSession?: boolean;
   isNew?: boolean;
   isExiting?: boolean;
@@ -26,6 +27,7 @@ function formatLastSession(isoDate: string): string {
 export function CategoryListItem({
   category,
   onDelete,
+  onDuplicate,
   hasActiveSession,
   isNew,
   isExiting,
@@ -53,6 +55,7 @@ export function CategoryListItem({
     >
       <SwipeActions
         onDelete={() => onDelete(category.id)}
+        onDuplicate={() => onDuplicate(category.id)}
         confirmMessage={`Är du säker på att du vill ta bort kategorin "${category.name}"?`}
       >
         <div
