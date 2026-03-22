@@ -105,7 +105,7 @@ export function ExerciseListPage() {
     const rest = storeExercises.filter((e) => e.id !== newExercise.id);
     const afterIdx = rest.findIndex((e) => e.id === exerciseId);
     const ordered = [...rest];
-    if (afterIdx >= 0) ordered.splice(afterIdx + 1, 0, newExercise);
+    if (afterIdx >= 0) ordered.splice(afterIdx + 1, 0, { ...newExercise, sortOrder: afterIdx + 1 });
     reorderExercises(categoryId!, ordered.map((e) => e.id));
   };
 
