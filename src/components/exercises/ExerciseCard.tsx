@@ -1,5 +1,7 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { IconCheck } from "../ui/icons";
+import { Modal } from "../ui/Modal";
 import type { Exercise } from "../../types/models";
 import { useSessionStore } from "../../stores/useSessionStore";
 import { useExerciseStore } from "../../stores/useExerciseStore";
@@ -8,6 +10,15 @@ import { RepWeightAdjuster } from "./RepWeightAdjuster";
 import { ExerciseSetDisplay } from "./ExerciseSetDisplay";
 import { usePBTracker } from "../../hooks/usePBTracker";
 import { firePBConfetti } from "../../utils/confetti";
+
+function SettingsIcon({ className }: { className?: string }) {
+  return (
+    <svg width="17" height="16" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      <path d="M10.6338 0.25L11.0938 2.55566L13.4375 1.88574L16.0371 6.38867L14.2129 7.99902L16.0371 9.61133L13.4375 14.1143L11.0938 13.4434L10.6338 15.75H5.40332L4.94238 13.4434L2.59961 14.1143L0 9.61133L1.82324 7.99902L0 6.38867L2.59961 1.88574L4.94238 2.55566L5.40332 0.25H10.6338ZM6.25391 3.64746L5.3125 4.2207L3.3125 3.64844L1.91113 6.07617L3.45215 7.43652L3.45312 8.56055L1.91113 9.92285L3.3125 12.3506L5.3125 11.7793L6.25391 12.3525L6.63379 14.25H9.40332L9.7832 12.3525L10.7246 11.7793L12.7236 12.3506L14.125 9.92285L12.584 8.56055L12.585 7.43652L14.125 6.07617L12.7236 3.64844L10.7246 4.2207L9.7832 3.64746L9.40332 1.75H6.63379L6.25391 3.64746Z" fill="currentColor"/>
+      <path d="M9.26855 8C9.26855 7.30964 8.70891 6.75 8.01855 6.75C7.3282 6.75 6.76855 7.30964 6.76855 8C6.76855 8.69036 7.3282 9.25 8.01855 9.25C8.70891 9.25 9.26855 8.69036 9.26855 8ZM10.7686 8C10.7686 9.51878 9.53734 10.75 8.01855 10.75C6.49977 10.75 5.26855 9.51878 5.26855 8C5.26855 6.48122 6.49977 5.25 8.01855 5.25C9.53734 5.25 10.7686 6.48122 10.7686 8Z" fill="currentColor"/>
+    </svg>
+  );
+}
 
 interface ExerciseCardProps {
   exercise: Exercise;
@@ -41,20 +52,13 @@ export function ExerciseCard({
     getExerciseSetCount,
   } = useSessionStore();
 
-  const [isEditingName, setIsEditingName] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [editName, setEditName] = useState(exercise.name);
-  const nameInputRef = useRef<HTMLInputElement>(null);
+  const [savingName, setSavingName] = useState(false);
 
   useEffect(() => {
-    if (isEditingName) {
-      nameInputRef.current?.focus();
-      nameInputRef.current?.select();
-    }
-  }, [isEditingName]);
-
-  useEffect(() => {
-    if (!isEditingName) setEditName(exercise.name);
-  }, [exercise.name, isEditingName]);
+    if (!showSettings) setEditName(exercise.name);
+  }, [exercise.name, showSettings]);
 
   const { updateExercise } = useExerciseStore();
   const { loadCategories } = useCategoryStore();
@@ -98,122 +102,154 @@ export function ExerciseCard({
     }
   };
 
-  const handleNameBlur = async () => {
+  const nameHasChanged = editName.trim() !== exercise.name && editName.trim().length > 0;
+
+  const handleNameSave = async () => {
     const trimmed = editName.trim();
-    if (trimmed && trimmed !== exercise.name) {
-      await onRename(exercise.id, trimmed);
-    } else {
-      setEditName(exercise.name);
-    }
-    setIsEditingName(false);
+    if (!trimmed || !nameHasChanged) return;
+    setSavingName(true);
+    await onRename(exercise.id, trimmed);
+    setSavingName(false);
   };
 
-  const handleNameKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") nameInputRef.current?.blur();
-    if (e.key === "Escape") {
-      setEditName(exercise.name);
-      setIsEditingName(false);
-    }
+  const handleBodyweightToggle = async () => {
+    await updateExercise(exercise.id, { isBodyweight: !exercise.isBodyweight });
+    await loadCategories();
   };
 
-  return (
-    <div
-      {...itemProps}
-      className={[
-        "bg-card rounded-card p-4 flex flex-col gap-3 select-none",
-        isNew ? "animate-new-exercise" : "animate-in",
-        hasCompletedSets ? "ring-2 ring-accent" : "",
-        isDragging ? "shadow-xl scale-[1.01]" : "",
-        isDimmed ? "opacity-40" : "opacity-100",
-        "transition-opacity transition-shadow duration-150",
-      ]
-        .filter(Boolean)
-        .join(" ")}
-    >
-      {/* Header row */}
-      <div className="flex items-center gap-2">
-        {/* Name — inline editable */}
-        <div className="flex-1 min-w-0">
-          {isEditingName ? (
-            <input
-              ref={nameInputRef}
-              type="text"
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-              onBlur={handleNameBlur}
-              onKeyDown={handleNameKeyDown}
-              className="w-full font-mono font-normal text-[15px] leading-[18px] uppercase bg-transparent outline-none border-b border-black/20 dark:border-white/20"
-            />
-          ) : (
-            <span
-              className="font-mono font-normal text-[15px] leading-[18px] uppercase truncate block cursor-text"
-              onClick={() => setIsEditingName(true)}
-            >
-              {exercise.name}
-            </span>
-          )}
-        </div>
-
-        <div className="flex items-center shrink-0">
+  const settingsModal = createPortal(
+    <Modal isOpen={showSettings} onClose={() => setShowSettings(false)} title="Inställningar">
+      {/* Name field */}
+      <div className="flex flex-col gap-2">
+        <span className="text-[12px] font-bold uppercase tracking-wider opacity-50">
+          Övningsnamn
+        </span>
+        <div className="border border-black/10 dark:border-white/20 rounded-card flex items-center gap-2 pl-6 pr-4 py-4">
+          <input
+            type="text"
+            value={editName}
+            onChange={(e) => setEditName(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") handleNameSave(); }}
+            maxLength={60}
+            placeholder="Namn"
+            className="flex-1 text-[15px] bg-transparent outline-none"
+          />
           <button
-            onClick={handleSetPress}
-            className="bg-black dark:bg-white text-white dark:text-black px-3 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider shrink-0"
+            type="button"
+            onClick={handleNameSave}
+            disabled={!nameHasChanged || savingName}
+            className={`px-3 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center ${
+              nameHasChanged && !savingName
+                ? "bg-black dark:bg-white text-white dark:text-black"
+                : "bg-black/5 dark:bg-white/10 text-black/30 dark:text-white/30"
+            }`}
           >
-            SET {setCount + 1}
+            {savingName
+              ? <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              : "Spara"
+            }
           </button>
         </div>
       </div>
 
-      {/* Adjusters */}
-      <div className="flex flex-col gap-2">
-        <RepWeightAdjuster
-          value={adjustment.currentReps}
-          label="rep"
-          onChange={(val) => setAdjustment(exercise.id, val, adjustment.currentWeight)}
-        />
-        <RepWeightAdjuster
-          value={adjustment.currentWeight}
-          label="kg"
-          isBodyweight={exercise.isBodyweight}
-          step={exercise.isBodyweight ? 5 : 2.5}
-          onChange={(val) => setAdjustment(exercise.id, adjustment.currentReps, val)}
-        />
-      </div>
+      {/* Bodyweight toggle */}
+      <button
+        onClick={handleBodyweightToggle}
+        className="w-full border border-black/10 dark:border-white/20 rounded-card flex items-center px-6 py-4"
+      >
+        <span className="flex-1 text-left text-[15px]">Kroppsvikt</span>
+        <div
+          className={`w-5 h-5 rounded-[4px] flex items-center justify-center ${
+            exercise.isBodyweight
+              ? "bg-black dark:bg-white"
+              : "border-2 border-black/20 dark:border-white/20"
+          }`}
+        >
+          {exercise.isBodyweight && (
+            <IconCheck size={12} className="text-white dark:text-black" />
+          )}
+        </div>
+      </button>
+    </Modal>,
+    document.body
+  );
 
-      {/* PB / Completed sets + Bodyweight row */}
-      <div className="flex items-center justify-between">
-        {/* Left: PB or completed sets */}
-        <div className="flex-1 min-w-0">
-          {hasCompletedSets ? (
-            <ExerciseSetDisplay
-              sets={exerciseLog!.sets}
-              isBodyweight={exercise.isBodyweight}
-              pbSetNumbers={pbSetNumbers}
-            />
-          ) : hasPB ? (
-            <span className="text-[11px] opacity-60 truncate block">{pbLabel}</span>
-          ) : null}
+  return (
+    <>
+      <div
+        {...itemProps}
+        className={[
+          "bg-card rounded-card p-4 flex flex-col gap-3 select-none",
+          isNew ? "animate-new-exercise" : "animate-in",
+          hasCompletedSets ? "ring-2 ring-accent" : "",
+          isDragging ? "shadow-xl scale-[1.01]" : "",
+          isDimmed ? "opacity-40" : "opacity-100",
+          "transition-opacity transition-shadow duration-150",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+      >
+        {/* Header row */}
+        <div className="flex items-center gap-2">
+          {/* Settings icon */}
+          <button
+            onClick={() => setShowSettings(true)}
+            className="shrink-0 opacity-40 active:opacity-70 w-8 h-8 flex items-center justify-center -ml-1.5"
+          >
+            <SettingsIcon />
+          </button>
+
+          {/* Name — read only */}
+          <div className="flex-1 min-w-0">
+            <span className="font-mono font-normal text-[15px] leading-[18px] uppercase truncate block">
+              {exercise.name}
+            </span>
+          </div>
+
+          <div className="flex items-center shrink-0">
+            <button
+              onClick={handleSetPress}
+              className="bg-black dark:bg-white text-white dark:text-black px-3 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider shrink-0"
+            >
+              SET {setCount + 1}
+            </button>
+          </div>
         </div>
 
-        {/* Bodyweight toggle */}
-        <button
-          onClick={async () => { await updateExercise(exercise.id, { isBodyweight: !exercise.isBodyweight }); await loadCategories(); }}
-          className="flex items-center gap-1.5 shrink-0"
-        >
-          <span className="text-[11px] opacity-60">Kroppsvikt</span>
-          <div
-            className={`w-5 h-5 rounded-[4px] flex items-center justify-center ${
-              exercise.isBodyweight
-                ? "bg-black dark:bg-white"
-                : "border-2 border-black/20 dark:border-white/20"
-            }`}
-          >
-            {exercise.isBodyweight && (
-              <IconCheck size={12} className="text-white dark:text-black" />
+        {/* Adjusters */}
+        <div className="flex flex-col gap-2">
+          <RepWeightAdjuster
+            value={adjustment.currentReps}
+            label="rep"
+            onChange={(val) => setAdjustment(exercise.id, val, adjustment.currentWeight)}
+          />
+          <RepWeightAdjuster
+            value={adjustment.currentWeight}
+            label="kg"
+            isBodyweight={exercise.isBodyweight}
+            step={exercise.isBodyweight ? 5 : 2.5}
+            onChange={(val) => setAdjustment(exercise.id, adjustment.currentReps, val)}
+          />
+        </div>
+
+        {/* Completed sets (left) + PB (right, only when active) */}
+        {hasCompletedSets && (
+          <div className="flex items-center justify-between">
+            <div className="flex-1 min-w-0">
+              <ExerciseSetDisplay
+                sets={exerciseLog!.sets}
+                isBodyweight={exercise.isBodyweight}
+                pbSetNumbers={pbSetNumbers}
+              />
+            </div>
+            {hasPB && (
+              <span className="text-[11px] opacity-60 shrink-0 ml-2">{pbLabel}</span>
             )}
           </div>
-        </button>
+        )}
       </div>
-    </div>
+
+      {settingsModal}
+    </>
   );
 }
