@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useHistoryStore } from "../stores/useHistoryStore";
-import { computeExercisePRs, computeEventProgression } from "../utils/statistics";
+import { computeExercisePRs, computeEventProgression, computeEventVolume } from "../utils/statistics";
 import { StatsLineChart } from "../components/stats/StatsLineChart";
 import { IconArrowLeft } from "../components/ui/icons";
 
@@ -26,6 +26,11 @@ export function ExerciseProgressPage() {
   const allPoints = useMemo(() => {
     if (!exerciseId) return [];
     return computeEventProgression(exerciseId, sessions, isBodyweight);
+  }, [exerciseId, sessions, isBodyweight]);
+
+  const allVolumePoints = useMemo(() => {
+    if (!exerciseId) return [];
+    return computeEventVolume(exerciseId, sessions, isBodyweight);
   }, [exerciseId, sessions, isBodyweight]);
 
   const [viewMode, setViewMode] = useState<"year" | "month">("year");
@@ -55,6 +60,14 @@ export function ExerciseProgressPage() {
     });
   }, [allPoints, viewMode, targetYear, targetMonth]);
 
+  const filteredVolumePoints = useMemo(() => {
+    return allVolumePoints.filter((p) => {
+      const d = new Date(p.date);
+      if (viewMode === "year") return d.getFullYear() === targetYear;
+      return d.getFullYear() === targetYear && d.getMonth() === targetMonth;
+    });
+  }, [allVolumePoints, viewMode, targetYear, targetMonth]);
+
   const periodLabel = useMemo(() => {
     if (viewMode === "year") return `${targetYear}`;
     return `${MONTHS_SV[targetMonth]} ${targetYear}`;
@@ -81,7 +94,9 @@ export function ExerciseProgressPage() {
   }, [allPoints, viewMode, targetYear, targetMonth]);
 
   const chartData = filteredPoints.map((p) => ({ label: p.label, value: p.value }));
+  const volumeChartData = filteredVolumePoints.map((p) => ({ label: p.label, value: p.value }));
   const unit = isBodyweight ? "reps" : "kg";
+  const volumeUnit = isBodyweight ? "reps" : "kg";
 
   if (!pr) {
     return (
@@ -145,13 +160,17 @@ export function ExerciseProgressPage() {
         </button>
       </div>
 
-      {/* Chart */}
+      {/* Charts */}
       {chartData.length > 0 ? (
-        <StatsLineChart key={`${viewMode}-${offset}`} data={chartData} unit={unit} />
+        <StatsLineChart key={`best-${viewMode}-${offset}`} data={chartData} unit={unit} title="Tyngsta lyft" />
       ) : (
         <div className="rounded-card border border-black/10 dark:border-white/10 p-4">
           <p className="text-[13px] opacity-50 text-center">Inga pass under denna period</p>
         </div>
+      )}
+
+      {volumeChartData.length > 0 && (
+        <StatsLineChart key={`vol-${viewMode}-${offset}`} data={volumeChartData} unit={volumeUnit} title="Total volym" />
       )}
     </div>
   );

@@ -302,6 +302,31 @@ export function computeEventProgression(
   return points.sort((a, b) => a.date.localeCompare(b.date));
 }
 
+export function computeEventVolume(
+  exerciseId: string,
+  sessions: WorkoutSession[],
+  isBodyweight: boolean
+): EventPoint[] {
+  const points: EventPoint[] = [];
+
+  for (const session of sessions) {
+    for (const log of session.exerciseLogs) {
+      if (log.exerciseId !== exerciseId) continue;
+      let total = 0;
+      for (const set of log.sets) {
+        total += isBodyweight ? set.reps : set.weight * set.reps;
+      }
+      if (total > 0) {
+        const d = new Date(session.startedAt);
+        const label = `${d.getDate()} ${SHORT_MONTHS[d.getMonth()].toLowerCase()}`;
+        points.push({ date: session.startedAt, label, value: total });
+      }
+    }
+  }
+
+  return points.sort((a, b) => a.date.localeCompare(b.date));
+}
+
 // ── Streaks & Consistency ──────────────────────────────────
 
 export function computeStreaks(sessions: WorkoutSession[]): StreakInfo {

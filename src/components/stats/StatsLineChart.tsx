@@ -8,6 +8,7 @@ interface DataPoint {
 interface Props {
   data: DataPoint[];
   unit?: string;
+  title?: string;
 }
 
 const CHART_HEIGHT = 120;
@@ -16,7 +17,7 @@ const PADDING_BOTTOM = 16;
 const PADDING_LEFT = 36;
 const PADDING_RIGHT = 12;
 
-export function StatsLineChart({ data, unit = "kg" }: Props) {
+export function StatsLineChart({ data, unit = "kg", title }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
   const [animate, setAnimate] = useState(false);
@@ -107,6 +108,9 @@ export function StatsLineChart({ data, unit = "kg" }: Props) {
       ref={containerRef}
       className="rounded-card border border-black/10 dark:border-white/10 p-4 overflow-hidden"
     >
+      {title && (
+        <span className="text-[12px] font-bold uppercase tracking-wider opacity-40 mb-1 block">{title}</span>
+      )}
       {width > 0 && (
         <svg
           width={width}
