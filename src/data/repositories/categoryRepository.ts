@@ -1,43 +1,85 @@
-import type { Category, Exercise } from "../../types/models";
+import type { Category, CategoryExercise, Exercise } from "../../types/models";
 import type { CategoryRepository } from "../types";
 import { getItem, setItem } from "../storage";
 
-const STORAGE_KEY = "categories";
+const CATEGORIES_KEY = "categories";
+const EXERCISES_KEY = "global-exercises";
+const JOIN_KEY = "category-exercises";
 
-function loadCategories(): Category[] {
-  return getItem<Category[]>(STORAGE_KEY) ?? [];
+interface JoinEntry {
+  categoryId: string;
+  exerciseId: string;
+  sortOrder: number;
 }
 
-function saveCategories(categories: Category[]): void {
-  setItem(STORAGE_KEY, categories);
+function loadCategories(): Omit<Category, "exercises">[] {
+  // Load raw categories (may still have old nested exercises from pre-migration)
+  const raw = getItem<Category[]>(CATEGORIES_KEY) ?? [];
+  return raw.map(({ exercises: _exercises, ...rest }) => rest);
+}
+
+function saveCategories(categories: Omit<Category, "exercises">[]): void {
+  setItem(CATEGORIES_KEY, categories);
+}
+
+function loadExercises(): Exercise[] {
+  return getItem<Exercise[]>(EXERCISES_KEY) ?? [];
+}
+
+function loadJoin(): JoinEntry[] {
+  return getItem<JoinEntry[]>(JOIN_KEY) ?? [];
+}
+
+function saveJoin(entries: JoinEntry[]): void {
+  setItem(JOIN_KEY, entries);
+}
+
+function buildCategory(
+  cat: Omit<Category, "exercises">,
+  exercises: Exercise[],
+  joinEntries: JoinEntry[]
+): Category {
+  const exerciseMap = new Map(exercises.map((e) => [e.id, e]));
+  const catJoins = joinEntries
+    .filter((j) => j.categoryId === cat.id)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+
+  const categoryExercises: CategoryExercise[] = catJoins
+    .map((j) => {
+      const ex = exerciseMap.get(j.exerciseId);
+      if (!ex) return null;
+      return { ...ex, sortOrder: j.sortOrder };
+    })
+    .filter((e): e is CategoryExercise => e !== null);
+
+  return { ...cat, exercises: categoryExercises };
 }
 
 export const categoryRepository: CategoryRepository = {
   async getAll() {
-    return loadCategories()
-      .sort((a, b) => a.sortOrder - b.sortOrder)
-      .map((cat) => ({
-        ...cat,
-        exercises: [...cat.exercises].sort((a, b) => a.sortOrder - b.sortOrder),
-      }));
+    const cats = loadCategories().sort((a, b) => a.sortOrder - b.sortOrder);
+    const exercises = loadExercises();
+    const joins = loadJoin();
+    return cats.map((cat) => buildCategory(cat, exercises, joins));
   },
 
   async getById(id: string) {
-    return loadCategories().find((c) => c.id === id) ?? null;
+    const cat = loadCategories().find((c) => c.id === id);
+    if (!cat) return null;
+    return buildCategory(cat, loadExercises(), loadJoin());
   },
 
   async create(name: string) {
     const categories = loadCategories();
-    const newCategory: Category = {
+    const newCategory: Omit<Category, "exercises"> = {
       id: crypto.randomUUID(),
       name,
-      exercises: [],
       createdAt: new Date().toISOString(),
       sortOrder: categories.length,
     };
     categories.push(newCategory);
     saveCategories(categories);
-    return newCategory;
+    return { ...newCategory, exercises: [] };
   },
 
   async update(id, data) {
@@ -46,53 +88,33 @@ export const categoryRepository: CategoryRepository = {
     if (index === -1) throw new Error(`Category ${id} not found`);
     categories[index] = { ...categories[index], ...data };
     saveCategories(categories);
-    return categories[index];
+    return buildCategory(categories[index], loadExercises(), loadJoin());
   },
 
   async delete(id) {
     const categories = loadCategories().filter((c) => c.id !== id);
     saveCategories(categories);
+    // Also remove join entries for this category
+    const joins = loadJoin().filter((j) => j.categoryId !== id);
+    saveJoin(joins);
   },
 
-  async addExercise(categoryId, data) {
-    const categories = loadCategories();
-    const category = categories.find((c) => c.id === categoryId);
-    if (!category) throw new Error(`Category ${categoryId} not found`);
-
-    const newExercise: Exercise = {
-      id: crypto.randomUUID(),
-      categoryId,
-      name: data.name,
-      baseReps: data.baseReps,
-      baseWeight: data.baseWeight,
-      isBodyweight: data.isBodyweight,
-      sortOrder: category.exercises.length,
-    };
-    category.exercises.push(newExercise);
-    saveCategories(categories);
-    return newExercise;
+  async addExerciseToCategory(categoryId, exerciseId) {
+    const joins = loadJoin();
+    // Check if already exists
+    if (joins.some((j) => j.categoryId === categoryId && j.exerciseId === exerciseId)) return;
+    const maxSort = joins
+      .filter((j) => j.categoryId === categoryId)
+      .reduce((max, j) => Math.max(max, j.sortOrder), -1);
+    joins.push({ categoryId, exerciseId, sortOrder: maxSort + 1 });
+    saveJoin(joins);
   },
 
-  async updateExercise(categoryId, exerciseId, data) {
-    const categories = loadCategories();
-    const category = categories.find((c) => c.id === categoryId);
-    if (!category) throw new Error(`Category ${categoryId} not found`);
-
-    const index = category.exercises.findIndex((e) => e.id === exerciseId);
-    if (index === -1) throw new Error(`Exercise ${exerciseId} not found`);
-
-    category.exercises[index] = { ...category.exercises[index], ...data };
-    saveCategories(categories);
-    return category.exercises[index];
-  },
-
-  async deleteExercise(categoryId, exerciseId) {
-    const categories = loadCategories();
-    const category = categories.find((c) => c.id === categoryId);
-    if (!category) return;
-
-    category.exercises = category.exercises.filter((e) => e.id !== exerciseId);
-    saveCategories(categories);
+  async removeExerciseFromCategory(categoryId, exerciseId) {
+    const joins = loadJoin().filter(
+      (j) => !(j.categoryId === categoryId && j.exerciseId === exerciseId)
+    );
+    saveJoin(joins);
   },
 
   async reorderCategories(orderedIds) {
@@ -105,13 +127,11 @@ export const categoryRepository: CategoryRepository = {
   },
 
   async reorderExercises(categoryId, orderedIds) {
-    const categories = loadCategories();
-    const category = categories.find((c) => c.id === categoryId);
-    if (!category) return;
+    const joins = loadJoin();
     orderedIds.forEach((id, index) => {
-      const ex = category.exercises.find((e) => e.id === id);
-      if (ex) ex.sortOrder = index;
+      const entry = joins.find((j) => j.categoryId === categoryId && j.exerciseId === id);
+      if (entry) entry.sortOrder = index;
     });
-    saveCategories(categories);
+    saveJoin(joins);
   },
 };

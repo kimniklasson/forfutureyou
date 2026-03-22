@@ -1,18 +1,20 @@
-export interface Category {
-  id: string;
-  name: string;
-  exercises: Exercise[];
-  createdAt: string;
-  sortOrder: number;
-}
-
 export interface Exercise {
   id: string;
-  categoryId: string;
   name: string;
   baseReps: number;
   baseWeight: number;
   isBodyweight: boolean;
+}
+
+export interface CategoryExercise extends Exercise {
+  sortOrder: number;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  exercises: CategoryExercise[];
+  createdAt: string;
   sortOrder: number;
 }
 

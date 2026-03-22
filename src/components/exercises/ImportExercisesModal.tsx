@@ -1,22 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useExerciseStore } from "../../stores/useExerciseStore";
 import { useCategoryStore } from "../../stores/useCategoryStore";
-import { IconClose, IconCheck } from "../ui/icons";
-import type { Exercise } from "../../types/models";
+import { IconClose, IconCheck, IconTrash } from "../ui/icons";
+import { ConfirmDialog } from "../ui/ConfirmDialog";
 
 interface ImportExercisesModalProps {
   isOpen: boolean;
   onClose: () => void;
   categoryId: string;
   categoryName: string;
-  currentExerciseNames: Set<string>;
-}
-
-interface UniqueExercise {
-  name: string;
-  normalizedName: string;
-  template: Pick<Exercise, "baseReps" | "baseWeight" | "isBodyweight">;
-  alreadyInCategory: boolean;
 }
 
 export function ImportExercisesModal({
@@ -24,20 +17,28 @@ export function ImportExercisesModal({
   onClose,
   categoryId,
   categoryName,
-  currentExerciseNames,
 }: ImportExercisesModalProps) {
-  const { categories, addExercise, deleteExercise, reorderExercises } = useCategoryStore();
-  // Track names the user has toggled ON (to add)
-  const [addedNames, setAddedNames] = useState<Set<string>>(new Set());
-  // Track names the user has toggled OFF (to remove from this category)
-  const [removedNames, setRemovedNames] = useState<Set<string>>(new Set());
-  const [saving, setSaving] = useState(false);
+  const { exercises, createExercise, deleteExercise, loadExercises } = useExerciseStore();
+  const { categories, addExerciseToCategory, removeExerciseFromCategory, loadCategories } =
+    useCategoryStore();
 
-  // Reset checked state when modal opens
+  const [newName, setNewName] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+
+  // Track pending changes: exerciseId → "add" | "remove"
+  const [pendingChanges, setPendingChanges] = useState<Map<string, "add" | "remove">>(new Map());
+
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const category = categories.find((c) => c.id === categoryId);
+  const currentExerciseIds = new Set(category?.exercises.map((e) => e.id) ?? []);
+
   useEffect(() => {
     if (isOpen) {
-      setAddedNames(new Set());
-      setRemovedNames(new Set());
+      setPendingChanges(new Map());
+      setNewName("");
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -49,100 +50,92 @@ export function ImportExercisesModal({
 
   if (!isOpen) return null;
 
-  // Collect all unique exercises across all categories
-  const uniqueExercises: UniqueExercise[] = [];
-  const seen = new Set<string>();
+  const isChecked = (exerciseId: string) => {
+    const pending = pendingChanges.get(exerciseId);
+    if (pending === "add") return true;
+    if (pending === "remove") return false;
+    return currentExerciseIds.has(exerciseId);
+  };
 
-  for (const cat of categories) {
-    for (const ex of cat.exercises) {
-      const normalized = ex.name.trim().toLowerCase();
-      if (!seen.has(normalized)) {
-        seen.add(normalized);
-        uniqueExercises.push({
-          name: ex.name,
-          normalizedName: normalized,
-          template: {
-            baseReps: ex.baseReps,
-            baseWeight: ex.baseWeight,
-            isBodyweight: ex.isBodyweight,
-          },
-          alreadyInCategory: currentExerciseNames.has(normalized),
-        });
+  const toggleExercise = (exerciseId: string) => {
+    setPendingChanges((prev) => {
+      const next = new Map(prev);
+      const inCategory = currentExerciseIds.has(exerciseId);
+      const current = next.get(exerciseId);
+
+      if (inCategory) {
+        // Currently in category: toggle between remove and no-change
+        if (current === "remove") {
+          next.delete(exerciseId);
+        } else {
+          next.set(exerciseId, "remove");
+        }
+      } else {
+        // Not in category: toggle between add and no-change
+        if (current === "add") {
+          next.delete(exerciseId);
+        } else {
+          next.set(exerciseId, "add");
+        }
       }
-    }
-  }
+      return next;
+    });
+  };
 
-  uniqueExercises.sort((a, b) => a.name.localeCompare(b.name, "sv"));
-
-  const toggleCheck = (normalizedName: string, alreadyInCategory: boolean) => {
-    if (alreadyInCategory) {
-      // Toggle removal of an existing exercise
-      setRemovedNames((prev) => {
-        const next = new Set(prev);
-        if (next.has(normalizedName)) {
-          next.delete(normalizedName);
-        } else {
-          next.add(normalizedName);
-        }
-        return next;
-      });
-    } else {
-      // Toggle addition of a new exercise
-      setAddedNames((prev) => {
-        const next = new Set(prev);
-        if (next.has(normalizedName)) {
-          next.delete(normalizedName);
-        } else {
-          next.add(normalizedName);
-        }
-        return next;
-      });
-    }
+  const handleCreate = async () => {
+    const name = newName.trim();
+    if (!name) return;
+    setCreating(true);
+    const exercise = await createExercise({
+      name,
+      baseReps: 8,
+      baseWeight: 50,
+      isBodyweight: false,
+    });
+    // Auto-check for current category
+    setPendingChanges((prev) => {
+      const next = new Map(prev);
+      next.set(exercise.id, "add");
+      return next;
+    });
+    setNewName("");
+    setCreating(false);
+    inputRef.current?.focus();
   };
 
   const handleSave = async () => {
-    if (addedNames.size === 0 && removedNames.size === 0) return;
+    if (pendingChanges.size === 0) return;
     setSaving(true);
 
-    // Add newly checked exercises
-    const toAdd = uniqueExercises.filter(
-      (e) => addedNames.has(e.normalizedName) && !e.alreadyInCategory
-    );
-
-    for (const ex of toAdd) {
-      await addExercise(categoryId, {
-        name: ex.name,
-        ...ex.template,
-      });
-    }
-
-    // Remove unchecked exercises from this category (not deleted globally)
-    if (removedNames.size > 0) {
-      const category = useCategoryStore
-        .getState()
-        .categories.find((c) => c.id === categoryId);
-      if (category) {
-        const exercisesToRemove = category.exercises.filter((e) =>
-          removedNames.has(e.name.trim().toLowerCase())
-        );
-        for (const ex of exercisesToRemove) {
-          await deleteExercise(categoryId, ex.id);
-        }
+    for (const [exerciseId, action] of pendingChanges) {
+      if (action === "add") {
+        await addExerciseToCategory(categoryId, exerciseId);
+      } else {
+        await removeExerciseFromCategory(categoryId, exerciseId);
       }
     }
 
-    // Persist order
-    const exercises =
-      useCategoryStore
-        .getState()
-        .categories.find((c) => c.id === categoryId)?.exercises ?? [];
-    reorderExercises(categoryId, exercises.map((e) => e.id));
-
+    await loadCategories();
     setSaving(false);
     onClose();
   };
 
-  const hasChanges = addedNames.size > 0 || removedNames.size > 0;
+  const handlePermanentDelete = async () => {
+    if (!deleteTarget) return;
+    // Remove pending changes for this exercise
+    setPendingChanges((prev) => {
+      const next = new Map(prev);
+      next.delete(deleteTarget.id);
+      return next;
+    });
+    await deleteExercise(deleteTarget.id);
+    await loadCategories();
+    await loadExercises();
+    setDeleteTarget(null);
+  };
+
+  const hasChanges = pendingChanges.size > 0;
+  const sortedExercises = [...exercises].sort((a, b) => a.name.localeCompare(b.name, "sv"));
 
   return createPortal(
     <div
@@ -174,41 +167,80 @@ export function ImportExercisesModal({
 
         {/* Exercise list */}
         <div className="flex-1 overflow-y-auto px-8 pb-4">
+          {/* Create new exercise input */}
+          <div className="flex gap-2 mb-4">
+            <div className="flex-1 border border-black/10 dark:border-white/20 rounded-card flex items-center gap-2 pl-4 pr-3 py-3">
+              <input
+                ref={inputRef}
+                type="text"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleCreate(); }}
+                placeholder="Lägg till övning"
+                className="flex-1 text-[15px] bg-transparent outline-none"
+              />
+              <button
+                onClick={handleCreate}
+                disabled={!newName.trim() || creating}
+                className={`px-3 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center shrink-0 min-w-[52px] ${
+                  newName.trim() && !creating
+                    ? "bg-black dark:bg-white text-white dark:text-black"
+                    : "bg-black/5 dark:bg-white/10 text-black/30 dark:text-white/30"
+                }`}
+              >
+                {creating ? (
+                  <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  "Skapa"
+                )}
+              </button>
+            </div>
+          </div>
+
           <div className="flex flex-col gap-2">
-            {uniqueExercises.length === 0 ? (
+            {sortedExercises.length === 0 ? (
               <p className="text-center opacity-50 py-8 text-[15px]">
-                Inga övningar att importera
+                Inga övningar skapade ännu
               </p>
             ) : (
-              uniqueExercises.map((ex) => {
-                const isChecked = ex.alreadyInCategory
-                  ? !removedNames.has(ex.normalizedName)
-                  : addedNames.has(ex.normalizedName);
+              sortedExercises.map((ex) => {
+                const checked = isChecked(ex.id);
 
                 return (
-                  <button
-                    key={ex.normalizedName}
-                    onClick={() =>
-                      toggleCheck(ex.normalizedName, ex.alreadyInCategory)
-                    }
-                    className="bg-card dark:bg-white/10 rounded-card px-4 py-3 flex items-center justify-between text-left"
+                  <div
+                    key={ex.id}
+                    className="bg-card dark:bg-white/10 rounded-card px-4 py-3 flex items-center gap-3"
                   >
-                    <span className="text-[15px]">{ex.name}</span>
-                    <div
-                      className={`w-5 h-5 rounded-[4px] flex items-center justify-center shrink-0 ${
-                        isChecked
-                          ? "bg-black dark:bg-white"
-                          : "border-2 border-black/20 dark:border-white/20"
-                      }`}
+                    {/* Toggle checkbox */}
+                    <button
+                      onClick={() => toggleExercise(ex.id)}
+                      className="flex-1 flex items-center justify-between text-left"
                     >
-                      {isChecked && (
-                        <IconCheck
-                          size={12}
-                          className="text-white dark:text-black"
-                        />
-                      )}
-                    </div>
-                  </button>
+                      <span className="text-[15px]">{ex.name}</span>
+                      <div
+                        className={`w-5 h-5 rounded-[4px] flex items-center justify-center shrink-0 ${
+                          checked
+                            ? "bg-black dark:bg-white"
+                            : "border-2 border-black/20 dark:border-white/20"
+                        }`}
+                      >
+                        {checked && (
+                          <IconCheck
+                            size={12}
+                            className="text-white dark:text-black"
+                          />
+                        )}
+                      </div>
+                    </button>
+
+                    {/* Permanent delete */}
+                    <button
+                      onClick={() => setDeleteTarget({ id: ex.id, name: ex.name })}
+                      className="w-8 h-8 flex items-center justify-center opacity-30 hover:opacity-60 transition-opacity shrink-0"
+                    >
+                      <IconTrash size={14} />
+                    </button>
+                  </div>
                 );
               })
             )}
@@ -238,6 +270,16 @@ export function ImportExercisesModal({
           </div>
         )}
       </div>
+
+      {/* Permanent delete confirmation */}
+      <ConfirmDialog
+        isOpen={deleteTarget !== null}
+        message={`Vill du permanent radera ${deleteTarget?.name ?? ""}? Övningen tas bort från alla kategorier.`}
+        cancelLabel="Avbryt"
+        confirmLabel="Radera"
+        onConfirm={handlePermanentDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>,
     document.body
   );

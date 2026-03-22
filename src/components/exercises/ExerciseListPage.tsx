@@ -1,26 +1,24 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useCategoryStore } from "../../stores/useCategoryStore";
+import { useExerciseStore } from "../../stores/useExerciseStore";
 import { useSessionStore } from "../../stores/useSessionStore";
 import { ExerciseCard } from "./ExerciseCard";
 import { SwipeActions } from "../ui/SwipeToDelete";
 import { ImportExercisesModal } from "./ImportExercisesModal";
-import { IconList } from "../ui/icons";
 import { useDragSort } from "../../hooks/useDragSort";
 
 export function ExerciseListPage() {
   const { id: categoryId } = useParams<{ id: string }>();
-  const { categories, loadCategories, addExercise, updateExercise, deleteExercise, reorderExercises } =
+  const { categories, loadCategories, removeExerciseFromCategory, reorderExercises } =
     useCategoryStore();
+  const { loadExercises } = useExerciseStore();
   const { activeSession } = useSessionStore();
 
-  const [newName, setNewName] = useState("");
-  const [saving, setSaving] = useState(false);
   const [newExerciseId, setNewExerciseId] = useState<string | null>(null);
   const [duplicateAfterId, setDuplicateAfterId] = useState<string | null>(null);
   const [importOpen, setImportOpen] = useState(false);
   const [tipIndex, setTipIndex] = useState(0);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   const tips = useMemo(() => [
     "Tryck på Set 1 för att starta session",
@@ -37,8 +35,16 @@ export function ExerciseListPage() {
   }, [tips]);
 
   useEffect(() => {
+    loadExercises();
     loadCategories();
-  }, [loadCategories]);
+  }, [loadExercises, loadCategories]);
+
+  // Listen for "+" button in header
+  useEffect(() => {
+    const handler = () => setImportOpen(true);
+    window.addEventListener("open-exercise-modal", handler);
+    return () => window.removeEventListener("open-exercise-modal", handler);
+  }, []);
 
   const category = categories.find((c) => c.id === categoryId);
 
@@ -70,43 +76,29 @@ export function ExerciseListPage() {
   const sessionBlocked =
     activeSession !== null && activeSession.categoryId !== categoryId;
 
-  const handleAdd = async () => {
-    const name = newName.trim();
-    if (!name) return;
-    setSaving(true);
-    const exercise = await addExercise(category.id, {
-      name,
-      baseReps: 8,
-      baseWeight: 50,
-      isBodyweight: false,
-    });
-    // Exercise is already at top in local state (optimistic prepend in store).
-    // Set newExerciseId immediately so animation fires on first render.
-    setNewExerciseId(exercise.id);
-    setNewName("");
-    setSaving(false);
-    inputRef.current?.focus();
-    setTimeout(() => setNewExerciseId(null), 800);
-    // Persist order to server in background (no await — don't block UI)
-    const exercises = useCategoryStore.getState().categories.find((c) => c.id === categoryId)?.exercises ?? [];
-    reorderExercises(categoryId!, exercises.map((e) => e.id));
-  };
-
   const handleDuplicate = async (exerciseId: string) => {
     const exercise = category.exercises.find((e) => e.id === exerciseId);
     if (!exercise) return;
-    const newExercise = await addExercise(category.id, {
+
+    // Create a copy as a new global exercise, then add to category
+    const { createExercise } = useExerciseStore.getState();
+    const { addExerciseToCategory } = useCategoryStore.getState();
+
+    const newExercise = await createExercise({
       name: `${exercise.name} kopia`,
       baseReps: exercise.baseReps,
       baseWeight: exercise.baseWeight,
       isBodyweight: exercise.isBodyweight,
     });
+    await addExerciseToCategory(category.id, newExercise.id);
+
     setNewExerciseId(newExercise.id);
     setDuplicateAfterId(exerciseId);
     setTimeout(() => {
       setNewExerciseId(null);
       setDuplicateAfterId(null);
     }, 800);
+
     // Persist correct order (new exercise after source)
     const storeExercises = useCategoryStore.getState().categories
       .find((c) => c.id === categoryId)?.exercises ?? [];
@@ -118,98 +110,77 @@ export function ExerciseListPage() {
   };
 
   const handleRename = async (exerciseId: string, name: string) => {
-    await updateExercise(category.id, exerciseId, { name });
+    await useExerciseStore.getState().updateExercise(exerciseId, { name });
+    await loadCategories(); // Refresh to get updated names
   };
+
+  const handleRemoveFromCategory = async (exerciseId: string) => {
+    await removeExerciseFromCategory(categoryId!, exerciseId);
+  };
+
+  const isEmpty = category.exercises.length === 0;
 
   return (
     <div className="flex flex-col gap-10">
       {/* Category header */}
       <div className="flex flex-col items-center text-center">
         <span className="font-bold text-[20px] leading-[1.22]">{category.name}</span>
-        <div className="text-[20px] leading-[1.22] opacity-50 relative">
-          {/* Invisible spacer — tallest tip sets width */}
-          <span className="invisible whitespace-nowrap">{tips[tipIndex]}</span>
-          {tips.map((tip, i) => (
-            <span
-              key={tip}
-              className="absolute inset-0 transition-opacity duration-700 whitespace-nowrap text-center"
-              style={{ opacity: i === tipIndex ? 1 : 0 }}
-            >
-              {tip}
-            </span>
-          ))}
-        </div>
+        {!isEmpty && (
+          <div className="text-[20px] leading-[1.22] opacity-50 relative">
+            <span className="invisible whitespace-nowrap">{tips[tipIndex]}</span>
+            {tips.map((tip, i) => (
+              <span
+                key={tip}
+                className="absolute inset-0 transition-opacity duration-700 whitespace-nowrap text-center"
+                style={{ opacity: i === tipIndex ? 1 : 0 }}
+              >
+                {tip}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
-      <div className="flex flex-col gap-6">
-      {/* Add exercise form + import button */}
-      <div className="flex gap-2">
-        <div className="flex-1 border border-black/10 dark:border-white/20 rounded-card flex items-center gap-2 pl-6 pr-4 py-4">
-          <input
-            ref={inputRef}
-            type="text"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") handleAdd(); }}
-            placeholder="Lägg till övning"
-            className="flex-1 text-[15px] bg-transparent outline-none"
-          />
-          <button
-            onClick={handleAdd}
-            disabled={!newName.trim() || saving}
-            className={`px-3 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center shrink-0 min-w-[52px] ${
-              newName.trim() && !saving
-                ? "bg-black dark:bg-white text-white dark:text-black"
-                : "bg-black/5 dark:bg-white/10 text-black/30 dark:text-white/30"
-            }`}
-          >
-            {saving ? (
-              <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-            ) : (
-              "Skapa"
-            )}
-          </button>
+      {isEmpty ? (
+        <div className="flex flex-col items-center gap-4 pt-8">
+          <p className="text-[15px] opacity-50 text-center leading-relaxed">
+            Inga övningar ännu.<br />
+            Tryck på <span className="font-bold">+</span> uppe till höger för att lägga till.
+          </p>
         </div>
-        <button
-          onClick={() => setImportOpen(true)}
-          className="bg-card rounded-card px-4 flex items-center justify-center shrink-0"
-        >
-          <IconList size={16} />
-        </button>
-      </div>
-
-      {/* Exercise list */}
-      <div {...containerProps} className="flex flex-col gap-2">
-        {displayItems.map((exercise) => (
-          <SwipeActions
-            key={exercise.id}
-            onDelete={() => deleteExercise(categoryId!, exercise.id)}
-            onDuplicate={() => handleDuplicate(exercise.id)}
-            confirmMessage={`Är du säker på att du vill ta bort ${exercise.name} från ${category.name}?`}
-          >
-            <ExerciseCard
-              exercise={exercise}
-              categoryId={category.id}
-              categoryName={category.name}
-              onRename={handleRename}
-              sessionBlocked={sessionBlocked}
-              isNew={exercise.id === newExerciseId}
-              isDragging={draggingId === exercise.id}
-              isDimmed={draggingId !== null && draggingId !== exercise.id}
-              dragHandleProps={getDragHandleProps(exercise.id)}
-              itemProps={getItemProps(exercise.id)}
-            />
-          </SwipeActions>
-        ))}
-      </div>
-      </div>
+      ) : (
+        <div className="flex flex-col gap-2">
+          <div {...containerProps} className="flex flex-col gap-2">
+            {displayItems.map((exercise) => (
+              <SwipeActions
+                key={exercise.id}
+                onDelete={() => handleRemoveFromCategory(exercise.id)}
+                onDuplicate={() => handleDuplicate(exercise.id)}
+                confirmMessage={`Är du säker på att du vill ta bort ${exercise.name} från ${category.name}?`}
+              >
+                <ExerciseCard
+                  exercise={exercise}
+                  categoryId={category.id}
+                  categoryName={category.name}
+                  onRename={handleRename}
+                  sessionBlocked={sessionBlocked}
+                  isNew={exercise.id === newExerciseId}
+                  isDragging={draggingId === exercise.id}
+                  isDimmed={draggingId !== null && draggingId !== exercise.id}
+                  dragHandleProps={getDragHandleProps(exercise.id)}
+                  itemProps={getItemProps(exercise.id)}
+                />
+              </SwipeActions>
+            ))}
+          </div>
+        </div>
+      )}
 
       <ImportExercisesModal
         isOpen={importOpen}
         onClose={() => setImportOpen(false)}
         categoryId={category.id}
         categoryName={category.name}
-        currentExerciseNames={new Set(category.exercises.map((e) => e.name.trim().toLowerCase()))}
       />
     </div>
   );

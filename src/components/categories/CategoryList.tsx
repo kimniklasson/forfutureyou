@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useCategoryStore } from "../../stores/useCategoryStore";
+import { useExerciseStore } from "../../stores/useExerciseStore";
 import { useSessionStore } from "../../stores/useSessionStore";
 import { useHistoryStore } from "../../stores/useHistoryStore";
 import { CategoryListItem } from "./CategoryListItem";
@@ -38,6 +39,7 @@ function formatTimeSince(isoDate: string): string {
 
 export function CategoryList() {
   const { categories, loadCategories, deleteCategory, reorderCategories } = useCategoryStore();
+  const { loadExercises } = useExerciseStore();
   const activeSession = useSessionStore((s) => s.activeSession);
   const { sessions, loadSessions } = useHistoryStore();
   useAuth();
@@ -46,9 +48,10 @@ export function CategoryList() {
   const [newCategoryId, setNewCategoryId] = useState<string | null>(null);
 
   useEffect(() => {
+    loadExercises();
     loadCategories();
     loadSessions();
-  }, [loadCategories, loadSessions]);
+  }, [loadExercises, loadCategories, loadSessions]);
 
   const lastSession = sessions.length > 0 ? sessions[0] : null;
   const lastTrainedDate = lastSession?.finishedAt ?? lastSession?.startedAt;

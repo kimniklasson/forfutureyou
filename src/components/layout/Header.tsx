@@ -1,6 +1,6 @@
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useMatch } from "react-router-dom";
 import { IconButton } from "../ui/IconButton";
-import { IconArrowLeft } from "../ui/icons";
+import { IconArrowLeft, IconPlus } from "../ui/icons";
 
 // Top-level routes that live in the bottom nav — no back arrow here
 const TOP_LEVEL = ["/", "/profile", "/history", "/stats", "/login", "/signup"];
@@ -17,6 +17,11 @@ export function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const isTopLevel = TOP_LEVEL.includes(location.pathname);
+  const isCategoryPage = useMatch("/category/:id");
+
+  const handleAddExercise = () => {
+    window.dispatchEvent(new CustomEvent("open-exercise-modal"));
+  };
 
   return (
     <div className="fixed top-0 left-0 right-0 z-40 pointer-events-none">
@@ -40,8 +45,14 @@ export function Header() {
             <Logo />
           </button>
 
-          {/* Right — empty, keeps logo centered */}
-          <div className="flex-1" />
+          {/* Right — "+" button on category pages */}
+          <div className="flex-1 flex justify-end">
+            {isCategoryPage && (
+              <IconButton onClick={handleAddExercise} aria-label="Lägg till övning">
+                <IconPlus size={18} />
+              </IconButton>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -1,7 +1,9 @@
-import type { CategoryRepository, SessionRepository } from "../types";
+import type { CategoryRepository, ExerciseRepository, SessionRepository } from "../types";
 import { categoryRepository as localCategoryRepo } from "./categoryRepository";
+import { exerciseRepository as localExerciseRepo } from "./exerciseRepository";
 import { sessionRepository as localSessionRepo } from "./sessionRepository";
 import { supabaseCategoryRepository } from "./supabase/supabaseCategoryRepository";
+import { supabaseExerciseRepository } from "./supabase/supabaseExerciseRepository";
 import { supabaseSessionRepository } from "./supabase/supabaseSessionRepository";
 import { supabase } from "../../lib/supabase";
 
@@ -19,6 +21,10 @@ supabase.auth.getSession().then(({ data: { session } }) => {
 
 export function getCategoryRepository(): CategoryRepository {
   return isAuthenticated ? supabaseCategoryRepository : localCategoryRepo;
+}
+
+export function getExerciseRepository(): ExerciseRepository {
+  return isAuthenticated ? supabaseExerciseRepository : localExerciseRepo;
 }
 
 export function getSessionRepository(): SessionRepository {

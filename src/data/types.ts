@@ -1,21 +1,20 @@
 import type { Category, Exercise, WorkoutSession } from "../types/models";
 
+export interface ExerciseRepository {
+  getAll(): Promise<Exercise[]>;
+  create(data: Pick<Exercise, "name" | "baseReps" | "baseWeight" | "isBodyweight">): Promise<Exercise>;
+  update(id: string, data: Partial<Pick<Exercise, "name" | "baseReps" | "baseWeight" | "isBodyweight">>): Promise<Exercise>;
+  delete(id: string): Promise<void>;
+}
+
 export interface CategoryRepository {
   getAll(): Promise<Category[]>;
   getById(id: string): Promise<Category | null>;
   create(name: string): Promise<Category>;
   update(id: string, data: Partial<Pick<Category, "name" | "sortOrder">>): Promise<Category>;
   delete(id: string): Promise<void>;
-  addExercise(
-    categoryId: string,
-    data: Pick<Exercise, "name" | "baseReps" | "baseWeight" | "isBodyweight">
-  ): Promise<Exercise>;
-  updateExercise(
-    categoryId: string,
-    exerciseId: string,
-    data: Partial<Pick<Exercise, "name" | "baseReps" | "baseWeight" | "isBodyweight">>
-  ): Promise<Exercise>;
-  deleteExercise(categoryId: string, exerciseId: string): Promise<void>;
+  addExerciseToCategory(categoryId: string, exerciseId: string): Promise<void>;
+  removeExerciseFromCategory(categoryId: string, exerciseId: string): Promise<void>;
   reorderCategories(orderedIds: string[]): Promise<void>;
   reorderExercises(categoryId: string, orderedIds: string[]): Promise<void>;
 }

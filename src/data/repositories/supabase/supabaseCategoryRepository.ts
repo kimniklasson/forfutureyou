@@ -1,6 +1,19 @@
 import { supabase } from "../../../lib/supabase";
-import type { Category, Exercise } from "../../../types/models";
+import type { Category, CategoryExercise } from "../../../types/models";
 import type { CategoryRepository } from "../../types";
+
+interface DbGlobalExercise {
+  id: string;
+  name: string;
+  base_reps: number;
+  base_weight: number;
+  is_bodyweight: boolean;
+}
+
+interface DbCategoryExerciseJoin {
+  sort_order: number;
+  exercise: DbGlobalExercise;
+}
 
 interface DbCategory {
   id: string;
@@ -8,41 +21,31 @@ interface DbCategory {
   name: string;
   sort_order: number;
   created_at: string;
-  exercises: DbExercise[];
-}
-
-interface DbExercise {
-  id: string;
-  user_id: string;
-  category_id: string;
-  name: string;
-  base_reps: number;
-  base_weight: number;
-  is_bodyweight: boolean;
-  sort_order: number;
-}
-
-function mapExercise(db: DbExercise): Exercise {
-  return {
-    id: db.id,
-    categoryId: db.category_id,
-    name: db.name,
-    baseReps: db.base_reps,
-    baseWeight: db.base_weight,
-    isBodyweight: db.is_bodyweight,
-    sortOrder: db.sort_order,
-  };
+  category_exercises: DbCategoryExerciseJoin[];
 }
 
 function mapCategory(db: DbCategory): Category {
+  const exercises: CategoryExercise[] = (db.category_exercises || [])
+    .map((ce) => ({
+      id: ce.exercise.id,
+      name: ce.exercise.name,
+      baseReps: ce.exercise.base_reps,
+      baseWeight: ce.exercise.base_weight,
+      isBodyweight: ce.exercise.is_bodyweight,
+      sortOrder: ce.sort_order,
+    }))
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+
   return {
     id: db.id,
     name: db.name,
-    exercises: (db.exercises || []).map(mapExercise).sort((a, b) => a.sortOrder - b.sortOrder),
+    exercises,
     createdAt: db.created_at,
     sortOrder: db.sort_order,
   };
 }
+
+const CATEGORY_SELECT = "*, category_exercises(sort_order, exercise:global_exercises(*))";
 
 async function getUserId(): Promise<string> {
   const { data: { user } } = await supabase.auth.getUser();
@@ -54,7 +57,7 @@ export const supabaseCategoryRepository: CategoryRepository = {
   async getAll() {
     const { data, error } = await supabase
       .from("categories")
-      .select("*, exercises(*)")
+      .select(CATEGORY_SELECT)
       .order("sort_order", { ascending: true });
 
     if (error) throw error;
@@ -64,7 +67,7 @@ export const supabaseCategoryRepository: CategoryRepository = {
   async getById(id: string) {
     const { data, error } = await supabase
       .from("categories")
-      .select("*, exercises(*)")
+      .select(CATEGORY_SELECT)
       .eq("id", id)
       .single();
 
@@ -78,7 +81,6 @@ export const supabaseCategoryRepository: CategoryRepository = {
   async create(name: string) {
     const userId = await getUserId();
 
-    // Get current max sort_order
     const { data: existing } = await supabase
       .from("categories")
       .select("sort_order")
@@ -90,7 +92,7 @@ export const supabaseCategoryRepository: CategoryRepository = {
     const { data, error } = await supabase
       .from("categories")
       .insert({ user_id: userId, name, sort_order: sortOrder })
-      .select("*, exercises(*)")
+      .select(CATEGORY_SELECT)
       .single();
 
     if (error) throw error;
@@ -106,7 +108,7 @@ export const supabaseCategoryRepository: CategoryRepository = {
       .from("categories")
       .update(updateData)
       .eq("id", id)
-      .select("*, exercises(*)")
+      .select(CATEGORY_SELECT)
       .single();
 
     if (error) throw error;
@@ -118,12 +120,10 @@ export const supabaseCategoryRepository: CategoryRepository = {
     if (error) throw error;
   },
 
-  async addExercise(categoryId, data) {
-    const userId = await getUserId();
-
-    // Get current max sort_order for exercises in this category
+  async addExerciseToCategory(categoryId, exerciseId) {
+    // Get current max sort_order
     const { data: existing } = await supabase
-      .from("exercises")
+      .from("category_exercises")
       .select("sort_order")
       .eq("category_id", categoryId)
       .order("sort_order", { ascending: false })
@@ -131,44 +131,23 @@ export const supabaseCategoryRepository: CategoryRepository = {
 
     const sortOrder = existing && existing.length > 0 ? existing[0].sort_order + 1 : 0;
 
-    const { data: result, error } = await supabase
-      .from("exercises")
-      .insert({
-        user_id: userId,
-        category_id: categoryId,
-        name: data.name,
-        base_reps: data.baseReps,
-        base_weight: data.baseWeight,
-        is_bodyweight: data.isBodyweight,
-        sort_order: sortOrder,
-      })
-      .select()
-      .single();
+    const { error } = await supabase
+      .from("category_exercises")
+      .upsert(
+        { category_id: categoryId, exercise_id: exerciseId, sort_order: sortOrder },
+        { onConflict: "category_id,exercise_id" }
+      );
 
     if (error) throw error;
-    return mapExercise(result as DbExercise);
   },
 
-  async updateExercise(_categoryId, exerciseId, data) {
-    const updateData: Record<string, unknown> = {};
-    if (data.name !== undefined) updateData.name = data.name;
-    if (data.baseReps !== undefined) updateData.base_reps = data.baseReps;
-    if (data.baseWeight !== undefined) updateData.base_weight = data.baseWeight;
-    if (data.isBodyweight !== undefined) updateData.is_bodyweight = data.isBodyweight;
+  async removeExerciseFromCategory(categoryId, exerciseId) {
+    const { error } = await supabase
+      .from("category_exercises")
+      .delete()
+      .eq("category_id", categoryId)
+      .eq("exercise_id", exerciseId);
 
-    const { data: result, error } = await supabase
-      .from("exercises")
-      .update(updateData)
-      .eq("id", exerciseId)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return mapExercise(result as DbExercise);
-  },
-
-  async deleteExercise(_categoryId, exerciseId) {
-    const { error } = await supabase.from("exercises").delete().eq("id", exerciseId);
     if (error) throw error;
   },
 
@@ -179,9 +158,13 @@ export const supabaseCategoryRepository: CategoryRepository = {
     await Promise.all(updates);
   },
 
-  async reorderExercises(_categoryId, orderedIds) {
-    const updates = orderedIds.map((id, index) =>
-      supabase.from("exercises").update({ sort_order: index }).eq("id", id)
+  async reorderExercises(categoryId, orderedIds) {
+    const updates = orderedIds.map((exerciseId, index) =>
+      supabase
+        .from("category_exercises")
+        .update({ sort_order: index })
+        .eq("category_id", categoryId)
+        .eq("exercise_id", exerciseId)
     );
     await Promise.all(updates);
   },

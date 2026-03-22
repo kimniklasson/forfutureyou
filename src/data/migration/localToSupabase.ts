@@ -48,22 +48,32 @@ export async function migrateLocalDataToSupabase(): Promise<boolean> {
         }
 
         if (cat.exercises && cat.exercises.length > 0) {
-          const exercisesToInsert = cat.exercises.map((ex) => ({
-            id: ex.id,
-            user_id: user.id,
-            category_id: cat.id,
-            name: ex.name,
-            base_reps: ex.baseReps,
-            base_weight: ex.baseWeight,
-            is_bodyweight: ex.isBodyweight,
-            sort_order: ex.sortOrder,
-          }));
+          for (const ex of cat.exercises) {
+            // Insert global exercise (skip if already exists)
+            const { error: gError } = await supabase
+              .from("global_exercises")
+              .insert({
+                id: ex.id,
+                user_id: user.id,
+                name: ex.name,
+                base_reps: ex.baseReps,
+                base_weight: ex.baseWeight,
+                is_bodyweight: ex.isBodyweight,
+              });
 
-          const { error: exError } = await supabase
-            .from("exercises")
-            .insert(exercisesToInsert);
+            if (gError && gError.code !== "23505") throw gError;
 
-          if (exError && exError.code !== "23505") throw exError;
+            // Insert join entry
+            const { error: jError } = await supabase
+              .from("category_exercises")
+              .insert({
+                category_id: cat.id,
+                exercise_id: ex.id,
+                sort_order: ex.sortOrder ?? 0,
+              });
+
+            if (jError && jError.code !== "23505") throw jError;
+          }
         }
       }
     }

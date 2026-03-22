@@ -3,6 +3,7 @@ import type { User, Session } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
 import { migrateLocalDataToSupabase } from "../data/migration/localToSupabase";
 import { useCategoryStore } from "../stores/useCategoryStore";
+import { useExerciseStore } from "../stores/useExerciseStore";
 import { useSessionStore } from "../stores/useSessionStore";
 import { useHistoryStore } from "../stores/useHistoryStore";
 
@@ -29,6 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loadData = useCallback(async () => {
     try {
       await migrateLocalDataToSupabase();
+      await useExerciseStore.getState().loadExercises();
       await useCategoryStore.getState().loadCategories();
       await useHistoryStore.getState().loadSessions();
     } catch (e) {
@@ -48,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Load data in the background — don't block the UI
         loadData();
       } else {
+        useExerciseStore.getState().reset();
         useCategoryStore.getState().reset();
         useSessionStore.getState().reset();
         useHistoryStore.getState().reset();

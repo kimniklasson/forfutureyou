@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { Category, Exercise } from "../types/models";
+import type { Category } from "../types/models";
 import { getCategoryRepository } from "../data/repositories";
 
 interface CategoryState {
@@ -8,16 +8,8 @@ interface CategoryState {
   loadCategories: () => Promise<void>;
   createCategory: (name: string) => Promise<Category>;
   deleteCategory: (id: string) => Promise<void>;
-  addExercise: (
-    categoryId: string,
-    data: Pick<Exercise, "name" | "baseReps" | "baseWeight" | "isBodyweight">
-  ) => Promise<Exercise>;
-  updateExercise: (
-    categoryId: string,
-    exerciseId: string,
-    data: Partial<Pick<Exercise, "name" | "baseReps" | "baseWeight" | "isBodyweight">>
-  ) => Promise<Exercise>;
-  deleteExercise: (categoryId: string, exerciseId: string) => Promise<void>;
+  addExerciseToCategory: (categoryId: string, exerciseId: string) => Promise<void>;
+  removeExerciseFromCategory: (categoryId: string, exerciseId: string) => Promise<void>;
   getCategoryById: (id: string) => Category | undefined;
   reorderCategories: (orderedIds: string[]) => Promise<void>;
   reorderExercises: (categoryId: string, orderedIds: string[]) => Promise<void>;
@@ -38,7 +30,6 @@ export const useCategoryStore = create<CategoryState>()(
       createCategory: async (name: string) => {
         const repo = getCategoryRepository();
         const category = await repo.create(name);
-        // Optimistically prepend so item appears at top immediately
         set((state) => ({ categories: [category, ...state.categories] }));
         return category;
       },
@@ -50,31 +41,16 @@ export const useCategoryStore = create<CategoryState>()(
         set({ categories });
       },
 
-      addExercise: async (categoryId, data) => {
+      addExerciseToCategory: async (categoryId, exerciseId) => {
         const repo = getCategoryRepository();
-        const exercise = await repo.addExercise(categoryId, data);
-        // Optimistically prepend so item appears at top immediately
-        set((state) => ({
-          categories: state.categories.map((c) =>
-            c.id === categoryId
-              ? { ...c, exercises: [exercise, ...c.exercises] }
-              : c
-          ),
-        }));
-        return exercise;
-      },
-
-      updateExercise: async (categoryId, exerciseId, data) => {
-        const repo = getCategoryRepository();
-        const exercise = await repo.updateExercise(categoryId, exerciseId, data);
+        await repo.addExerciseToCategory(categoryId, exerciseId);
         const categories = await repo.getAll();
         set({ categories });
-        return exercise;
       },
 
-      deleteExercise: async (categoryId, exerciseId) => {
+      removeExerciseFromCategory: async (categoryId, exerciseId) => {
         const repo = getCategoryRepository();
-        await repo.deleteExercise(categoryId, exerciseId);
+        await repo.removeExerciseFromCategory(categoryId, exerciseId);
         const categories = await repo.getAll();
         set({ categories });
       },
