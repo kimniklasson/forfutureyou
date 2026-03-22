@@ -1,4 +1,5 @@
 import { useRef, useState, useCallback, useEffect, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { IconTrash, IconDuplicate } from "./icons";
 
 interface SwipeActionsProps {
@@ -179,10 +180,10 @@ export function SwipeActions({ children, onDelete, onDuplicate, confirmMessage }
         </div>
       </div>
 
-      {/* Delete confirm dialog */}
-      {showConfirm && (
+      {/* Delete confirm dialog — rendered in a portal so it always appears above all other UI */}
+      {showConfirm && createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-backdrop"
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-backdrop"
           onClick={handleCancel}
         >
           <div
@@ -205,7 +206,8 @@ export function SwipeActions({ children, onDelete, onDuplicate, confirmMessage }
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
