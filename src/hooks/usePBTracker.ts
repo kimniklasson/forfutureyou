@@ -6,7 +6,7 @@ import { buildPBRecord, isSetPB, type PBRecord } from "../utils/personalBest";
 export function usePBTracker(exerciseId: string) {
   const historySessions = useHistoryStore((s) => s.sessions);
   const activeSession = useSessionStore((s) => s.activeSession);
-  const recordRef = useRef<PBRecord>({ maxWeight: 0, maxRepsAtMaxWeight: 0 });
+  const recordRef = useRef<PBRecord>({ maxWeight: 0, maxRepsAtMaxWeight: 0, maxRepsBodyweight: 0 });
 
   // Build PB record from history + active session sets logged so far
   const { record, pbSetNumbers } = useMemo(() => {

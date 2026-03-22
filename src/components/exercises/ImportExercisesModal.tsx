@@ -18,7 +18,7 @@ export function ImportExercisesModal({
   categoryId,
   categoryName,
 }: ImportExercisesModalProps) {
-  const { exercises, createExercise, updateExercise, deleteExercise, loadExercises } = useExerciseStore();
+  const { exercises, createExercise, deleteExercise, loadExercises } = useExerciseStore();
   const { categories, addExerciseToCategory, removeExerciseFromCategory, loadCategories } =
     useCategoryStore();
 
@@ -130,13 +130,6 @@ export function ImportExercisesModal({
     handleClose();
   };
 
-  const handleToggleBodyweight = async (exerciseId: string) => {
-    const ex = exercises.find((e) => e.id === exerciseId);
-    if (!ex) return;
-    await updateExercise(exerciseId, { isBodyweight: !ex.isBodyweight });
-    await loadCategories(); // Refresh category exercises with updated isBodyweight
-  };
-
   const handlePermanentDelete = async () => {
     if (!deleteTarget) return;
     // Remove pending changes for this exercise
@@ -232,28 +225,6 @@ export function ImportExercisesModal({
                       className="flex-1 text-left"
                     >
                       <span className="text-[15px]">{ex.name}</span>
-                    </button>
-
-                    {/* Bodyweight toggle */}
-                    <button
-                      onClick={() => handleToggleBodyweight(ex.id)}
-                      className="flex items-center gap-1.5 shrink-0"
-                    >
-                      <div
-                        className={`w-5 h-5 rounded-[4px] flex items-center justify-center shrink-0 ${
-                          ex.isBodyweight
-                            ? "bg-black dark:bg-white"
-                            : "border-2 border-black/20 dark:border-white/20"
-                        }`}
-                      >
-                        {ex.isBodyweight && (
-                          <IconCheck
-                            size={12}
-                            className="text-white dark:text-black"
-                          />
-                        )}
-                      </div>
-                      <span className="text-[11px] opacity-50 whitespace-nowrap">Kroppsvikt</span>
                     </button>
 
                     {/* Permanent delete */}

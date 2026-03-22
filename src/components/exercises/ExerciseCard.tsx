@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-import { IconDrag } from "../ui/icons";
+import { IconDrag, IconCheck } from "../ui/icons";
 import type { Exercise } from "../../types/models";
 import { useSessionStore } from "../../stores/useSessionStore";
+import { useExerciseStore } from "../../stores/useExerciseStore";
+import { useCategoryStore } from "../../stores/useCategoryStore";
 import { RepWeightAdjuster } from "./RepWeightAdjuster";
 import { ExerciseSetDisplay } from "./ExerciseSetDisplay";
 import { usePBTracker } from "../../hooks/usePBTracker";
@@ -56,10 +58,21 @@ export function ExerciseCard({
     if (!isEditingName) setEditName(exercise.name);
   }, [exercise.name, isEditingName]);
 
+  const { updateExercise } = useExerciseStore();
+  const { loadCategories } = useCategoryStore();
   const adjustment = getAdjustment(exercise.id, exercise.baseReps, exercise.baseWeight);
   const setCount = getExerciseSetCount(exercise.id);
   const isSessionActive = activeSession !== null;
-  const { checkIfPB, pbSetNumbers } = usePBTracker(exercise.id);
+  const { record, checkIfPB, pbSetNumbers } = usePBTracker(exercise.id);
+
+  const hasPB = record.maxWeight > 0 || record.maxRepsBodyweight > 0;
+  const pbLabel = exercise.isBodyweight
+    ? record.maxWeight > 0
+      ? `PB: ${record.maxRepsAtMaxWeight}×+${record.maxWeight} kg`
+      : record.maxRepsBodyweight > 0
+        ? `PB: ${record.maxRepsBodyweight} reps`
+        : ""
+    : `PB: ${record.maxRepsAtMaxWeight}×${record.maxWeight} kg`;
 
   const exerciseLog = activeSession?.exerciseLogs.find(
     (l) => l.exerciseId === exercise.id
@@ -178,6 +191,35 @@ export function ExerciseCard({
           step={exercise.isBodyweight ? 5 : 2.5}
           onChange={(val) => setAdjustment(exercise.id, adjustment.currentReps, val)}
         />
+      </div>
+
+      {/* PB + Bodyweight row */}
+      <div className="flex items-center justify-between">
+        {/* PB display — hidden when sets are logged */}
+        <div className="flex-1 min-w-0">
+          {!hasCompletedSets && hasPB && (
+            <span className="text-[11px] opacity-40 truncate block">{pbLabel}</span>
+          )}
+        </div>
+
+        {/* Bodyweight toggle */}
+        <button
+          onClick={async () => { await updateExercise(exercise.id, { isBodyweight: !exercise.isBodyweight }); await loadCategories(); }}
+          className="flex items-center gap-1.5 shrink-0"
+        >
+          <span className="text-[11px] opacity-50">Kroppsvikt</span>
+          <div
+            className={`w-5 h-5 rounded-[4px] flex items-center justify-center ${
+              exercise.isBodyweight
+                ? "bg-black dark:bg-white"
+                : "border-2 border-black/20 dark:border-white/20"
+            }`}
+          >
+            {exercise.isBodyweight && (
+              <IconCheck size={12} className="text-white dark:text-black" />
+            )}
+          </div>
+        </button>
       </div>
 
       {/* Completed sets */}

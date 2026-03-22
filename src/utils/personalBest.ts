@@ -3,6 +3,7 @@ import type { WorkoutSession, WorkoutSet } from "../types/models";
 export interface PBRecord {
   maxWeight: number;
   maxRepsAtMaxWeight: number;
+  maxRepsBodyweight: number;
 }
 
 /** Check if a set beats the current PB record */
@@ -14,13 +15,16 @@ export function isSetPB(reps: number, weight: number, record: PBRecord): boolean
 
 /** Update a PB record with a new set (mutates nothing, returns new record) */
 function advanceRecord(record: PBRecord, reps: number, weight: number): PBRecord {
+  let next = record;
   if (weight > record.maxWeight) {
-    return { maxWeight: weight, maxRepsAtMaxWeight: reps };
+    next = { ...next, maxWeight: weight, maxRepsAtMaxWeight: reps };
+  } else if (weight === record.maxWeight && reps > record.maxRepsAtMaxWeight) {
+    next = { ...next, maxRepsAtMaxWeight: reps };
   }
-  if (weight === record.maxWeight && reps > record.maxRepsAtMaxWeight) {
-    return { maxWeight: weight, maxRepsAtMaxWeight: reps };
+  if (reps > record.maxRepsBodyweight) {
+    next = { ...next, maxRepsBodyweight: reps };
   }
-  return record;
+  return next;
 }
 
 /** Collect all sets for an exercise from sessions, sorted chronologically */
@@ -38,7 +42,7 @@ function collectSets(exerciseId: string, sessions: WorkoutSession[]): WorkoutSet
 
 /** Build PB record for an exercise from all completed sessions */
 export function buildPBRecord(exerciseId: string, sessions: WorkoutSession[]): PBRecord {
-  let record: PBRecord = { maxWeight: 0, maxRepsAtMaxWeight: 0 };
+  let record: PBRecord = { maxWeight: 0, maxRepsAtMaxWeight: 0, maxRepsBodyweight: 0 };
   const sets = collectSets(exerciseId, sessions);
   for (const set of sets) {
     record = advanceRecord(record, set.reps, set.weight);
@@ -55,7 +59,7 @@ export function computeHistoricalPBs(
   allSessions: WorkoutSession[]
 ): Set<string> {
   const pbTimestamps = new Set<string>();
-  let record: PBRecord = { maxWeight: 0, maxRepsAtMaxWeight: 0 };
+  let record: PBRecord = { maxWeight: 0, maxRepsAtMaxWeight: 0, maxRepsBodyweight: 0 };
   const sets = collectSets(exerciseId, allSessions);
 
   for (const set of sets) {
