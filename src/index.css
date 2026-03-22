@@ -153,6 +153,15 @@ textarea::placeholder {
   animation: bottom-sheet-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+@keyframes bottom-sheet-out {
+  from { transform: translateY(0); }
+  to   { transform: translateY(100%); }
+}
+
+.bottom-sheet-out {
+  animation: bottom-sheet-out 0.25s ease-in both;
+}
+
 button {
   transition: transform 0.08s ease;
 }

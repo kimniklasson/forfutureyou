@@ -25,6 +25,7 @@ export function ImportExercisesModal({
   const [newName, setNewName] = useState("");
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [closing, setClosing] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   // Track pending changes: exerciseId → "add" | "remove"
@@ -35,10 +36,19 @@ export function ImportExercisesModal({
   const category = categories.find((c) => c.id === categoryId);
   const currentExerciseIds = new Set(category?.exercises.map((e) => e.id) ?? []);
 
+  const handleClose = () => {
+    setClosing(true);
+    setTimeout(() => {
+      setClosing(false);
+      onClose();
+    }, 250);
+  };
+
   useEffect(() => {
     if (isOpen) {
       setPendingChanges(new Map());
       setNewName("");
+      setClosing(false);
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -117,7 +127,7 @@ export function ImportExercisesModal({
 
     await loadCategories();
     setSaving(false);
-    onClose();
+    handleClose();
   };
 
   const handlePermanentDelete = async () => {
@@ -139,26 +149,20 @@ export function ImportExercisesModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-70 flex flex-col justify-end modal-backdrop bg-black/40"
-      onClick={onClose}
+      className={`fixed inset-0 z-70 flex flex-col justify-end bg-black/40 transition-opacity duration-250 ${closing ? "opacity-0" : "modal-backdrop"}`}
+      onClick={handleClose}
     >
       <div
-        className="bg-white dark:bg-[#1c1c1e] rounded-t-modal max-h-[85vh] flex flex-col bottom-sheet-in"
+        className={`bg-white dark:bg-[#1c1c1e] rounded-t-modal max-h-[85vh] flex flex-col ${closing ? "bottom-sheet-out" : "bottom-sheet-in"}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div
-          className="flex items-center justify-between px-8 pt-4 pb-2 shrink-0 relative z-10 modal-header-fade"
-          style={{
-            paddingBottom: "32px",
-            marginBottom: "-24px",
-          }}
-        >
+        <div className="flex items-center justify-between px-10 pt-6 pb-4 shrink-0">
           <span className="font-bold text-[15px] leading-[1.22]">
             Välj övningar till {categoryName}
           </span>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="w-10 h-10 flex items-center justify-center rounded-icon"
           >
             <IconClose size={16} />
@@ -166,7 +170,7 @@ export function ImportExercisesModal({
         </div>
 
         {/* Exercise list */}
-        <div className="flex-1 overflow-y-auto px-8 pb-4">
+        <div className="flex-1 overflow-y-auto px-10 pb-4">
           {/* Create new exercise input */}
           <div className="flex gap-2 mb-4">
             <div className="flex-1 border border-black/10 dark:border-white/20 rounded-card flex items-center gap-2 pl-4 pr-3 py-3">
@@ -250,7 +254,7 @@ export function ImportExercisesModal({
         {/* Sticky footer — only visible when changes exist */}
         {hasChanges && (
           <div
-            className="px-8 pb-8 shrink-0 modal-footer-fade"
+            className="px-10 pb-8 shrink-0 modal-footer-fade"
             style={{
               paddingTop: "16px",
               marginTop: "-24px",
