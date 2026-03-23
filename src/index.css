@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Google Sans";
+  src: url("/fonts/GoogleSans-Variable.woff2") format("woff2-variations");
+  font-weight: 400 700;
+  font-display: swap;
+}
+
 /* Dark mode variant — triggered by data-theme="dark" on any ancestor */
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
@@ -159,6 +166,24 @@ textarea::placeholder {
 
 .bottom-sheet-out {
   animation: bottom-sheet-out 0.25s ease-in both;
+}
+
+@keyframes letter-flex {
+  0%   { font-variation-settings: "wght" 400, "GRAD" -50; }
+  18%  { font-variation-settings: "wght" 620, "GRAD" 120; }
+  32%  { font-variation-settings: "wght" 690, "GRAD" 185; }
+  45%  { font-variation-settings: "wght" 700, "GRAD" 200; }
+  52%  { font-variation-settings: "wght" 700, "GRAD" 195; }
+  68%  { font-variation-settings: "wght" 540, "GRAD" -25; }
+  82%  { font-variation-settings: "wght" 700, "GRAD" 20; }
+  92%  { font-variation-settings: "wght" 690, "GRAD" -5; }
+  100% { font-variation-settings: "wght" 700, "GRAD" 0; }
+}
+
+.letter-flex {
+  animation: letter-flex 0.9s ease-out both;
+  display: inline-block;
+  font-variation-settings: "wght" 700, "GRAD" 0;
 }
 
 button {
