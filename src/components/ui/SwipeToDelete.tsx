@@ -190,20 +190,20 @@ export function SwipeActions({ children, onDelete, onDuplicate, confirmMessage }
           onClick={handleCancel}
         >
           <div
-            className="bg-white dark:bg-[#1c1c1e] rounded-modal w-[300px] p-6 flex flex-col gap-4"
+            className="bg-white dark:bg-card rounded-modal w-[300px] p-6 flex flex-col gap-4"
             onClick={(e) => e.stopPropagation()}
           >
             <p className="text-[15px] text-center">{confirmMessage}</p>
             <div className="flex gap-2">
               <button
                 onClick={handleCancel}
-                className="flex-1 py-3 px-[18px] rounded-button bg-card text-[12px] font-bold uppercase tracking-wider"
+                className="flex-1 py-3 px-4 rounded-button bg-card text-[12px] font-bold uppercase tracking-wider"
               >
                 Avbryt
               </button>
               <button
                 onClick={handleConfirm}
-                className="flex-1 py-3 px-[18px] rounded-button bg-red-500 text-white text-[12px] font-bold uppercase tracking-wider"
+                className="flex-1 py-3 px-4 rounded-button bg-red-500 text-white text-[12px] font-bold uppercase tracking-wider"
               >
                 Ta bort
               </button>

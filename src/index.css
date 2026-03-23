@@ -10,7 +10,6 @@
   --color-backdrop: rgba(0, 0, 0, 0.15);
 
   --font-sans: "Google Sans", system-ui, sans-serif;
-  --font-mono: "Google Sans", system-ui, sans-serif;
 
   --radius-button: 9999px;
   --radius-card: 8px;
@@ -181,10 +180,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: #f5f5f5;
-}
-
-[data-theme=dark] body {
-  background-color: #000000;
 }
 
 /* ── Hide scrollbar on pill selectors ── */

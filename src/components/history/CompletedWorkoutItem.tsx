@@ -29,7 +29,7 @@ export function CompletedWorkoutItem({ session, onDelete }: CompletedWorkoutItem
           <span className="font-bold text-[20px] leading-[24px]">
             {formatShortDate(session.startedAt)}
           </span>
-          <span className="font-mono font-bold text-[15px] leading-[18px]">{session.categoryName}</span>
+          <span className="font-bold text-[15px] leading-[18px]">{session.categoryName}</span>
         </div>
         <span className="text-[12px] opacity-50 uppercase tracking-wider shrink-0 pt-0.5">{duration}</span>
       </div>

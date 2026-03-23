@@ -13,6 +13,7 @@ Mapped to Tailwind CSS custom theme in `src/index.css`.
 | Text | `#000000` | `#FFFFFF` | `text-black` / `dark:text-white` | Primary text |
 | Backdrop | `rgba(0,0,0,0.15)` | — | `bg-backdrop` | Modal overlay |
 | Modal BG | `#FFFFFF` | `#1C1C1E` | — | Bottom sheet modals |
+| Nested input | `#FFFFFF` | `#2C2C2E` | `dark:bg-[#2c2c2e]` | Interactive elements nested inside cards (adjusters, form inputs) |
 
 ## Typography
 
@@ -22,7 +23,7 @@ Mapped to Tailwind CSS custom theme in `src/index.css`.
 | Bold | Google Sans | 700 | 15px | `font-bold text-[15px]` |
 | Heading | Google Sans | 700 | 20px | `font-bold text-[20px]` |
 | Label | Google Sans | 700 | 12px | `font-bold text-[12px] uppercase tracking-wider` |
-| Exercise name | Geist Mono | 400 | 15px | `font-mono font-normal text-[15px] uppercase` |
+| Exercise name | Google Sans | 700 | 15px | `font-bold text-[15px]` |
 | Timer | Google Sans | 400 | 31px | `text-[31px]` |
 | Rep/Weight value | Google Sans | 700 | 15px | `font-bold text-[15px]` |
 
@@ -30,7 +31,7 @@ Mapped to Tailwind CSS custom theme in `src/index.css`.
 
 | Token | Value | Tailwind |
 |-------|-------|----------|
-| Button | 4px | `rounded-button` |
+| Button | 9999px | `rounded-button` |
 | Card / Input | 8px | `rounded-card` |
 | Modal | 16px | `rounded-modal` |
 | Icon button | 56px | `rounded-icon` |

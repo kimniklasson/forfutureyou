@@ -129,7 +129,7 @@ export function ProfilePage() {
               type="button"
               onClick={handleNameSave}
               disabled={!hasChanged || saving}
-              className={`px-[14px] py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center ${
+              className={`px-4 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center ${
                 hasChanged && !saving
                   ? "bg-black dark:bg-white text-white dark:text-black"
                   : "bg-black/5 dark:bg-white/10 text-black/30 dark:text-white/30"
@@ -168,7 +168,7 @@ export function ProfilePage() {
               type="button"
               onClick={handleWeightSave}
               disabled={!weightChanged || savingWeight}
-              className={`px-[14px] py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center ${
+              className={`px-4 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center ${
                 weightChanged && !savingWeight
                   ? "bg-black dark:bg-white text-white dark:text-black"
                   : "bg-black/5 dark:bg-white/10 text-black/30 dark:text-white/30"
@@ -215,7 +215,7 @@ export function ProfilePage() {
                   key={value}
                   type="button"
                   onClick={() => setAppearance(value)}
-                  className={`px-[14px] py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors ${
+                  className={`px-4 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors ${
                     appearance === value
                       ? "bg-black dark:bg-white text-white dark:text-black"
                       : "bg-black/5 dark:bg-white/10 text-black/40 dark:text-white/40"
@@ -246,7 +246,7 @@ export function ProfilePage() {
               type="button"
               onClick={handleAgeSave}
               disabled={!ageChanged || savingAge}
-              className={`px-[14px] py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center ${
+              className={`px-4 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center ${
                 ageChanged && !savingAge
                   ? "bg-black dark:bg-white text-white dark:text-black"
                   : "bg-black/5 dark:bg-white/10 text-black/30 dark:text-white/30"
@@ -268,7 +268,7 @@ export function ProfilePage() {
                   key={value}
                   type="button"
                   onClick={() => setUserSex(userSex === value ? null : value)}
-                  className={`px-[14px] py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors ${
+                  className={`px-4 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors ${
                     userSex === value
                       ? "bg-black dark:bg-white text-white dark:text-black"
                       : "bg-black/5 dark:bg-white/10 text-black/40 dark:text-white/40"

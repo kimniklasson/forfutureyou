@@ -226,7 +226,7 @@ export function WorkoutDetailView() {
       {/* Exercise logs */}
       {session.exerciseLogs.map((log, logIdx) => (
         <div key={log.exerciseId} className="flex flex-col gap-2">
-          <span className="font-mono font-bold text-[15px] leading-[18px]">{log.exerciseName}</span>
+          <span className="font-bold text-[15px] leading-[18px]">{log.exerciseName}</span>
           <div className="flex flex-col">
             {log.sets.map((set, setIdx) => {
               const pbType = pbMap.get(log.exerciseId)?.get(set.completedAt);
@@ -291,7 +291,7 @@ export function WorkoutDetailView() {
 
                   <button
                     onClick={() => deleteSet(logIdx, setIdx)}
-                    className="w-8 flex items-center justify-end opacity-30 hover:opacity-100 active:opacity-100 transition-opacity"
+                    className="w-8 flex items-center justify-end opacity-40 hover:opacity-100 active:opacity-100 transition-opacity"
                   >
                     <IconTrash size={14} />
                   </button>

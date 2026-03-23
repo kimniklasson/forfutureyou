@@ -146,7 +146,7 @@ export function StatsLineChart({ data, unit = "kg", title }: Props) {
           {/* Area fill */}
           <polygon
             points={areaPoints}
-            fill="#F5C800"
+            fill="#FFD900"
             fillOpacity={animate ? 0.12 : 0}
             style={{ transition: "fill-opacity 0.6s ease" }}
           />
@@ -155,7 +155,7 @@ export function StatsLineChart({ data, unit = "kg", title }: Props) {
           <polyline
             points={polyline}
             fill="none"
-            stroke="#F5C800"
+            stroke="#FFD900"
             strokeWidth={2}
             strokeLinecap="round"
             strokeLinejoin="round"

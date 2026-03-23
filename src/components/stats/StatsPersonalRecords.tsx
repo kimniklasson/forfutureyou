@@ -28,7 +28,7 @@ export function StatsPersonalRecords({ prs }: Props) {
             style={{ animationDelay: `${(i + 3) * 0.04}s` }}
           >
             <div className="flex-1 min-w-0">
-              <div className="font-mono font-bold text-[15px] leading-[18px]">{pr.exerciseName}</div>
+              <div className="font-bold text-[15px] leading-[18px]">{pr.exerciseName}</div>
               <div className="text-[13px] opacity-50 mt-1">
                 {pr.isBodyweight ? (
                   <>

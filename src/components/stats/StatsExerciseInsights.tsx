@@ -5,7 +5,7 @@ interface Props {
 }
 
 const CATEGORY_COLORS = [
-  "#F5C800", "#6366f1", "#ef4444", "#22c55e", "#f97316", "#06b6d4",
+  "#FFD900", "#6366f1", "#ef4444", "#22c55e", "#f97316", "#06b6d4",
   "#a855f7", "#ec4899", "#84cc16",
 ];
 
@@ -90,7 +90,7 @@ function InsightCard({ label, value, detail, delay }: {
       style={{ animationDelay: `${delay * 0.04}s` }}
     >
       <span className="text-[11px] opacity-50 uppercase tracking-wider">{label}</span>
-      <div className="font-mono font-bold text-[15px] leading-[18px] mt-1">{value}</div>
+      <div className="font-bold text-[15px] leading-[18px] mt-1">{value}</div>
       <div className="text-[12px] opacity-50 mt-0.5">{detail}</div>
     </div>
   );

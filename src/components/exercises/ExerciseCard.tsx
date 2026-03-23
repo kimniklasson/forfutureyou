@@ -146,7 +146,7 @@ export function ExerciseCard({
             type="button"
             onClick={handleNameSave}
             disabled={!nameHasChanged || savingName}
-            className={`px-[14px] py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center ${
+            className={`px-4 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center ${
               nameHasChanged && !savingName
                 ? "bg-black dark:bg-white text-white dark:text-black"
                 : "bg-black/5 dark:bg-white/10 text-black/30 dark:text-white/30"
@@ -209,7 +209,7 @@ export function ExerciseCard({
 
           {/* Name — read only */}
           <div className="flex-1 min-w-0">
-            <span className="font-mono font-bold text-[15px] leading-[18px] truncate block">
+            <span className="font-bold text-[15px] leading-[18px] truncate block">
               {exercise.name}
             </span>
           </div>
@@ -217,7 +217,7 @@ export function ExerciseCard({
           <div className="flex items-center shrink-0">
             <button
               onClick={handleSetPress}
-              className={`px-[14px] py-2 rounded-button text-[12px] font-bold uppercase tracking-wider shrink-0 transition-colors ${
+              className={`px-4 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider shrink-0 transition-colors ${
                 isSetInProgress
                   ? "bg-accent text-black"
                   : "bg-black dark:bg-white text-white dark:text-black"

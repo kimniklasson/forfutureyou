@@ -120,7 +120,7 @@ export function ExerciseFormFields({
       <button
         onClick={handleSubmit}
         disabled={!canSubmit}
-        className={`w-full py-4 px-[26px] rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors ${
+        className={`w-full py-4 px-6 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors ${
           canSubmit
             ? "bg-black dark:bg-white text-white dark:text-black"
             : "bg-black/5 dark:bg-white/10 text-black/30 dark:text-white/30"

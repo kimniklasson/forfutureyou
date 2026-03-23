@@ -24,7 +24,7 @@ export function ForFutureYou() {
       style={{ overflow: "visible" }}
     >
       {PATHS.map((d, i) => (
-        <path key={i} d={d} fill="#F5C800" />
+        <path key={i} d={d} fill="#FFD900" />
       ))}
     </svg>
   );

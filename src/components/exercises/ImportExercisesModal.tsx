@@ -153,7 +153,7 @@ export function ImportExercisesModal({
       onClick={handleClose}
     >
       <div
-        className={`bg-white dark:bg-[#1c1c1e] rounded-t-modal max-h-[85vh] flex flex-col ${closing ? "bottom-sheet-out" : "bottom-sheet-in"}`}
+        className={`bg-white dark:bg-card rounded-t-modal max-h-[85vh] flex flex-col ${closing ? "bottom-sheet-out" : "bottom-sheet-in"}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -186,7 +186,7 @@ export function ImportExercisesModal({
               <button
                 onClick={handleCreate}
                 disabled={!newName.trim() || creating}
-                className={`px-[14px] py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center shrink-0 min-w-[52px] ${
+                className={`px-4 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center shrink-0 min-w-[52px] ${
                   newName.trim() && !creating
                     ? "bg-black dark:bg-white text-white dark:text-black"
                     : "bg-black/5 dark:bg-white/10 text-black/30 dark:text-white/30"
@@ -230,7 +230,7 @@ export function ImportExercisesModal({
                     {/* Permanent delete */}
                     <button
                       onClick={() => setDeleteTarget({ id: ex.id, name: ex.name })}
-                      className="w-8 h-8 flex items-center justify-center opacity-30 hover:opacity-60 transition-opacity shrink-0"
+                      className="w-8 h-8 flex items-center justify-center opacity-40 hover:opacity-60 transition-opacity shrink-0"
                     >
                       <IconTrash size={14} />
                     </button>

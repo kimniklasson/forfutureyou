@@ -83,7 +83,7 @@ export function WorkoutBarChart({ sessions }: Props) {
                     className="rounded-t-[3px] w-full transition-opacity duration-150"
                     style={{
                       height: `${heightPct}%`,
-                      background: isCurrent ? "#F5C800" : "rgba(128,128,128,0.55)",
+                      background: isCurrent ? "#FFD900" : "rgba(128,128,128,0.55)",
                       opacity: isSelected ? 0.75 : 1,
                     }}
                   />

@@ -96,7 +96,7 @@ export function SetNamePage() {
             type="button"
             onClick={handleSubmit}
             disabled={!canSubmit}
-            className={`px-[14px] py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors ${
+            className={`px-4 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors ${
               canSubmit
                 ? "bg-black text-white"
                 : "bg-black/5 text-black/30"
