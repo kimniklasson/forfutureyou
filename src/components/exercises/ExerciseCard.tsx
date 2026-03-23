@@ -198,7 +198,7 @@ export function ExerciseCard({
           .join(" ")}
       >
         {/* Header row */}
-        <div className="flex items-center -ml-2">
+        <div className="flex items-center">
           {/* Settings icon */}
           <button
             onClick={() => setShowSettings(true)}
