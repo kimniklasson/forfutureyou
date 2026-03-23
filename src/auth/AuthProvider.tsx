@@ -6,6 +6,7 @@ import { useCategoryStore } from "../stores/useCategoryStore";
 import { useExerciseStore } from "../stores/useExerciseStore";
 import { useSessionStore } from "../stores/useSessionStore";
 import { useHistoryStore } from "../stores/useHistoryStore";
+import { useSettingsStore } from "../stores/useSettingsStore";
 
 export interface AuthContextType {
   user: User | null;
@@ -33,6 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await useExerciseStore.getState().loadExercises();
       await useCategoryStore.getState().loadCategories();
       await useHistoryStore.getState().loadSessions();
+      await useSettingsStore.getState().loadFromSupabase();
     } catch (e) {
       console.error("Failed to load data:", e);
     }
@@ -54,6 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         useCategoryStore.getState().reset();
         useSessionStore.getState().reset();
         useHistoryStore.getState().reset();
+        useSettingsStore.getState().reset();
       }
 
       setLoading(false);
@@ -127,6 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Clear local storage
     localStorage.removeItem("workout-app:category-store");
     localStorage.removeItem("workout-app:session-store");
+    localStorage.removeItem("workout-app:settings-store");
     localStorage.removeItem("migration-done");
 
     await supabase.auth.signOut();
