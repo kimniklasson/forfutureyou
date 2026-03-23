@@ -287,7 +287,7 @@ export function ProfilePage() {
           >
             <span className="flex-1 text-left text-[15px]">Visa kalorier</span>
             <div
-              className={`w-5 h-5 rounded-full flex items-center justify-center ${
+              className={`w-5 h-5 rounded-[4px] flex items-center justify-center ${
                 showCalories
                   ? "bg-black dark:bg-white"
                   : "border-2 border-black/20 dark:border-white/20"

@@ -255,7 +255,7 @@ export function ImportExercisesModal({
             <button
               onClick={handleSave}
               disabled={saving}
-              className="w-full py-3 rounded-card font-bold text-[15px] uppercase tracking-wider transition-colors bg-black dark:bg-white text-white dark:text-black"
+              className="w-full py-3 rounded-button font-bold text-[15px] uppercase tracking-wider transition-colors bg-black dark:bg-white text-white dark:text-black"
             >
               {saving ? (
                 <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin inline-block" />
