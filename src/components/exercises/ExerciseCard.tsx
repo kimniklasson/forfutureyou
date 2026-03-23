@@ -198,11 +198,11 @@ export function ExerciseCard({
           .join(" ")}
       >
         {/* Header row */}
-        <div className="flex items-center">
+        <div className="flex items-center -ml-2">
           {/* Settings icon */}
           <button
             onClick={() => setShowSettings(true)}
-            className="shrink-0 opacity-40 active:opacity-70 w-8 h-8 flex items-center justify-center -ml-1.5"
+            className="shrink-0 opacity-40 active:opacity-70 w-8 h-8 flex items-center justify-center"
           >
             <SettingsIcon />
           </button>
