@@ -52,10 +52,10 @@ export function RepWeightAdjuster({
   };
 
   return (
-    <div className="bg-white dark:bg-[#2c2c2e] rounded-button flex items-center h-10">
+    <div className="bg-white dark:bg-[#2c2c2e] rounded-card flex items-center h-10">
       <button
         onClick={() => onChange(Math.max(0, value - step))}
-        className="w-16 h-full flex items-center justify-center rounded-button"
+        className="w-16 h-full flex items-center justify-center rounded-card"
       >
         <IconMinus size={16} />
       </button>
@@ -82,7 +82,7 @@ export function RepWeightAdjuster({
       </div>
       <button
         onClick={() => onChange(value + step)}
-        className="w-16 h-full flex items-center justify-center rounded-button"
+        className="w-16 h-full flex items-center justify-center rounded-card"
       >
         <IconPlus size={16} />
       </button>
