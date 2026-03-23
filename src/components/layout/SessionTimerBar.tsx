@@ -101,12 +101,6 @@ export function SessionTimerBar() {
     ? calculateCalories(finishedSession, userWeight, userAge, userSex, intensity?.score)
     : 0;
 
-  const avgRestSec = restData
-    ? Math.round(
-        (restData.avgInterSetRestMs + restData.avgInterExerciseRestMs) /
-          (restData.interSetRests.length + restData.interExerciseRests.length > 0 ? 2000 : 1)
-      )
-    : 0;
   const avgRestDisplay = restData && (restData.interSetRests.length > 0 || restData.interExerciseRests.length > 0)
     ? `${Math.floor(restData.avgInterSetRestMs / 60000)}:${String(
         Math.floor((restData.avgInterSetRestMs % 60000) / 1000)

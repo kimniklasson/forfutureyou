@@ -1,4 +1,4 @@
-import type { WorkoutSession, WorkoutSet } from "../types/models";
+import type { WorkoutSession } from "../types/models";
 import type { Sex } from "../stores/useSettingsStore";
 
 export interface WorkoutTotals {
