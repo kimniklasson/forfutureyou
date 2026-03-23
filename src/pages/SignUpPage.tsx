@@ -59,7 +59,7 @@ export function SignUpPage() {
           </p>
           <Link
             to="/login"
-            className="inline-block py-4 px-8 bg-black dark:bg-white text-white dark:text-black text-[12px] font-bold uppercase tracking-wider rounded-button"
+            className="inline-block py-4 px-[34px] bg-black dark:bg-white text-white dark:text-black text-[12px] font-bold uppercase tracking-wider rounded-button"
           >
             Tillbaka till inloggning
           </Link>

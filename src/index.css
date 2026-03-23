@@ -12,7 +12,7 @@
   --font-sans: "Google Sans", system-ui, sans-serif;
   --font-mono: "Google Sans", system-ui, sans-serif;
 
-  --radius-button: 4px;
+  --radius-button: 9999px;
   --radius-card: 8px;
   --radius-modal: 16px;
   --radius-icon: 56px;

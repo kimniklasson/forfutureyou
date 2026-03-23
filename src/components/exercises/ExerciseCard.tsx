@@ -146,7 +146,7 @@ export function ExerciseCard({
             type="button"
             onClick={handleNameSave}
             disabled={!nameHasChanged || savingName}
-            className={`px-3 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center ${
+            className={`px-[14px] py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center ${
               nameHasChanged && !savingName
                 ? "bg-black dark:bg-white text-white dark:text-black"
                 : "bg-black/5 dark:bg-white/10 text-black/30 dark:text-white/30"
@@ -166,7 +166,7 @@ export function ExerciseCard({
         >
           <span className="flex-1 text-left text-[15px]">Kroppsvikt</span>
           <div
-            className={`w-5 h-5 rounded-[4px] flex items-center justify-center ${
+            className={`w-5 h-5 rounded-full flex items-center justify-center ${
               exercise.isBodyweight
                 ? "bg-black dark:bg-white"
                 : "border-2 border-black/20 dark:border-white/20"
@@ -217,7 +217,7 @@ export function ExerciseCard({
           <div className="flex items-center shrink-0">
             <button
               onClick={handleSetPress}
-              className={`px-3 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider shrink-0 transition-colors ${
+              className={`px-[14px] py-2 rounded-button text-[12px] font-bold uppercase tracking-wider shrink-0 transition-colors ${
                 isSetInProgress
                   ? "bg-accent text-black"
                   : "bg-black dark:bg-white text-white dark:text-black"

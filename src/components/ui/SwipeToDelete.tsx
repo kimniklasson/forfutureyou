@@ -197,13 +197,13 @@ export function SwipeActions({ children, onDelete, onDuplicate, confirmMessage }
             <div className="flex gap-2">
               <button
                 onClick={handleCancel}
-                className="flex-1 py-3 px-4 rounded-button bg-card text-[12px] font-bold uppercase tracking-wider"
+                className="flex-1 py-3 px-[18px] rounded-button bg-card text-[12px] font-bold uppercase tracking-wider"
               >
                 Avbryt
               </button>
               <button
                 onClick={handleConfirm}
-                className="flex-1 py-3 px-4 rounded-button bg-red-500 text-white text-[12px] font-bold uppercase tracking-wider"
+                className="flex-1 py-3 px-[18px] rounded-button bg-red-500 text-white text-[12px] font-bold uppercase tracking-wider"
               >
                 Ta bort
               </button>

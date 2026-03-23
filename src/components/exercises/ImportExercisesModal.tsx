@@ -186,7 +186,7 @@ export function ImportExercisesModal({
               <button
                 onClick={handleCreate}
                 disabled={!newName.trim() || creating}
-                className={`px-3 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center shrink-0 min-w-[52px] ${
+                className={`px-[14px] py-2 rounded-button text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center shrink-0 min-w-[52px] ${
                   newName.trim() && !creating
                     ? "bg-black dark:bg-white text-white dark:text-black"
                     : "bg-black/5 dark:bg-white/10 text-black/30 dark:text-white/30"

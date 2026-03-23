@@ -23,13 +23,13 @@ export function ConfirmDialog({ isOpen, message, confirmLabel = "Ta bort", cance
         <div className="flex gap-2">
           <button
             onClick={onCancel}
-            className="flex-1 py-3 px-4 rounded-button bg-card text-[12px] font-bold uppercase tracking-wider"
+            className="flex-1 py-3 px-[18px] rounded-button bg-card text-[12px] font-bold uppercase tracking-wider"
           >
             {cancelLabel}
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 py-3 px-4 rounded-button bg-black dark:bg-white text-white dark:text-black text-[12px] font-bold uppercase tracking-wider"
+            className="flex-1 py-3 px-[18px] rounded-button bg-black dark:bg-white text-white dark:text-black text-[12px] font-bold uppercase tracking-wider"
           >
             {confirmLabel}
           </button>
