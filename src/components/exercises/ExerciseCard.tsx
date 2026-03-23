@@ -223,7 +223,7 @@ export function ExerciseCard({
                   : "bg-black dark:bg-white text-white dark:text-black"
               }`}
             >
-              {isSetInProgress ? "LOGGA" : `SET ${setCount + 1}`}
+              {isSetInProgress ? `LOGGA S${setCount + 1}` : `STARTA S${setCount + 1}`}
             </button>
           </div>
         </div>
