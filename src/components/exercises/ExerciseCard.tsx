@@ -209,7 +209,7 @@ export function ExerciseCard({
 
           {/* Name — read only */}
           <div className="flex-1 min-w-0">
-            <span className="font-mono font-normal text-[15px] leading-[18px] uppercase truncate block">
+            <span className="font-mono font-bold text-[15px] leading-[18px] truncate block">
               {exercise.name}
             </span>
           </div>

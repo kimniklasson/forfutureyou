@@ -90,7 +90,7 @@ function InsightCard({ label, value, detail, delay }: {
       style={{ animationDelay: `${delay * 0.04}s` }}
     >
       <span className="text-[11px] opacity-50 uppercase tracking-wider">{label}</span>
-      <div className="font-mono font-normal text-[15px] leading-[18px] uppercase mt-1">{value}</div>
+      <div className="font-mono font-bold text-[15px] leading-[18px] mt-1">{value}</div>
       <div className="text-[12px] opacity-50 mt-0.5">{detail}</div>
     </div>
   );

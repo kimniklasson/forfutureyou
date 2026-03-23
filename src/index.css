@@ -10,7 +10,7 @@
   --color-backdrop: rgba(0, 0, 0, 0.15);
 
   --font-sans: "Google Sans", system-ui, sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --font-mono: "Google Sans", system-ui, sans-serif;
 
   --radius-button: 4px;
   --radius-card: 8px;

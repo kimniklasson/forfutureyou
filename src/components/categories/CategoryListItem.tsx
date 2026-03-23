@@ -71,7 +71,7 @@ export function CategoryListItem({
             className="flex-1 flex flex-col gap-0.5 cursor-pointer"
             onClick={() => !isDragging && navigate(`/category/${category.id}`)}
           >
-            <p className="font-mono font-normal text-[15px] leading-[16px] uppercase">
+            <p className="font-mono font-bold text-[15px] leading-[16px]">
               {category.name}
             </p>
             <span className="text-[12px] opacity-60">

@@ -226,7 +226,7 @@ export function WorkoutDetailView() {
       {/* Exercise logs */}
       {session.exerciseLogs.map((log, logIdx) => (
         <div key={log.exerciseId} className="flex flex-col gap-2">
-          <span className="font-mono font-normal text-[15px] leading-[18px] uppercase">{log.exerciseName}</span>
+          <span className="font-mono font-bold text-[15px] leading-[18px]">{log.exerciseName}</span>
           <div className="flex flex-col">
             {log.sets.map((set, setIdx) => {
               const pbType = pbMap.get(log.exerciseId)?.get(set.completedAt);
