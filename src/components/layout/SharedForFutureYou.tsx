@@ -3,7 +3,7 @@ import { useRef, useState, useEffect, useLayoutEffect, useCallback } from "react
 
 const LINES = ["For", "future", "you."];
 const HEADER_SCALE = 14 / 96;
-const HERO_TOP = 128;
+const HERO_TOP = 112;
 const HEADER_TOP = 43;
 const SCROLL_THRESHOLD = 100;
 
