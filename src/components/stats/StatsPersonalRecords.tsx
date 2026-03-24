@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { ExercisePR } from "../../utils/statistics";
+import { FadeInOnScroll } from "../ui/FadeInOnScroll";
 
 interface Props {
   prs: ExercisePR[];
@@ -20,11 +21,10 @@ export function StatsPersonalRecords({ prs }: Props) {
       {/* Exercise PR list */}
       <div className="flex flex-col gap-2">
         {displayPrs.map((pr, i) => (
+          <FadeInOnScroll key={pr.exerciseId} delay={i * 60}>
           <button
-            key={pr.exerciseId}
             onClick={() => navigate(`/stats/exercise/${pr.exerciseId}`)}
-            className="bg-card rounded-card px-6 py-6 flex items-start gap-2 w-full text-left animate-in"
-            style={{ animationDelay: `${(i + 3) * 0.04}s` }}
+            className="bg-card rounded-card px-6 py-6 flex items-start gap-2 w-full text-left"
           >
             <div className="flex-1 min-w-0">
               <div className="font-bold text-[15px] leading-[18px]">{pr.exerciseName}</div>
@@ -47,6 +47,7 @@ export function StatsPersonalRecords({ prs }: Props) {
               </span>
             )}
           </button>
+          </FadeInOnScroll>
         ))}
       </div>
 

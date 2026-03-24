@@ -5,6 +5,7 @@ import { useSessionStore } from "../../stores/useSessionStore";
 import { useHistoryStore } from "../../stores/useHistoryStore";
 import { CategoryListItem } from "./CategoryListItem";
 import { CreateCategoryInput } from "./CreateCategoryInput";
+import { FadeInOnScroll } from "../ui/FadeInOnScroll";
 import { useDragSort } from "../../hooks/useDragSort";
 import { useAuth } from "../../auth/useAuth";
 
@@ -97,20 +98,21 @@ export function CategoryList() {
 
         {!isEmpty && (
           <div {...containerProps} className="flex flex-col gap-2">
-            {displayItems.map((category) => (
-              <CategoryListItem
-                key={category.id}
-                category={category}
-                onDelete={handleDelete}
-                onDuplicate={handleDuplicate}
-                hasActiveSession={activeSession?.categoryId === category.id}
-                isNew={category.id === newCategoryId}
-                isExiting={exitingId === category.id}
-                isDragging={draggingId === category.id}
-                isDimmed={draggingId !== null && draggingId !== category.id}
-                itemProps={getItemProps(category.id)}
-                lastSessionDate={lastSessionByCategory.get(category.id)}
-              />
+            {displayItems.map((category, i) => (
+              <FadeInOnScroll key={category.id} delay={i * 60}>
+                <CategoryListItem
+                  category={category}
+                  onDelete={handleDelete}
+                  onDuplicate={handleDuplicate}
+                  hasActiveSession={activeSession?.categoryId === category.id}
+                  isNew={category.id === newCategoryId}
+                  isExiting={exitingId === category.id}
+                  isDragging={draggingId === category.id}
+                  isDimmed={draggingId !== null && draggingId !== category.id}
+                  itemProps={getItemProps(category.id)}
+                  lastSessionDate={lastSessionByCategory.get(category.id)}
+                />
+              </FadeInOnScroll>
             ))}
           </div>
         )}
@@ -133,12 +135,14 @@ export function CategoryList() {
             ? `Kom igen nu${firstName ? ` ${firstName}` : ""}!`
             : `Dags att ta tag i det${firstName ? ` ${firstName}` : ""}!`;
         return (
-          <div className="flex flex-col gap-0 text-center">
-            <p className="text-[15px] font-bold">{motivation}</p>
-            <p className="text-[15px]">
-              Senaste träningen var {formatTimeSince(lastTrainedDate)} sedan
-            </p>
-          </div>
+          <FadeInOnScroll>
+            <div className="flex flex-col gap-0 text-center">
+              <p className="text-[15px] font-bold">{motivation}</p>
+              <p className="text-[15px]">
+                Senaste träningen var {formatTimeSince(lastTrainedDate)} sedan
+              </p>
+            </div>
+          </FadeInOnScroll>
         );
       })()}
 

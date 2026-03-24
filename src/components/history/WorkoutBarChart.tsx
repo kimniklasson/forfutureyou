@@ -107,8 +107,7 @@ export function WorkoutBarChart({ sessions }: Props) {
 
           {/* Segmented pill toggle — absolutely centered */}
           <div
-            className="absolute left-1/2 -translate-x-1/2 flex rounded-full p-[6px]"
-            style={{ border: "1px solid rgba(0,0,0,0.1)" }}
+            className="absolute left-1/2 -translate-x-1/2 flex rounded-full p-[6px] border border-black/10 dark:border-white/10"
           >
             {/* Sliding indicator */}
             <div

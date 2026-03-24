@@ -6,6 +6,7 @@ import { useSessionStore } from "../../stores/useSessionStore";
 import { ExerciseCard } from "./ExerciseCard";
 import { SwipeActions } from "../ui/SwipeToDelete";
 import { ImportExercisesModal } from "./ImportExercisesModal";
+import { FadeInOnScroll } from "../ui/FadeInOnScroll";
 import { useDragSort } from "../../hooks/useDragSort";
 import { IconEdit } from "../ui/icons";
 
@@ -192,25 +193,26 @@ export function ExerciseListPage() {
       ) : (
         <div className="flex flex-col gap-2">
           <div {...containerProps} className="flex flex-col gap-2">
-            {displayItems.map((exercise) => (
-              <SwipeActions
-                key={exercise.id}
-                onDelete={() => handleRemoveFromCategory(exercise.id)}
-                onDuplicate={() => handleDuplicate(exercise.id)}
-                confirmMessage={`Är du säker på att du vill ta bort ${exercise.name} från ${category.name}?`}
-              >
-                <ExerciseCard
-                  exercise={exercise}
-                  categoryId={category.id}
-                  categoryName={category.name}
-                  onRename={handleRename}
-                  sessionBlocked={sessionBlocked}
-                  isNew={exercise.id === newExerciseId}
-                  isDragging={draggingId === exercise.id}
-                  isDimmed={draggingId !== null && draggingId !== exercise.id}
-                  itemProps={getItemProps(exercise.id)}
-                />
-              </SwipeActions>
+            {displayItems.map((exercise, i) => (
+              <FadeInOnScroll key={exercise.id} delay={i * 60}>
+                <SwipeActions
+                  onDelete={() => handleRemoveFromCategory(exercise.id)}
+                  onDuplicate={() => handleDuplicate(exercise.id)}
+                  confirmMessage={`Är du säker på att du vill ta bort ${exercise.name} från ${category.name}?`}
+                >
+                  <ExerciseCard
+                    exercise={exercise}
+                    categoryId={category.id}
+                    categoryName={category.name}
+                    onRename={handleRename}
+                    sessionBlocked={sessionBlocked}
+                    isNew={exercise.id === newExerciseId}
+                    isDragging={draggingId === exercise.id}
+                    isDimmed={draggingId !== null && draggingId !== exercise.id}
+                    itemProps={getItemProps(exercise.id)}
+                  />
+                </SwipeActions>
+              </FadeInOnScroll>
             ))}
           </div>
         </div>

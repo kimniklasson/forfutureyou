@@ -27,14 +27,14 @@
 /* CSS custom properties that change per theme */
 :root {
   --header-bg: linear-gradient(to bottom, white 50%, rgba(255, 255, 255, 0));
-  --footer-bg: linear-gradient(to top, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 100%);
+  --footer-bg: linear-gradient(to top, rgba(255, 255, 255, 0.97) 25%, rgba(255, 255, 255, 0) 100%);
   --nav-solid: white;
 }
 
 [data-theme=dark] {
   --color-card: #1c1c1e;
   --header-bg: linear-gradient(to bottom, #111111 50%, rgba(17, 17, 17, 0));
-  --footer-bg: linear-gradient(to top, rgba(17, 17, 17, 0.5) 0%, rgba(17, 17, 17, 0) 100%);
+  --footer-bg: linear-gradient(to top, rgba(17, 17, 17, 0.95) 25%, rgba(17, 17, 17, 0) 100%);
   --nav-solid: #111111;
   color-scheme: dark;
 }

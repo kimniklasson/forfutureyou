@@ -57,11 +57,10 @@ export function StatsStreaks({ streaks }: Props) {
         {cards.map((card, i) => (
           <div
             key={card.label}
-            className="bg-white rounded-card p-4 flex flex-col flex-none animate-in"
+            className="border border-black/10 dark:border-white/10 rounded-card p-4 flex flex-col flex-none animate-in"
             style={{
               width: "calc(min(100vw, 600px) / 3 - 10px)",
               minWidth: "calc(min(100vw, 600px) / 3 - 10px)",
-              border: "1px solid rgba(0,0,0,0.1)",
               animationDelay: `${i * 0.04}s`,
             }}
           >

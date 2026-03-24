@@ -55,10 +55,7 @@ function arcLength(angleDeg: number) {
   return (angleDeg / 360) * 2 * Math.PI * R;
 }
 
-const CARD_STYLE: React.CSSProperties = {
-  backgroundColor: "white",
-  border: "1px solid rgba(0,0,0,0.10)",
-};
+const CARD_CLS = "flex-1 rounded-card p-4 flex flex-col items-center gap-3 border border-black/10 dark:border-white/10";
 
 // ── Intensity Ring ───────────────────────────────────────────
 
@@ -75,10 +72,10 @@ function IntensityCard({ score }: { score: number }) {
   const dashOffset = animated ? circumference - progressArc : circumference;
 
   return (
-    <div className="flex-1 rounded-card p-4 flex flex-col items-center gap-3" style={CARD_STYLE}>
+    <div className={CARD_CLS}>
       <div className="relative" style={{ width: SIZE, height: SIZE }}>
         <svg width={SIZE} height={SIZE}>
-          <circle cx={CX} cy={CY} r={R} fill="none" stroke="#f5f5f5" strokeWidth={SW} />
+          <circle cx={CX} cy={CY} r={R} fill="none" stroke="currentColor" strokeWidth={SW} strokeOpacity={0.1} />
           <circle
             cx={CX} cy={CY} r={R}
             fill="none"
@@ -96,7 +93,7 @@ function IntensityCard({ score }: { score: number }) {
         </div>
       </div>
       <span className="text-[11px] font-medium uppercase tracking-wider opacity-50">
-        ~Intensitet
+        Snittintensitet
       </span>
     </div>
   );
@@ -160,8 +157,7 @@ function CategoryCard({ insights }: { insights: ExerciseInsight }) {
 
   return (
     <div
-      className="flex-1 rounded-card p-4 flex flex-col items-center gap-3"
-      style={CARD_STYLE}
+      className={CARD_CLS}
       ref={cardRef}
       // Clicking the card background (not a segment) clears selection
       onClick={() => setActiveIdx(null)}
@@ -172,7 +168,7 @@ function CategoryCard({ insights }: { insights: ExerciseInsight }) {
             <circle cx={CX} cy={CY} r={R} fill="none" stroke="#f5f5f5" strokeWidth={SW} />
           ) : (
             <>
-              <circle cx={CX} cy={CY} r={R} fill="none" stroke="#f5f5f5" strokeWidth={SW_ACTIVE} />
+              <circle cx={CX} cy={CY} r={R} fill="none" stroke="currentColor" strokeWidth={SW_ACTIVE} strokeOpacity={0.1} />
               {segments.map((seg, i) => {
                 const isActive = activeIdx === i;
                 const sw = isActive ? SW_ACTIVE : SW;
@@ -216,7 +212,7 @@ function CategoryCard({ insights }: { insights: ExerciseInsight }) {
         {/* Active segment: only % in center */}
         {activeSegment && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <span className="text-[15px] font-normal text-black">
+            <span className="text-[15px] font-normal">
               {Math.round(activeSegment.pct * 100)}%
             </span>
           </div>
@@ -225,7 +221,7 @@ function CategoryCard({ insights }: { insights: ExerciseInsight }) {
 
       {/* Label — always same size/style, text swaps on selection */}
       <span className="text-[11px] font-medium uppercase tracking-wider opacity-50">
-        {activeSegment ? activeSegment.categoryName : "Kategorier"}
+        {activeSegment ? activeSegment.categoryName : "Passfördelning"}
       </span>
     </div>
   );

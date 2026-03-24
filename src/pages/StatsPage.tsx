@@ -6,6 +6,7 @@ import { StatsPersonalRecords } from "../components/stats/StatsPersonalRecords";
 import { StatsStreaks } from "../components/stats/StatsStreaks";
 import { StatsSessionOverview } from "../components/stats/StatsSessionOverview";
 import { StatsOverviewCards } from "../components/stats/StatsOverviewCards";
+import { FadeInOnScroll } from "../components/ui/FadeInOnScroll";
 import * as stats from "../utils/statistics";
 
 export function StatsPage() {
@@ -47,12 +48,18 @@ export function StatsPage() {
         </p>
       ) : (
         <>
-          <StatsOverviewCards stats={sessionStats} insights={insights} />
-          <StatsPersonalRecords prs={prs} />
-          <div className="flex flex-col gap-8">
-            <StatsStreaks streaks={streaks} />
-            <StatsSessionOverview stats={sessionStats} />
-          </div>
+          <FadeInOnScroll>
+            <StatsOverviewCards stats={sessionStats} insights={insights} />
+          </FadeInOnScroll>
+          <FadeInOnScroll>
+            <StatsPersonalRecords prs={prs} />
+          </FadeInOnScroll>
+          <FadeInOnScroll>
+            <div className="flex flex-col gap-8">
+              <StatsStreaks streaks={streaks} />
+              <StatsSessionOverview stats={sessionStats} />
+            </div>
+          </FadeInOnScroll>
         </>
       )}
     </div>

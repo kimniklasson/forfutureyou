@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useHistoryStore } from "../../stores/useHistoryStore";
 import { CompletedWorkoutItem } from "./CompletedWorkoutItem";
 import { WorkoutBarChart } from "./WorkoutBarChart";
+import { FadeInOnScroll } from "../ui/FadeInOnScroll";
 
 export function CompletedWorkoutsList() {
   const { loadSessions, getGroupedByMonth, deleteSession } = useHistoryStore();
@@ -35,20 +36,23 @@ export function CompletedWorkoutsList() {
 
       {/* Month groups */}
       {groups.map((group) => (
-        <div key={group.label} className="flex flex-col gap-2">
-          <span className="text-[12px] font-bold uppercase tracking-wider opacity-50">
-            {group.label}
-          </span>
+        <FadeInOnScroll key={group.label}>
           <div className="flex flex-col gap-2">
-            {group.sessions.map((session) => (
-              <CompletedWorkoutItem
-                key={session.id}
-                session={session}
-                onDelete={deleteSession}
-              />
-            ))}
+            <span className="text-[12px] font-bold uppercase tracking-wider opacity-50">
+              {group.label}
+            </span>
+            <div className="flex flex-col gap-2">
+              {group.sessions.map((session, i) => (
+                <FadeInOnScroll key={session.id} delay={i * 80}>
+                  <CompletedWorkoutItem
+                    session={session}
+                    onDelete={deleteSession}
+                  />
+                </FadeInOnScroll>
+              ))}
+            </div>
           </div>
-        </div>
+        </FadeInOnScroll>
       ))}
 
     </div>
