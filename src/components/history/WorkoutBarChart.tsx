@@ -100,14 +100,14 @@ export function WorkoutBarChart({ sessions }: Props) {
 
   return (
     <div ref={containerRef}>
-      <div className="rounded-card border border-black/10 dark:border-white/10 px-4 pt-4 overflow-hidden">
+      <div className="rounded-card border border-black/10 dark:border-white/10 px-4 pt-5 overflow-hidden">
         {/* Header */}
-        <div className="flex justify-between items-center mb-4">
+        <div className="relative flex justify-between items-center mb-4">
           <span className="text-[13px] font-medium opacity-50">{currentYear}</span>
 
-          {/* Segmented pill toggle */}
+          {/* Segmented pill toggle — absolutely centered */}
           <div
-            className="relative flex rounded-full p-[6px]"
+            className="absolute left-1/2 -translate-x-1/2 flex rounded-full p-[6px]"
             style={{ border: "1px solid rgba(0,0,0,0.1)" }}
           >
             {/* Sliding indicator */}
