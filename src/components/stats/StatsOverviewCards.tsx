@@ -32,7 +32,7 @@ function getCategoryColor(index: number): string {
 }
 
 // ── SVG helpers ──────────────────────────────────────────────
-const SIZE = 148;
+const SIZE = 156;
 const CX = SIZE / 2;
 const CY = SIZE / 2;
 const R = 56;
@@ -213,31 +213,20 @@ function CategoryCard({ insights }: { insights: ExerciseInsight }) {
           </div>
         )}
 
-        {/* Active segment info in center */}
+        {/* Active segment: only % in center */}
         {activeSegment && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="text-center px-2">
-              <div className="text-[13px] font-semibold leading-tight">
-                {activeSegment.categoryName}
-              </div>
-              <div className="text-[11px] opacity-50 mt-0.5">
-                {Math.round(activeSegment.pct * 100)}%
-              </div>
-            </div>
+            <span className="text-[15px] font-normal text-black">
+              {Math.round(activeSegment.pct * 100)}%
+            </span>
           </div>
         )}
       </div>
 
-      {/* Label — shows category name when selected, otherwise "KATEGORIER" */}
-      {activeSegment ? (
-        <span className="text-[13px] font-medium">
-          {activeSegment.categoryName}
-        </span>
-      ) : (
-        <span className="text-[11px] font-medium uppercase tracking-wider opacity-50">
-          Kategorier
-        </span>
-      )}
+      {/* Label — always same size/style, text swaps on selection */}
+      <span className="text-[11px] font-medium uppercase tracking-wider opacity-50">
+        {activeSegment ? activeSegment.categoryName : "Kategorier"}
+      </span>
     </div>
   );
 }
@@ -246,7 +235,7 @@ function CategoryCard({ insights }: { insights: ExerciseInsight }) {
 
 export function StatsOverviewCards({ stats, insights }: Props) {
   return (
-    <div className="flex gap-3">
+    <div className="flex gap-2">
       <IntensityCard score={stats.avgIntensityScore} />
       <CategoryCard insights={insights} />
     </div>
