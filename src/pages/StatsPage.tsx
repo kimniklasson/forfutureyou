@@ -5,7 +5,6 @@ import { useSettingsStore } from "../stores/useSettingsStore";
 import { StatsPersonalRecords } from "../components/stats/StatsPersonalRecords";
 import { StatsStreaks } from "../components/stats/StatsStreaks";
 import { StatsSessionOverview } from "../components/stats/StatsSessionOverview";
-import { StatsExerciseInsights } from "../components/stats/StatsExerciseInsights";
 import { StatsOverviewCards } from "../components/stats/StatsOverviewCards";
 import * as stats from "../utils/statistics";
 
@@ -26,14 +25,10 @@ export function StatsPage() {
     [sessions, userWeight, userAge, userSex]
   );
 
-  const allExercises = useMemo(() => {
-    return categories.flatMap((c) => c.exercises.map((e) => ({ id: e.id, name: e.name })));
-  }, [categories]);
-
-  const insights = useMemo(
-    () => stats.computeExerciseInsights(sessions, allExercises),
-    [sessions, allExercises]
-  );
+  const insights = useMemo(() => {
+    const allExercises = categories.flatMap((c) => c.exercises.map((e) => ({ id: e.id, name: e.name })));
+    return stats.computeExerciseInsights(sessions, allExercises);
+  }, [sessions, categories]);
   const isEmpty = sessions.length === 0;
 
   return (
@@ -58,7 +53,6 @@ export function StatsPage() {
             <StatsStreaks streaks={streaks} />
             <StatsSessionOverview stats={sessionStats} />
           </div>
-          <StatsExerciseInsights insights={insights} />
         </>
       )}
     </div>

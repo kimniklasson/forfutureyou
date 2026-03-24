@@ -33,12 +33,11 @@ export function StatsSessionOverview({ stats }: Props) {
   const cards: { value: string; label: string }[] = [
     { value: formatMs(stats.avgDurationMs), label: "Snittlängd" },
     { value: formatTotalTime(stats.totalTrainingTimeMs), label: "Total tid" },
-    { value: stats.avgIntensityScore > 0 ? `${stats.avgIntensityScore}/100` : "–", label: "Snitt intensitet" },
-    { value: formatRestTime(stats.avgRestTimeMs), label: "Snitt vila" },
+    { value: formatRestTime(stats.avgRestTimeMs), label: "Snittvila" },
   ];
 
   if (showCalories && stats.avgCalories > 0) {
-    cards.push({ value: `${stats.avgCalories} kcal`, label: "Snitt kalorier" });
+    cards.push({ value: `${stats.avgCalories} kcal`, label: "Snittkalorier" });
   }
 
   const scrollRef = useRef<HTMLDivElement>(null);
