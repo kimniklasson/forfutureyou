@@ -52,7 +52,7 @@ export function BottomNav() {
         <div className="absolute inset-0 pointer-events-auto" />
 
         {/* Nav icons — z-10 so they sit above the blur layers, unaffected */}
-        <div className="relative z-10 flex items-end justify-around px-6 pb-12 pt-14">
+        <div className="relative z-10 flex items-end justify-around px-6 pb-10 pt-16">
           {NAV_ITEMS.map(({ path, Icon, label }) => {
             const isActive = path === "/"
               ? location.pathname === "/" || location.pathname.startsWith("/category")
