@@ -96,7 +96,7 @@ export function CategoryList() {
         <CreateCategoryInput onCreated={handleCategoryCreated} />
 
         {!isEmpty && (
-          <div {...containerProps} className="flex flex-col gap-2">
+          <div {...containerProps} className="flex flex-col gap-6">
             {displayItems.map((category) => (
               <CategoryListItem
                 key={category.id}

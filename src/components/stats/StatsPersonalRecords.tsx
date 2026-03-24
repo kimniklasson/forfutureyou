@@ -18,7 +18,7 @@ export function StatsPersonalRecords({ prs }: Props) {
       </span>
 
       {/* Exercise PR list */}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-6">
         {displayPrs.map((pr, i) => (
           <button
             key={pr.exerciseId}
