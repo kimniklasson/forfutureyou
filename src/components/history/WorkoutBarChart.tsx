@@ -3,8 +3,17 @@ import type { WorkoutSession } from "../../types/models";
 
 const MONTH_LABELS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
 const CHART_HEIGHT = 112; // px
+const BTN_WIDTH = 62; // px — fixed width so toggle never shifts layout
 
 type View = "months" | "weeks";
+
+function getISOWeek(d: Date): number {
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  return Math.ceil(((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+}
 
 interface Props {
   sessions: WorkoutSession[];
@@ -30,18 +39,23 @@ export function WorkoutBarChart({ sessions }: Props) {
     return { monthlyCounts: counts, monthlyTotal: counts.reduce((a, b) => a + b, 0) };
   }, [sessions, currentYear]);
 
-  // Weekly data — rolling 12 weeks
-  const { weeklyCounts, weekLabels, weeklyTotal } = useMemo(() => {
-    const today = new Date(now);
-    today.setHours(0, 0, 0, 0);
-    const dayOfWeek = today.getDay();
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7));
+  // Weekly data — all ISO weeks of current year
+  const { weeklyCounts, weekLabels, weeklyTotal, currentWeekIndex } = useMemo(() => {
+    // Find Monday of ISO week 1
+    const jan4 = new Date(currentYear, 0, 4);
+    const dow = jan4.getDay() || 7;
+    const week1Monday = new Date(jan4);
+    week1Monday.setDate(jan4.getDate() - dow + 1);
+    week1Monday.setHours(0, 0, 0, 0);
+
+    // Total ISO weeks in year
+    const dec28 = new Date(currentYear, 11, 28);
+    const totalWeeks = getISOWeek(dec28);
 
     const weeks: { start: Date; end: Date }[] = [];
-    for (let i = 11; i >= 0; i--) {
-      const start = new Date(monday);
-      start.setDate(monday.getDate() - i * 7);
+    for (let i = 0; i < totalWeeks; i++) {
+      const start = new Date(week1Monday);
+      start.setDate(week1Monday.getDate() + i * 7);
       const end = new Date(start);
       end.setDate(start.getDate() + 7);
       weeks.push({ start, end });
@@ -54,10 +68,13 @@ export function WorkoutBarChart({ sessions }: Props) {
       }).length
     );
 
-    const labels = weeks.map(({ start }) => `${start.getDate()}/${start.getMonth() + 1}`);
+    const labels = weeks.map((_, i) => String(i + 1));
     const total = counts.reduce((a, b) => a + b, 0);
-    return { weeklyCounts: counts, weekLabels: labels, weeklyTotal: total };
-  }, [sessions]);
+    const todayMs = Date.now();
+    const cwIndex = weeks.findIndex(({ start, end }) => todayMs >= start.getTime() && todayMs < end.getTime());
+
+    return { weeklyCounts: counts, weekLabels: labels, weeklyTotal: total, currentWeekIndex: cwIndex };
+  }, [sessions, currentYear]);
 
   const counts = view === "months" ? monthlyCounts : weeklyCounts;
   const labels = view === "months" ? MONTH_LABELS : weekLabels;
@@ -71,7 +88,6 @@ export function WorkoutBarChart({ sessions }: Props) {
     setAnimKey((k) => k + 1);
   };
 
-  // Close tooltip when clicking outside
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -87,24 +103,36 @@ export function WorkoutBarChart({ sessions }: Props) {
       <div className="rounded-card border border-black/10 dark:border-white/10 px-4 pt-4 overflow-hidden">
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
-          <span className="text-[13px] font-medium opacity-50">
-            {view === "months" ? currentYear : "12 veckor"}
-          </span>
+          <span className="text-[13px] font-medium opacity-50">{currentYear}</span>
 
-          {/* Segmented toggle */}
-          <div className="flex rounded-full bg-black/[0.06] dark:bg-white/10 p-[3px]">
+          {/* Segmented pill toggle */}
+          <div
+            className="relative flex rounded-full p-[6px]"
+            style={{ border: "1px solid rgba(0,0,0,0.1)" }}
+          >
+            {/* Sliding indicator */}
+            <div
+              className="absolute top-[6px] bottom-[6px] rounded-full bg-[#FFD900]"
+              style={{
+                width: BTN_WIDTH,
+                left: 6,
+                transform: view === "weeks" ? `translateX(${BTN_WIDTH}px)` : "translateX(0)",
+                transition: "transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+              }}
+            />
             {(["months", "weeks"] as View[]).map((v) => (
               <button
                 key={v}
                 onClick={() => handleViewChange(v)}
-                className="px-3 py-[3px] rounded-full text-[11px] font-bold tracking-wide transition-all duration-200"
+                className="relative z-10 py-[4px] text-[12px] font-bold tracking-wide"
                 style={{
-                  background: view === v ? "#FFD900" : "transparent",
+                  width: BTN_WIDTH,
                   color: view === v ? "#000" : undefined,
                   opacity: view === v ? 1 : 0.4,
+                  transition: "opacity 0.2s, color 0.2s",
                 }}
               >
-                {v === "months" ? "MÅN" : "VEC"}
+                {v === "months" ? "Månad" : "Vecka"}
               </button>
             ))}
           </div>
@@ -113,9 +141,13 @@ export function WorkoutBarChart({ sessions }: Props) {
         </div>
 
         {/* Bars */}
-        <div key={animKey} className="flex items-end gap-[5px]" style={{ height: CHART_HEIGHT }}>
+        <div
+          key={animKey}
+          className="flex items-end"
+          style={{ height: CHART_HEIGHT, gap: view === "weeks" ? 2 : 5 }}
+        >
           {counts.map((count, i) => {
-            const isCurrent = view === "months" ? i === currentMonth : i === 11;
+            const isCurrent = view === "months" ? i === currentMonth : i === currentWeekIndex;
             const heightPct = count > 0 ? Math.max((count / maxCount) * 100, 6) : 0;
             const isSelected = tooltip === i;
 
@@ -128,7 +160,6 @@ export function WorkoutBarChart({ sessions }: Props) {
                   setTooltip(isSelected ? null : i);
                 }}
               >
-                {/* Tooltip */}
                 {isSelected && (
                   <div className="absolute bottom-[calc(100%+6px)] left-1/2 -translate-x-1/2 z-10
                     bg-black dark:bg-white text-white dark:text-black
@@ -139,8 +170,6 @@ export function WorkoutBarChart({ sessions }: Props) {
                       border-4 border-transparent border-t-black dark:border-t-white" />
                   </div>
                 )}
-
-                {/* Bar */}
                 {count > 0 ? (
                   <div
                     className="rounded-t-[3px] w-full transition-opacity duration-150"
@@ -159,21 +188,29 @@ export function WorkoutBarChart({ sessions }: Props) {
         </div>
       </div>
 
-      {/* Labels — outside the card */}
-      <div key={`labels-${animKey}`} className="flex gap-[5px] mt-2 px-4">
-        {labels.map((label, i) => (
-          <div
-            key={i}
-            className="flex-1 text-center text-[11px]"
-            style={{
-              opacity: view === "months"
-                ? (i <= currentMonth ? 0.5 : 0.25)
-                : (i === 11 ? 0.7 : 0.4),
-            }}
-          >
-            {label}
-          </div>
-        ))}
+      {/* Labels */}
+      <div
+        key={`labels-${animKey}`}
+        className="flex mt-2 px-4"
+        style={{ gap: view === "weeks" ? 2 : 5 }}
+      >
+        {labels.map((label, i) => {
+          // For weeks, only show every 4th label to avoid crowding
+          const showLabel = view === "months" || (i + 1) % 4 === 1;
+          return (
+            <div
+              key={i}
+              className="flex-1 text-center text-[12px]"
+              style={{
+                opacity: view === "months"
+                  ? (i <= currentMonth ? 0.5 : 0.25)
+                  : (i === currentWeekIndex ? 0.7 : i < (currentWeekIndex ?? 52) ? 0.4 : 0.2),
+              }}
+            >
+              {showLabel ? label : ""}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
