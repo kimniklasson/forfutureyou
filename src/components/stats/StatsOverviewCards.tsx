@@ -6,17 +6,33 @@ interface Props {
   insights: ExerciseInsight;
 }
 
-const CATEGORY_COLORS = [
-  "#FFD900", "#6366f1", "#ef4444", "#22c55e", "#f97316", "#06b6d4",
-  "#a855f7", "#ec4899", "#84cc16",
+// ── Colors ──────────────────────────────────────────────────
+// First 7 are used in order; beyond that, opacity variants are generated.
+const BASE_COLORS = [
+  "#FFD900", "#FFA100", "#FF6600",
+  "#555555", "#EEEEEE", "#777777", "#BBBBBB",
 ];
+const EXTRA_OPACITIES = [0.7, 0.5, 0.35];
 
-const SIZE = 128;
+function getCategoryColor(index: number): string {
+  if (index < BASE_COLORS.length) return BASE_COLORS[index];
+  const opacityIdx = Math.floor((index - BASE_COLORS.length) / BASE_COLORS.length);
+  const colorIdx = (index - BASE_COLORS.length) % BASE_COLORS.length;
+  const opacity = EXTRA_OPACITIES[Math.min(opacityIdx, EXTRA_OPACITIES.length - 1)];
+  const hex = BASE_COLORS[colorIdx];
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${opacity})`;
+}
+
+// ── SVG helpers ──────────────────────────────────────────────
+const SIZE = 148;
 const CX = SIZE / 2;
 const CY = SIZE / 2;
-const R = 46;
-const SW = 11; // stroke width
-const GAP_DEG = 3;
+const R = 56;
+const SW = 12;
+const GAP_DEG = 3.5;
 
 function polarToCartesian(angleDeg: number) {
   const a = ((angleDeg - 90) * Math.PI) / 180;
@@ -34,7 +50,12 @@ function arcLength(angleDeg: number) {
   return (angleDeg / 360) * 2 * Math.PI * R;
 }
 
-// ── Intensity Ring ──────────────────────────────────────────
+const CARD_STYLE: React.CSSProperties = {
+  backgroundColor: "white",
+  border: "1px solid rgba(0,0,0,0.10)",
+};
+
+// ── Intensity Ring ───────────────────────────────────────────
 
 function IntensityCard({ score }: { score: number }) {
   const [animated, setAnimated] = useState(false);
@@ -49,15 +70,14 @@ function IntensityCard({ score }: { score: number }) {
   const dashOffset = animated ? circumference - progressArc : circumference;
 
   return (
-    <div className="flex-1 bg-card rounded-card p-4 flex flex-col items-center gap-3">
+    <div className="flex-1 rounded-card p-4 flex flex-col items-center gap-3" style={CARD_STYLE}>
       <div className="relative" style={{ width: SIZE, height: SIZE }}>
         <svg width={SIZE} height={SIZE}>
           {/* Track */}
           <circle
             cx={CX} cy={CY} r={R}
             fill="none"
-            stroke="currentColor"
-            strokeOpacity={0.1}
+            stroke="#f5f5f5"
             strokeWidth={SW}
           />
           {/* Progress */}
@@ -66,7 +86,7 @@ function IntensityCard({ score }: { score: number }) {
             fill="none"
             stroke="currentColor"
             strokeWidth={SW}
-            strokeLinecap="round"
+            strokeLinecap="butt"
             strokeDasharray={`${circumference}`}
             strokeDashoffset={dashOffset}
             transform={`rotate(-90 ${CX} ${CY})`}
@@ -76,7 +96,7 @@ function IntensityCard({ score }: { score: number }) {
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-[26px] font-bold tabular-nums">{intensity}</span>
+          <span className="text-[20px] font-bold tabular-nums">{intensity}</span>
         </div>
       </div>
       <span className="text-[11px] font-medium uppercase tracking-wider opacity-50">
@@ -86,7 +106,7 @@ function IntensityCard({ score }: { score: number }) {
   );
 }
 
-// ── Category Donut ──────────────────────────────────────────
+// ── Category Donut ───────────────────────────────────────────
 
 interface Segment {
   categoryName: string;
@@ -107,7 +127,6 @@ function CategoryCard({ insights }: { insights: ExerciseInsight }) {
     return () => clearTimeout(t);
   }, []);
 
-  // Close tooltip on outside click
   useEffect(() => {
     if (activeIdx === null) return;
     const handler = () => setActiveIdx(null);
@@ -124,10 +143,8 @@ function CategoryCard({ insights }: { insights: ExerciseInsight }) {
     const cat = insights.categoryBalance[i];
     const pct = cat.sessionCount / total;
     const fullDeg = pct * 360;
-    const gapBefore = i === 0 ? GAP_DEG / 2 : GAP_DEG / 2;
-    const gapAfter = GAP_DEG / 2;
-    const startDeg = cursor + gapBefore;
-    const endDeg = cursor + fullDeg - gapAfter;
+    const startDeg = cursor + GAP_DEG / 2;
+    const endDeg = cursor + fullDeg - GAP_DEG / 2;
     cursor += fullDeg;
     if (endDeg > startDeg + 0.5) {
       segments.push({
@@ -136,7 +153,7 @@ function CategoryCard({ insights }: { insights: ExerciseInsight }) {
         pct,
         startDeg,
         endDeg,
-        color: CATEGORY_COLORS[i % CATEGORY_COLORS.length],
+        color: getCategoryColor(i),
       });
     }
   }
@@ -144,62 +161,60 @@ function CategoryCard({ insights }: { insights: ExerciseInsight }) {
   const activeSegment = activeIdx !== null ? segments[activeIdx] : null;
 
   return (
-    <div className="flex-1 bg-card rounded-card p-4 flex flex-col items-center gap-3" ref={cardRef}>
+    <div className="flex-1 rounded-card p-4 flex flex-col items-center gap-3" style={CARD_STYLE} ref={cardRef}>
       <div className="relative" style={{ width: SIZE, height: SIZE }}>
         <svg width={SIZE} height={SIZE}>
           {!hasData ? (
             <circle
               cx={CX} cy={CY} r={R}
               fill="none"
-              stroke="currentColor"
-              strokeOpacity={0.1}
+              stroke="#f5f5f5"
               strokeWidth={SW}
             />
           ) : (
-            segments.map((seg, i) => {
-              const totalArcLen = arcLength(seg.endDeg - seg.startDeg);
-              return (
-                <path
-                  key={seg.categoryName}
-                  d={arcPath(seg.startDeg, seg.endDeg)}
-                  fill="none"
-                  stroke={seg.color}
-                  strokeWidth={activeIdx === i ? SW + 3 : SW}
-                  strokeLinecap="round"
-                  strokeDasharray={`${totalArcLen} 9999`}
-                  strokeDashoffset={animated ? 0 : totalArcLen}
-                  style={{
-                    transition: `stroke-dashoffset 0.7s cubic-bezier(0.4,0,0.2,1) ${i * 0.07}s, stroke-width 0.15s ease`,
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setActiveIdx(activeIdx === i ? null : i);
-                  }}
-                  className="cursor-pointer"
-                />
-              );
-            })
+            <>
+              {/* Full track ring */}
+              <circle cx={CX} cy={CY} r={R} fill="none" stroke="#f5f5f5" strokeWidth={SW} />
+              {segments.map((seg, i) => {
+                const totalArcLen = arcLength(seg.endDeg - seg.startDeg);
+                return (
+                  <path
+                    key={seg.categoryName}
+                    d={arcPath(seg.startDeg, seg.endDeg)}
+                    fill="none"
+                    stroke={seg.color}
+                    strokeWidth={activeIdx === i ? SW + 3 : SW}
+                    strokeLinecap="butt"
+                    strokeDasharray={`${totalArcLen} 9999`}
+                    strokeDashoffset={animated ? 0 : totalArcLen}
+                    style={{
+                      transition: `stroke-dashoffset 0.7s cubic-bezier(0.4,0,0.2,1) ${i * 0.07}s, stroke-width 0.15s ease`,
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveIdx(activeIdx === i ? null : i);
+                    }}
+                    className="cursor-pointer"
+                  />
+                );
+              })}
+            </>
           )}
         </svg>
 
-        {/* Center icon */}
+        {/* Center: IconHome */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <svg
-            width="22" height="22" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" strokeWidth="2"
-            strokeLinecap="round" strokeLinejoin="round"
-            opacity={0.35}
+            width="22" height="20" viewBox="0 0 18 16"
+            fill="currentColor" opacity={0.35}
           >
-            {/* Barbell */}
-            <line x1="6" y1="12" x2="18" y2="12" />
-            <line x1="6" y1="9" x2="6" y2="15" />
-            <line x1="18" y1="9" x2="18" y2="15" />
-            <line x1="3" y1="10" x2="3" y2="14" />
-            <line x1="21" y1="10" x2="21" y2="14" />
+            <path d="M4 7.25H13.5V1H15V15H13.5V8.75H4V15H2.5V1H4V7.25Z" />
+            <path d="M1.5 12H0V4H1.5V12Z" />
+            <path d="M17.5 12H16V4H17.5V12Z" />
           </svg>
         </div>
 
-        {/* Tooltip inside SVG area */}
+        {/* Tooltip */}
         {activeSegment && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="bg-black/80 text-white rounded-lg px-3 py-1.5 text-center">
@@ -221,7 +236,7 @@ function CategoryCard({ insights }: { insights: ExerciseInsight }) {
   );
 }
 
-// ── Export ──────────────────────────────────────────────────
+// ── Export ───────────────────────────────────────────────────
 
 export function StatsOverviewCards({ stats, insights }: Props) {
   return (
