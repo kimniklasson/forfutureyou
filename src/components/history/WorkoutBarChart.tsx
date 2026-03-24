@@ -23,6 +23,7 @@ export function WorkoutBarChart({ sessions }: Props) {
   const [tooltip, setTooltip] = useState<number | null>(null);
   const [view, setView] = useState<View>("months");
   const [animKey, setAnimKey] = useState(0);
+  const [barsVisible, setBarsVisible] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const now = new Date();
@@ -84,9 +85,16 @@ export function WorkoutBarChart({ sessions }: Props) {
   const handleViewChange = (newView: View) => {
     if (newView === view) return;
     setTooltip(null);
+    setBarsVisible(false);
     setView(newView);
     setAnimKey((k) => k + 1);
+    setTimeout(() => setBarsVisible(true), 32);
   };
+
+  useEffect(() => {
+    const t = setTimeout(() => setBarsVisible(true), 32);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -171,11 +179,12 @@ export function WorkoutBarChart({ sessions }: Props) {
                 )}
                 {count > 0 ? (
                   <div
-                    className="rounded-t-[3px] w-full transition-opacity duration-150"
+                    className="rounded-t-[3px] w-full"
                     style={{
-                      height: `${heightPct}%`,
+                      height: `${barsVisible ? heightPct : 0}%`,
                       background: "#FFD900",
                       opacity: isSelected ? 0.6 : isCurrent ? 1 : 0.8,
+                      transition: `height 0.4s cubic-bezier(0.4,0,0.2,1) ${i * (view === "weeks" ? 4 : 16)}ms, opacity 0.15s`,
                     }}
                   />
                 ) : (
