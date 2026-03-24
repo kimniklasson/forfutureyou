@@ -6,6 +6,7 @@ import { StatsPersonalRecords } from "../components/stats/StatsPersonalRecords";
 import { StatsStreaks } from "../components/stats/StatsStreaks";
 import { StatsSessionOverview } from "../components/stats/StatsSessionOverview";
 import { StatsExerciseInsights } from "../components/stats/StatsExerciseInsights";
+import { StatsOverviewCards } from "../components/stats/StatsOverviewCards";
 import * as stats from "../utils/statistics";
 
 export function StatsPage() {
@@ -41,7 +42,7 @@ export function StatsPage() {
       <div className="flex flex-col items-center text-center">
         <span className="text-[20px] font-bold leading-[1.22]">Statistik</span>
         <span className="text-[20px] leading-[1.22] opacity-50">
-          Dina framsteg och rekord
+          Framsteg och rekord
         </span>
       </div>
 
@@ -51,6 +52,7 @@ export function StatsPage() {
         </p>
       ) : (
         <>
+          <StatsOverviewCards stats={sessionStats} insights={insights} />
           <StatsPersonalRecords prs={prs} />
           <StatsStreaks streaks={streaks} />
           <StatsSessionOverview stats={sessionStats} />
