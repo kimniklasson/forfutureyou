@@ -70,7 +70,6 @@ export function StatsSessionOverview({ stats }: Props) {
         style={{
           marginLeft: -32,
           marginRight: -32,
-          touchAction: "pan-x",
           overscrollBehaviorX: "contain",
           cursor: grabbing ? "grabbing" : "grab",
           userSelect: "none",
