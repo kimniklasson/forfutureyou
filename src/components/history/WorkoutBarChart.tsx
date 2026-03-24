@@ -195,8 +195,8 @@ export function WorkoutBarChart({ sessions }: Props) {
         style={{ gap: view === "weeks" ? 2 : 5 }}
       >
         {labels.map((label, i) => {
-          // For weeks, only show every 4th label to avoid crowding
-          const showLabel = view === "months" || (i + 1) % 4 === 1;
+          // For weeks, show every 5th label (1, 6, 11, 16 …)
+          const showLabel = view === "months" || i % 5 === 0;
           return (
             <div
               key={i}
