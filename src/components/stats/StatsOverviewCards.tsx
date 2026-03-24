@@ -6,18 +6,23 @@ interface Props {
   insights: ExerciseInsight;
 }
 
-// ── Colors ──────────────────────────────────────────────────
-// First 7 are used in order; beyond that, opacity variants are generated.
+// ── Colors ───────────────────────────────────────────────────
+// Pattern: strong, gray, gray, strong, gray, gray — then opacity variants
 const BASE_COLORS = [
-  "#FFD900", "#FFA100", "#FF6600",
-  "#555555", "#EEEEEE", "#777777", "#BBBBBB",
+  "#FFD900", // 1 – stark
+  "#555555", // 2 – grå
+  "#BBBBBB", // 3 – grå
+  "#FF6600", // 4 – stark
+  "#777777", // 5 – grå
+  "#EEEEEE", // 6 – grå
 ];
 const EXTRA_OPACITIES = [0.7, 0.5, 0.35];
 
 function getCategoryColor(index: number): string {
   if (index < BASE_COLORS.length) return BASE_COLORS[index];
-  const opacityIdx = Math.floor((index - BASE_COLORS.length) / BASE_COLORS.length);
-  const colorIdx = (index - BASE_COLORS.length) % BASE_COLORS.length;
+  const cycle = index - BASE_COLORS.length;
+  const opacityIdx = Math.floor(cycle / BASE_COLORS.length);
+  const colorIdx = cycle % BASE_COLORS.length;
   const opacity = EXTRA_OPACITIES[Math.min(opacityIdx, EXTRA_OPACITIES.length - 1)];
   const hex = BASE_COLORS[colorIdx];
   const r = parseInt(hex.slice(1, 3), 16);
@@ -31,8 +36,8 @@ const SIZE = 148;
 const CX = SIZE / 2;
 const CY = SIZE / 2;
 const R = 56;
-const SW = 12;
-const GAP_DEG = 3.5;
+const SW = 16;
+const SW_ACTIVE = 20;
 
 function polarToCartesian(angleDeg: number) {
   const a = ((angleDeg - 90) * Math.PI) / 180;
@@ -73,14 +78,7 @@ function IntensityCard({ score }: { score: number }) {
     <div className="flex-1 rounded-card p-4 flex flex-col items-center gap-3" style={CARD_STYLE}>
       <div className="relative" style={{ width: SIZE, height: SIZE }}>
         <svg width={SIZE} height={SIZE}>
-          {/* Track */}
-          <circle
-            cx={CX} cy={CY} r={R}
-            fill="none"
-            stroke="#f5f5f5"
-            strokeWidth={SW}
-          />
-          {/* Progress */}
+          <circle cx={CX} cy={CY} r={R} fill="none" stroke="#f5f5f5" strokeWidth={SW} />
           <circle
             cx={CX} cy={CY} r={R}
             fill="none"
@@ -90,9 +88,7 @@ function IntensityCard({ score }: { score: number }) {
             strokeDasharray={`${circumference}`}
             strokeDashoffset={dashOffset}
             transform={`rotate(-90 ${CX} ${CY})`}
-            style={{
-              transition: "stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1)",
-            }}
+            style={{ transition: "stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1)" }}
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
@@ -127,9 +123,14 @@ function CategoryCard({ insights }: { insights: ExerciseInsight }) {
     return () => clearTimeout(t);
   }, []);
 
+  // Deselect on click outside the card
   useEffect(() => {
     if (activeIdx === null) return;
-    const handler = () => setActiveIdx(null);
+    const handler = (e: MouseEvent) => {
+      if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
+        setActiveIdx(null);
+      }
+    };
     window.addEventListener("click", handler);
     return () => window.removeEventListener("click", handler);
   }, [activeIdx]);
@@ -143,39 +144,38 @@ function CategoryCard({ insights }: { insights: ExerciseInsight }) {
     const cat = insights.categoryBalance[i];
     const pct = cat.sessionCount / total;
     const fullDeg = pct * 360;
-    const startDeg = cursor + GAP_DEG / 2;
-    const endDeg = cursor + fullDeg - GAP_DEG / 2;
+    // No gap — segments touch each other
+    segments.push({
+      categoryName: cat.categoryName,
+      sessionCount: cat.sessionCount,
+      pct,
+      startDeg: cursor,
+      endDeg: cursor + fullDeg,
+      color: getCategoryColor(i),
+    });
     cursor += fullDeg;
-    if (endDeg > startDeg + 0.5) {
-      segments.push({
-        categoryName: cat.categoryName,
-        sessionCount: cat.sessionCount,
-        pct,
-        startDeg,
-        endDeg,
-        color: getCategoryColor(i),
-      });
-    }
   }
 
   const activeSegment = activeIdx !== null ? segments[activeIdx] : null;
 
   return (
-    <div className="flex-1 rounded-card p-4 flex flex-col items-center gap-3" style={CARD_STYLE} ref={cardRef}>
+    <div
+      className="flex-1 rounded-card p-4 flex flex-col items-center gap-3"
+      style={CARD_STYLE}
+      ref={cardRef}
+      // Clicking the card background (not a segment) clears selection
+      onClick={() => setActiveIdx(null)}
+    >
       <div className="relative" style={{ width: SIZE, height: SIZE }}>
         <svg width={SIZE} height={SIZE}>
           {!hasData ? (
-            <circle
-              cx={CX} cy={CY} r={R}
-              fill="none"
-              stroke="#f5f5f5"
-              strokeWidth={SW}
-            />
+            <circle cx={CX} cy={CY} r={R} fill="none" stroke="#f5f5f5" strokeWidth={SW} />
           ) : (
             <>
-              {/* Full track ring */}
-              <circle cx={CX} cy={CY} r={R} fill="none" stroke="#f5f5f5" strokeWidth={SW} />
+              <circle cx={CX} cy={CY} r={R} fill="none" stroke="#f5f5f5" strokeWidth={SW_ACTIVE} />
               {segments.map((seg, i) => {
+                const isActive = activeIdx === i;
+                const sw = isActive ? SW_ACTIVE : SW;
                 const totalArcLen = arcLength(seg.endDeg - seg.startDeg);
                 return (
                   <path
@@ -183,7 +183,7 @@ function CategoryCard({ insights }: { insights: ExerciseInsight }) {
                     d={arcPath(seg.startDeg, seg.endDeg)}
                     fill="none"
                     stroke={seg.color}
-                    strokeWidth={activeIdx === i ? SW + 3 : SW}
+                    strokeWidth={sw}
                     strokeLinecap="butt"
                     strokeDasharray={`${totalArcLen} 9999`}
                     strokeDashoffset={animated ? 0 : totalArcLen}
@@ -192,7 +192,7 @@ function CategoryCard({ insights }: { insights: ExerciseInsight }) {
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      setActiveIdx(activeIdx === i ? null : i);
+                      setActiveIdx(isActive ? null : i);
                     }}
                     className="cursor-pointer"
                   />
@@ -202,26 +202,25 @@ function CategoryCard({ insights }: { insights: ExerciseInsight }) {
           )}
         </svg>
 
-        {/* Center: IconHome */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <svg
-            width="22" height="20" viewBox="0 0 18 16"
-            fill="currentColor" opacity={0.35}
-          >
-            <path d="M4 7.25H13.5V1H15V15H13.5V8.75H4V15H2.5V1H4V7.25Z" />
-            <path d="M1.5 12H0V4H1.5V12Z" />
-            <path d="M17.5 12H16V4H17.5V12Z" />
-          </svg>
-        </div>
+        {/* Center icon — hidden when a segment is active */}
+        {!activeSegment && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <svg width="22" height="20" viewBox="0 0 18 16" fill="currentColor" opacity={0.35}>
+              <path d="M4 7.25H13.5V1H15V15H13.5V8.75H4V15H2.5V1H4V7.25Z" />
+              <path d="M1.5 12H0V4H1.5V12Z" />
+              <path d="M17.5 12H16V4H17.5V12Z" />
+            </svg>
+          </div>
+        )}
 
-        {/* Tooltip */}
+        {/* Active segment info in center */}
         {activeSegment && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="bg-black/80 text-white rounded-lg px-3 py-1.5 text-center">
-              <div className="text-[12px] font-medium leading-tight">
+            <div className="text-center px-2">
+              <div className="text-[13px] font-semibold leading-tight">
                 {activeSegment.categoryName}
               </div>
-              <div className="text-[11px] opacity-70">
+              <div className="text-[11px] opacity-50 mt-0.5">
                 {Math.round(activeSegment.pct * 100)}%
               </div>
             </div>
@@ -229,9 +228,16 @@ function CategoryCard({ insights }: { insights: ExerciseInsight }) {
         )}
       </div>
 
-      <span className="text-[11px] font-medium uppercase tracking-wider opacity-50">
-        Kategorier
-      </span>
+      {/* Label — shows category name when selected, otherwise "KATEGORIER" */}
+      {activeSegment ? (
+        <span className="text-[13px] font-medium">
+          {activeSegment.categoryName}
+        </span>
+      ) : (
+        <span className="text-[11px] font-medium uppercase tracking-wider opacity-50">
+          Kategorier
+        </span>
+      )}
     </div>
   );
 }
