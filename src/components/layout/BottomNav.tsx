@@ -9,6 +9,13 @@ const NAV_ITEMS = [
   { path: "/profile", Icon: IconProfile, label: "Profil" },
 ];
 
+const BLUR_LAYERS = [
+  { blur: "16px", stop: "25%" },
+  { blur: "12px", stop: "50%" },
+  { blur: "8px",  stop: "75%" },
+  { blur: "4px",  stop: "100%" },
+];
+
 export function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -16,11 +23,36 @@ export function BottomNav() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-60 pointer-events-none">
-      <div className="mx-auto max-w-[600px]">
-        <div
-          className="flex items-end justify-around px-6 pb-12 pt-14"
-          style={{ background: activeSession ? "transparent" : "var(--footer-bg)" }}
-        >
+      <div className="mx-auto max-w-[600px] relative">
+
+        {/* Progressive blur + gradient — extends 16px above the icon row */}
+        {!activeSession && (
+          <>
+            {BLUR_LAYERS.map(({ blur, stop }) => (
+              <div
+                key={blur}
+                className="absolute inset-x-0 bottom-0"
+                style={{
+                  top: "-16px",
+                  backdropFilter: `blur(${blur})`,
+                  WebkitBackdropFilter: `blur(${blur})`,
+                  maskImage: `linear-gradient(to top, black 0%, transparent ${stop})`,
+                  WebkitMaskImage: `linear-gradient(to top, black 0%, transparent ${stop})`,
+                }}
+              />
+            ))}
+            <div
+              className="absolute inset-x-0 bottom-0"
+              style={{ top: "-16px", background: "var(--footer-bg)" }}
+            />
+          </>
+        )}
+
+        {/* Click blocker — covers the full footer area so taps don't fall through */}
+        <div className="absolute inset-0 pointer-events-auto" />
+
+        {/* Nav icons — z-10 so they sit above the blur layers, unaffected */}
+        <div className="relative z-10 flex items-end justify-around px-6 pb-12 pt-14">
           {NAV_ITEMS.map(({ path, Icon, label }) => {
             const isActive = path === "/"
               ? location.pathname === "/" || location.pathname.startsWith("/category")
@@ -39,6 +71,7 @@ export function BottomNav() {
             );
           })}
         </div>
+
       </div>
     </div>
   );

@@ -4,7 +4,7 @@ import { useRef, useState, useEffect, useLayoutEffect, useCallback } from "react
 const LINES = ["For", "future", "you."];
 const HEADER_SCALE = 0.2;
 const HERO_TOP = 112;
-const HEADER_TOP = 43;
+const HEADER_TOP = 35;
 const SCROLL_THRESHOLD = 100;
 
 function lerp(a: number, b: number, t: number) {
