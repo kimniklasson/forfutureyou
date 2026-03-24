@@ -42,18 +42,24 @@ export function StatsSessionOverview({ stats }: Props) {
 
   return (
     <div className="flex flex-col gap-4">
-      <span className="text-[12px] font-bold uppercase tracking-wider opacity-50">
+      <span className="text-[12px] font-bold uppercase tracking-wider opacity-50 px-4">
         Passöversikt
       </span>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="flex overflow-x-auto gap-3 px-4 pb-1 scrollbar-none snap-x snap-mandatory">
         {cards.map((card, i) => (
           <div
             key={card.label}
-            className="bg-card rounded-card p-4 flex flex-col gap-1 animate-in"
-            style={{ animationDelay: `${i * 0.04}s` }}
+            className="bg-white rounded-card p-4 flex flex-col flex-none animate-in snap-start"
+            style={{
+              width: "calc(33.333vw - 20px)",
+              minWidth: "calc(33.333vw - 20px)",
+              border: "1px solid rgba(0,0,0,0.1)",
+              animationDelay: `${i * 0.04}s`,
+            }}
           >
             <span className="text-[20px] font-bold">{card.value}</span>
+            <div style={{ height: 40 }} />
             <span className="text-[11px] opacity-50 uppercase tracking-wider">{card.label}</span>
           </div>
         ))}
