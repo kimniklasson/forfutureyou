@@ -191,10 +191,12 @@ export function ExerciseCard({
     <>
       <div
         {...itemProps}
+        onClick={handleSetPress}
         className={[
-          "bg-card rounded-card p-4 flex flex-col select-none",
+          "bg-card rounded-card p-4 flex flex-col select-none cursor-pointer",
           isNew ? "animate-new-exercise" : "animate-in",
-          isSetInProgress ? "ring-2 ring-black/20 dark:ring-white/20" : hasCompletedSets ? "ring-2 ring-black dark:ring-white" : "",
+          "ring-2",
+          isSetInProgress ? "ring-black dark:ring-white" : hasCompletedSets ? "ring-accent" : "ring-transparent",
           isDragging ? "shadow-xl scale-[1.01]" : "",
           isDimmed ? "opacity-40" : "opacity-100",
           "transition-opacity transition-shadow duration-150",
@@ -206,7 +208,7 @@ export function ExerciseCard({
         <div className="flex items-center">
           {/* Settings icon */}
           <button
-            onClick={() => setShowSettings(true)}
+            onClick={(e) => { e.stopPropagation(); setShowSettings(true); }}
             className="shrink-0 opacity-40 active:opacity-70 w-8 h-8 flex items-center justify-center"
           >
             <SettingsIcon />
@@ -224,20 +226,19 @@ export function ExerciseCard({
               <span className="text-[12px] opacity-50 whitespace-nowrap">{pbLabel}</span>
             )}
             <button
-              onClick={handleSetPress}
-              className={`px-4 py-2 rounded-button text-[12px] font-bold uppercase tracking-wider shrink-0 transition-colors ${
+              className={`w-12 h-8 flex items-center justify-center rounded-button text-[12px] font-bold uppercase tracking-wider shrink-0 transition-colors border ${
                 isSetInProgress
-                  ? "bg-black dark:bg-white text-white dark:text-black"
-                  : "border border-black/15 dark:border-white/15 text-black dark:text-white bg-transparent"
+                  ? "bg-black dark:bg-white text-white dark:text-black border-transparent"
+                  : "border-transparent bg-accent text-black"
               }`}
             >
-              {isSetInProgress ? `LOGGA S${setCount + 1}` : `STARTA S${setCount + 1}`}
+              {isSetInProgress ? <IconCheck size={16} /> : `S${setCount + 1}`}
             </button>
           </div>
         </div>
 
         {/* Adjusters */}
-        <div className="flex flex-row gap-2 mt-3">
+        <div className="flex flex-row gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
           <RepWeightAdjuster
             value={adjustment.currentReps}
             label="rep"
