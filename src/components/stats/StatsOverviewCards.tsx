@@ -4,6 +4,7 @@ import type { SessionStats, ExerciseInsight } from "../../utils/statistics";
 interface Props {
   stats: SessionStats;
   insights: ExerciseInsight;
+  categoryNameToIndex: Map<string, number>;
 }
 
 import { getCategoryColor } from "../../utils/categoryColors";
@@ -87,7 +88,7 @@ interface Segment {
   color: string;
 }
 
-function CategoryCard({ insights }: { insights: ExerciseInsight }) {
+function CategoryCard({ insights, categoryNameToIndex }: { insights: ExerciseInsight; categoryNameToIndex: Map<string, number> }) {
   const [animated, setAnimated] = useState(false);
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -125,7 +126,7 @@ function CategoryCard({ insights }: { insights: ExerciseInsight }) {
       pct,
       startDeg: cursor,
       endDeg: cursor + fullDeg,
-      color: getCategoryColor(i),
+      color: getCategoryColor(categoryNameToIndex.get(cat.categoryName) ?? i),
     });
     cursor += fullDeg;
   }
@@ -204,11 +205,11 @@ function CategoryCard({ insights }: { insights: ExerciseInsight }) {
 
 // ── Export ───────────────────────────────────────────────────
 
-export function StatsOverviewCards({ stats, insights }: Props) {
+export function StatsOverviewCards({ stats, insights, categoryNameToIndex }: Props) {
   return (
     <div className="flex gap-2">
       <IntensityCard score={stats.avgIntensityScore} />
-      <CategoryCard insights={insights} />
+      <CategoryCard insights={insights} categoryNameToIndex={categoryNameToIndex} />
     </div>
   );
 }

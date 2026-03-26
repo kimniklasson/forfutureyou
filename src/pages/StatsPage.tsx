@@ -30,6 +30,14 @@ export function StatsPage() {
     const allExercises = categories.flatMap((c) => c.exercises.map((e) => ({ id: e.id, name: e.name })));
     return stats.computeExerciseInsights(sessions, allExercises);
   }, [sessions, categories]);
+
+  // Stabil färgmappning: kategorins index i categories-arrayen (drag-ordning) → färg
+  const categoryNameToIndex = useMemo(() => {
+    const map = new Map<string, number>();
+    categories.forEach((c, i) => map.set(c.name, i));
+    return map;
+  }, [categories]);
+
   const isEmpty = sessions.length === 0;
 
   return (
@@ -49,7 +57,7 @@ export function StatsPage() {
       ) : (
         <>
           <FadeInOnScroll>
-            <StatsOverviewCards stats={sessionStats} insights={insights} />
+            <StatsOverviewCards stats={sessionStats} insights={insights} categoryNameToIndex={categoryNameToIndex} />
           </FadeInOnScroll>
           <FadeInOnScroll>
             <StatsPersonalRecords prs={prs} />
