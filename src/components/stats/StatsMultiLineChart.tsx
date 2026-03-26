@@ -139,7 +139,7 @@ export function StatsMultiLineChart({ seriesList, showBaseline = false, formatVa
           )}
 
 
-          {/* Series */}
+          {/* Pass 1: lines */}
           {seriesList.map((s) => {
             const pts = s.points.map((p) => ({
               x: xForKey(p.timeKey),
@@ -147,91 +147,87 @@ export function StatsMultiLineChart({ seriesList, showBaseline = false, formatVa
               p,
             }));
             if (pts.length === 0) return null;
-
             const polyline = pts.map((p) => `${p.x},${p.y}`).join(" ");
+            return (
+              <polyline
+                key={s.key}
+                points={polyline}
+                fill="none"
+                stroke={s.color}
+                strokeWidth={1.8}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                pathLength={1}
+                style={{
+                  strokeDasharray: 1,
+                  strokeDashoffset: animate ? 0 : 1,
+                  transition: "stroke-dashoffset 0.7s cubic-bezier(0.16, 1, 0.3, 1)",
+                }}
+              />
+            );
+          })}
 
+          {/* Pass 2: dots + hit areas */}
+          {seriesList.map((s) => {
+            const pts = s.points.map((p) => ({
+              x: xForKey(p.timeKey),
+              y: yForValue(p.value),
+              p,
+            }));
+            if (pts.length === 0) return null;
             return (
               <g key={s.key}>
-                <polyline
-                  points={polyline}
-                  fill="none"
-                  stroke={s.color}
-                  strokeWidth={1.8}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  pathLength={1}
-                  style={{
-                    strokeDasharray: 1,
-                    strokeDashoffset: animate ? 0 : 1,
-                    transition: "stroke-dashoffset 0.7s cubic-bezier(0.16, 1, 0.3, 1)",
-                  }}
-                />
-                {pts.map(({ x, y, p }, i) => {
-                  const isSelected = tooltip?.seriesKey === s.key && tooltip?.pointIdx === i;
-                  const line1 = s.label;
-                  const line2 = `${p.displayLabel} · ${fmt(p.value)}`;
-                  const tooltipW = Math.max(line1.length, line2.length) * TOOLTIP_CW + TOOLTIP_PX * 2;
-                  const rawTx = x - tooltipW / 2;
-                  const tx = Math.max(0, Math.min(rawTx, width - tooltipW));
-                  const ty = y - DOT_R - ARROW - TOOLTIP_H;
-
-                  return (
-                    <g key={i}>
-                      <circle
-                        cx={x}
-                        cy={y}
-                        r={DOT_R}
-                        fill={s.color}
-                        opacity={animate ? 1 : 0}
-                        style={{ transition: `opacity 0.3s ease ${0.4 + i * 0.04}s` }}
-                      />
-                      <rect
-                        x={x - HIT}
-                        y={y - HIT}
-                        width={HIT * 2}
-                        height={HIT * 2}
-                        fill="transparent"
-                        style={{ cursor: "pointer" }}
-                        onPointerDown={(e) => {
-                          e.stopPropagation();
-                          setTooltip(isSelected ? null : { seriesKey: s.key, pointIdx: i });
-                        }}
-                      />
-                      {isSelected && (
-                        <g pointerEvents="none">
-                          <rect
-                            x={tx}
-                            y={ty}
-                            width={tooltipW}
-                            height={TOOLTIP_H}
-                            rx={6}
-                            fill="black"
-                            className="dark:fill-white"
-                          />
-                          <text
-                            x={tx + tooltipW / 2}
-                            textAnchor="middle"
-                            fill="white"
-                            className="dark:fill-black"
-                            fontSize={TOOLTIP_FS}
-                            fontWeight={600}
-                          >
-                            <tspan x={tx + tooltipW / 2} y={ty + TOOLTIP_PY + TOOLTIP_FS - 1}>{line1}</tspan>
-                            <tspan x={tx + tooltipW / 2} dy={TOOLTIP_FS + TOOLTIP_LINE_GAP} fontWeight={400} fillOpacity={0.7}>{line2}</tspan>
-                          </text>
-                          <polygon
-                            points={`${x - ARROW},${y - DOT_R - ARROW} ${x + ARROW},${y - DOT_R - ARROW} ${x},${y - DOT_R}`}
-                            fill="black"
-                            className="dark:fill-white"
-                          />
-                        </g>
-                      )}
-                    </g>
-                  );
-                })}
+                {pts.map(({ x, y }, i) => (
+                  <g key={i}>
+                    <circle
+                      cx={x} cy={y} r={DOT_R}
+                      fill={s.color}
+                      opacity={animate ? 1 : 0}
+                      style={{ transition: `opacity 0.3s ease ${0.4 + i * 0.04}s` }}
+                    />
+                    <rect
+                      x={x - HIT} y={y - HIT}
+                      width={HIT * 2} height={HIT * 2}
+                      fill="transparent"
+                      style={{ cursor: "pointer" }}
+                      onPointerDown={(e) => {
+                        e.stopPropagation();
+                        const isSelected = tooltip?.seriesKey === s.key && tooltip?.pointIdx === i;
+                        setTooltip(isSelected ? null : { seriesKey: s.key, pointIdx: i });
+                      }}
+                    />
+                  </g>
+                ))}
               </g>
             );
           })}
+
+          {/* Pass 3: active tooltip — always on top */}
+          {(() => {
+            if (!tooltip) return null;
+            const s = seriesList.find((s) => s.key === tooltip.seriesKey);
+            if (!s) return null;
+            const pt = s.points[tooltip.pointIdx];
+            if (!pt) return null;
+            const x = xForKey(pt.timeKey);
+            const y = yForValue(pt.value);
+            const line1 = s.label;
+            const line2 = `${pt.displayLabel} · ${fmt(pt.value)}`;
+            const tooltipW = Math.max(line1.length, line2.length) * TOOLTIP_CW + TOOLTIP_PX * 2;
+            const rawTx = x - tooltipW / 2;
+            const tx = Math.max(0, Math.min(rawTx, width - tooltipW));
+            const ty = y - DOT_R - ARROW - TOOLTIP_H;
+            return (
+              <g pointerEvents="none">
+                <rect x={tx} y={ty} width={tooltipW} height={TOOLTIP_H} rx={6} fill="black" className="dark:fill-white" />
+                <text x={tx + tooltipW / 2} textAnchor="middle" fill="white" className="dark:fill-black" fontSize={TOOLTIP_FS} fontWeight={600}>
+                  <tspan x={tx + tooltipW / 2} y={ty + TOOLTIP_PY + TOOLTIP_FS - 1}>{line1}</tspan>
+                  <tspan x={tx + tooltipW / 2} dy={TOOLTIP_FS + TOOLTIP_LINE_GAP} fontWeight={400} fillOpacity={0.7}>{line2}</tspan>
+                </text>
+                <polygon points={`${x - ARROW},${y - DOT_R - ARROW} ${x + ARROW},${y - DOT_R - ARROW} ${x},${y - DOT_R}`} fill="black" className="dark:fill-white" />
+              </g>
+            );
+          })()}
         </svg>
       )}
     </div>
