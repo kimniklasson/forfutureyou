@@ -16,6 +16,7 @@ export interface Category {
   exercises: CategoryExercise[];
   createdAt: string;
   sortOrder: number;
+  colorIndex: number;
 }
 
 export interface WorkoutSet {

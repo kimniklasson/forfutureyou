@@ -9,6 +9,8 @@ import { useSettingsStore } from "../../stores/useSettingsStore";
 import { IconTrash } from "../ui/icons";
 import type { WorkoutSession } from "../../types/models";
 import { IntensityCard } from "../stats/StatsOverviewCards";
+import { getCategoryColor } from "../../utils/categoryColors";
+import { useCategoryStore } from "../../stores/useCategoryStore";
 
 // ─── Date / time helpers ────────────────────────────────────────────────────
 
@@ -113,6 +115,7 @@ export function WorkoutDetailView() {
   const { sessionId } = useParams<{ sessionId: string }>();
   const { loadSessions, updateSession } = useHistoryStore();
   const allSessions = useHistoryStore((state) => state.sessions);
+  const { categories } = useCategoryStore();
   const { userWeight, userAge, userSex, showCalories } = useSettingsStore();
   const session = allSessions.find((s) => s.id === sessionId);
 
@@ -142,6 +145,18 @@ export function WorkoutDetailView() {
   const intensity = calculateIntensity(session, userWeight);
   const restData = calculateRestTimes(session);
   const calories = calculateCalories(session, userWeight, userAge, userSex, intensity.score);
+
+  // Kategorigfärg — hämtas direkt från kategorimodellens colorIndex
+  const categoryColor = useMemo(() => {
+    const cat = categories.find((c) => c.id === session.categoryId);
+    if (cat) return getCategoryColor(cat.colorIndex);
+    // Fallback om kategorin raderats: first-seen-ordning bland alla pass
+    const seen = new Map<string, number>();
+    for (const s of allSessions) {
+      if (!seen.has(s.categoryId)) seen.set(s.categoryId, seen.size);
+    }
+    return getCategoryColor(seen.get(session.categoryId) ?? 0);
+  }, [categories, allSessions, session.categoryId]);
 
   // Previous session of same category for trend comparison
   const prevSession = useMemo(() => {
@@ -254,7 +269,7 @@ export function WorkoutDetailView() {
 
       {/* Summary row */}
       <div className="flex gap-3">
-        <IntensityCard score={intensity.score} label="Intensitet" infoTitle="Intensitet" infoDescription="Visar hur tungt du lyfte i förhållande till din maxstyrka. 100 betyder att du lyfte på max hela passet – de flesta tränar runt 60–80." />
+        <IntensityCard score={intensity.score} label="Intensitet" infoTitle="Intensitet" infoDescription="Visar hur tungt du lyfte i förhållande till din maxstyrka. 100 betyder att du lyfte på max hela passet – de flesta tränar runt 60–80." color={categoryColor} />
 
         <div className="flex-1 rounded-card border border-black/10 dark:border-white/10 p-6 flex flex-col justify-between">
           {(() => {

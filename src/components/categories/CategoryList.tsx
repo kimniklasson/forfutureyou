@@ -114,7 +114,7 @@ export function CategoryList() {
                   <FadeInOnScroll delay={i * 60}>
                     <CategoryListItem
                       category={category}
-                      colorIndex={i}
+                      colorIndex={category.colorIndex}
                       onDelete={handleDelete}
                       onDuplicate={handleDuplicate}
                       hasActiveSession={activeSession?.categoryId === category.id}

@@ -76,6 +76,7 @@ export const categoryRepository: CategoryRepository = {
       name,
       createdAt: new Date().toISOString(),
       sortOrder: categories.length,
+      colorIndex: 0, // Placeholder — store tilldelar korrekt index via colorIndices-kartan
     };
     categories.push(newCategory);
     saveCategories(categories);

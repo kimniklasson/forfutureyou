@@ -1,8 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useHistoryStore } from "../../stores/useHistoryStore";
+import { useCategoryStore } from "../../stores/useCategoryStore";
 import { CompletedWorkoutItem } from "./CompletedWorkoutItem";
 import { WorkoutBarChart } from "./WorkoutBarChart";
 import { FadeInOnScroll } from "../ui/FadeInOnScroll";
+import { getCategoryColor } from "../../utils/categoryColors";
 
 export function CompletedWorkoutsList() {
   const { loadSessions, getGroupedByMonth, deleteSession } = useHistoryStore();
@@ -12,7 +14,23 @@ export function CompletedWorkoutsList() {
   }, [loadSessions]);
 
   const { sessions } = useHistoryStore();
+  const { categories } = useCategoryStore();
   const groups = getGroupedByMonth();
+
+  // Bygg färgkarta från kategoriernas egna colorIndex (permanent, ordningsoberoende)
+  const categoryColorMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const cat of categories) {
+      map.set(cat.id, getCategoryColor(cat.colorIndex));
+    }
+    // Fallback för pass vars kategori raderats
+    for (const s of sessions) {
+      if (!map.has(s.categoryId)) {
+        map.set(s.categoryId, getCategoryColor(map.size));
+      }
+    }
+    return map;
+  }, [categories, sessions]);
   const isEmpty = groups.length === 0;
 
   return (
@@ -47,6 +65,7 @@ export function CompletedWorkoutsList() {
                   <CompletedWorkoutItem
                     session={session}
                     onDelete={deleteSession}
+                    categoryColor={categoryColorMap.get(session.categoryId)}
                   />
                 </FadeInOnScroll>
               ))}

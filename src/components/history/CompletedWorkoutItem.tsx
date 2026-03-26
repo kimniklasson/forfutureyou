@@ -13,7 +13,7 @@ const SIZE = 2 * (R + SW / 2); // 30px — no empty space around stroke
 const CX = SIZE / 2;
 const CY = SIZE / 2;
 
-function IntensityRing({ score }: { score: number }) {
+function IntensityRing({ score, color }: { score: number; color?: string }) {
   const [animated, setAnimated] = useState(false);
   useEffect(() => {
     const t = setTimeout(() => setAnimated(true), 80);
@@ -25,13 +25,15 @@ function IntensityRing({ score }: { score: number }) {
   const progressArc = (intensity / 100) * circumference;
   const dashOffset = animated ? circumference - progressArc : circumference;
 
+  const strokeColor = color ?? "currentColor";
+
   return (
     <svg width={SIZE} height={SIZE} className="shrink-0 self-center">
-      <circle cx={CX} cy={CY} r={R} fill="none" stroke="currentColor" strokeWidth={SW} strokeOpacity={0.1} />
+      <circle cx={CX} cy={CY} r={R} fill="none" stroke={strokeColor} strokeWidth={SW} strokeOpacity={0.15} />
       <circle
         cx={CX} cy={CY} r={R}
         fill="none"
-        stroke="currentColor"
+        stroke={strokeColor}
         strokeWidth={SW}
         strokeLinecap="butt"
         strokeDasharray={`${circumference}`}
@@ -46,9 +48,10 @@ function IntensityRing({ score }: { score: number }) {
 interface CompletedWorkoutItemProps {
   session: WorkoutSession;
   onDelete: (id: string) => void;
+  categoryColor?: string;
 }
 
-export function CompletedWorkoutItem({ session, onDelete }: CompletedWorkoutItemProps) {
+export function CompletedWorkoutItem({ session, onDelete, categoryColor }: CompletedWorkoutItemProps) {
   const navigate = useNavigate();
   const { userWeight } = useSettingsStore();
 
@@ -67,7 +70,7 @@ export function CompletedWorkoutItem({ session, onDelete }: CompletedWorkoutItem
         className="bg-card rounded-card px-6 py-6 flex items-start gap-4 cursor-pointer"
         onClick={() => navigate(`/history/${session.id}`)}
       >
-        <IntensityRing score={intensity.score} />
+        <IntensityRing score={intensity.score} color={categoryColor} />
         <div className="flex-1 flex flex-col min-w-0">
           <span className="font-bold text-[15px] leading-[18px]">
             {formatShortDate(session.startedAt)}

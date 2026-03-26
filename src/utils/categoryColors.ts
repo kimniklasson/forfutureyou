@@ -9,9 +9,10 @@ const BASE_COLORS = [
 ];
 const EXTRA_OPACITIES = [0.7, 0.5, 0.35];
 
-export function getCategoryColor(index: number): string {
-  if (index < BASE_COLORS.length) return BASE_COLORS[index];
-  const cycle = index - BASE_COLORS.length;
+export function getCategoryColor(index: number | undefined): string {
+  const i = typeof index === "number" && !isNaN(index) ? index : 0;
+  if (i < BASE_COLORS.length) return BASE_COLORS[i];
+  const cycle = i - BASE_COLORS.length;
   const opacityIdx = Math.floor(cycle / BASE_COLORS.length);
   const colorIdx = cycle % BASE_COLORS.length;
   const opacity = EXTRA_OPACITIES[Math.min(opacityIdx, EXTRA_OPACITIES.length - 1)];

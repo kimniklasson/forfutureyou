@@ -39,7 +39,7 @@ const CARD_CLS = "flex-1 rounded-card p-4 flex flex-col items-center gap-3 borde
 
 // ── Intensity Ring ───────────────────────────────────────────
 
-export function IntensityCard({ score, label = "Snittintensitet", infoTitle, infoDescription }: { score: number; label?: string; infoTitle?: string; infoDescription?: string }) {
+export function IntensityCard({ score, label = "Snittintensitet", infoTitle, infoDescription, color }: { score: number; label?: string; infoTitle?: string; infoDescription?: string; color?: string }) {
   const [animated, setAnimated] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
   useEffect(() => {
@@ -56,11 +56,11 @@ export function IntensityCard({ score, label = "Snittintensitet", infoTitle, inf
     <div className={CARD_CLS}>
       <div className="relative" style={{ width: SIZE, height: SIZE }}>
         <svg width={SIZE} height={SIZE}>
-          <circle cx={CX} cy={CY} r={R} fill="none" stroke="currentColor" strokeWidth={SW} strokeOpacity={0.1} />
+          <circle cx={CX} cy={CY} r={R} fill="none" stroke={color ?? "currentColor"} strokeWidth={SW} strokeOpacity={0.15} />
           <circle
             cx={CX} cy={CY} r={R}
             fill="none"
-            stroke="currentColor"
+            stroke={color ?? "currentColor"}
             strokeWidth={SW}
             strokeLinecap="butt"
             strokeDasharray={`${circumference}`}

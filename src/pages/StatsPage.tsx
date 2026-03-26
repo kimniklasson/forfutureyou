@@ -35,7 +35,7 @@ export function StatsPage() {
 
   const categoryNameToIndex = useMemo(() => {
     const map = new Map<string, number>();
-    categories.forEach((c, i) => map.set(c.name, i));
+    categories.forEach((c) => map.set(c.name, c.colorIndex));
     return map;
   }, [categories]);
 

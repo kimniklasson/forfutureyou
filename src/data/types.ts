@@ -11,7 +11,7 @@ export interface CategoryRepository {
   getAll(): Promise<Category[]>;
   getById(id: string): Promise<Category | null>;
   create(name: string): Promise<Category>;
-  update(id: string, data: Partial<Pick<Category, "name" | "sortOrder">>): Promise<Category>;
+  update(id: string, data: Partial<Pick<Category, "name" | "sortOrder" | "colorIndex">>): Promise<Category>;
   delete(id: string): Promise<void>;
   addExerciseToCategory(categoryId: string, exerciseId: string): Promise<void>;
   removeExerciseFromCategory(categoryId: string, exerciseId: string): Promise<void>;
