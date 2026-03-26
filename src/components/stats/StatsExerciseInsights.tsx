@@ -1,5 +1,5 @@
 import type { ExerciseInsight } from "../../utils/statistics";
-import { CATEGORY_COLORS } from "../../utils/categoryColors";
+import { getCategoryColor } from "../../utils/categoryColors";
 
 interface Props {
   insights: ExerciseInsight;
@@ -50,7 +50,7 @@ export function StatsExerciseInsights({ insights }: Props) {
                   key={cat.categoryName}
                   style={{
                     width: `${(cat.sessionCount / totalSessions) * 100}%`,
-                    backgroundColor: CATEGORY_COLORS[i % CATEGORY_COLORS.length],
+                    backgroundColor: getCategoryColor(i),
                   }}
                 />
               ))}
@@ -62,7 +62,7 @@ export function StatsExerciseInsights({ insights }: Props) {
                 <div key={cat.categoryName} className="flex items-center gap-1.5">
                   <div
                     className="w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: CATEGORY_COLORS[i % CATEGORY_COLORS.length] }}
+                    style={{ backgroundColor: getCategoryColor(i) }}
                   />
                   <span className="text-[11px] opacity-70">
                     {cat.categoryName} ({cat.sessionCount})
