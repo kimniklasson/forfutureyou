@@ -307,7 +307,7 @@ export function WorkoutDetailView() {
           }
           return (
         <div key={log.exerciseId} className="flex flex-col">
-          <span className="font-bold text-[15px] leading-[18px] mb-2">{log.exerciseName}</span>
+          <span className="font-bold text-[20px] leading-[25px] mb-4">{log.exerciseName}</span>
           <div className="flex flex-col">
             {log.sets.map((set, setIdx) => {
               const pbType = pbMap.get(log.exerciseId)?.get(set.completedAt);
@@ -329,13 +329,7 @@ export function WorkoutDetailView() {
               return (
               <div key={set.setNumber}>
                 {restLabel && (
-                  <div
-                    className="text-center text-[12px] uppercase tracking-wider text-black py-[6px] px-2"
-                    style={{
-                      backgroundImage: "radial-gradient(circle, rgba(0,0,0,0.1) 1px, transparent 1px)",
-                      backgroundSize: "4px 4px",
-                    }}
-                  >
+                  <div className="set-rest-dots text-center text-[12px] uppercase tracking-wider text-black dark:text-white py-[6px] px-2">
                     Vila: {restLabel}
                   </div>
                 )}
@@ -387,11 +381,7 @@ export function WorkoutDetailView() {
           </div>
           {interExerciseLabel && (
             <div
-              className="text-center text-[12px] uppercase tracking-wider text-black py-6 px-2"
-              style={{
-                backgroundImage: "radial-gradient(circle, rgba(218,165,32,0.35) 1px, transparent 1px)",
-                backgroundSize: "4px 4px",
-              }}
+              className="exercise-rest-dots text-center text-[12px] uppercase tracking-wider text-black dark:text-white py-6 px-2"
             >
               Övningsvila: {interExerciseLabel}
             </div>

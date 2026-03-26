@@ -299,8 +299,13 @@ export function ProfilePage() {
         </div>
 
         {/* Password field */}
-        <div className="border border-black/10 dark:border-white/20 rounded-card flex items-center pl-6 pr-4 py-4">
-          <span className="flex-1 text-[15px]">Lösenord</span>
+        <div className="border border-black/10 dark:border-white/20 rounded-card flex items-center pl-6 pr-4 py-3">
+          <div className="flex flex-col flex-1 opacity-50">
+            <span className="text-[12px] font-bold uppercase tracking-wider opacity-50">
+              Lösenord
+            </span>
+            <span className="text-[15px]">*********</span>
+          </div>
           <button
             type="button"
             onClick={() => { setShowPasswordModal(true); setPasswordError(null); setPasswordSuccess(false); }}
