@@ -272,6 +272,75 @@ export function computeVolumeProgression(sessions: WorkoutSession[]): MonthlyPoi
     });
 }
 
+export function computeVolumeProgressionWeekly(sessions: WorkoutSession[]): WeeklyPoint[] {
+  const weekMap = new Map<string, number>();
+
+  for (const session of sessions) {
+    const { totalWeight } = calculateWorkoutTotals(session);
+    const weekKey = getISOWeekKey(new Date(session.startedAt));
+    weekMap.set(weekKey, (weekMap.get(weekKey) || 0) + totalWeight);
+  }
+
+  return Array.from(weekMap)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([weekKey, value]) => ({
+      weekKey,
+      label: "v" + weekKey.split("-W")[1],
+      value,
+    }));
+}
+
+export interface CategoryVolumePoint {
+  weekKey: string;
+  label: string;
+  value: number;
+}
+
+export interface CategoryVolumeSeries {
+  categoryId: string;
+  categoryName: string;
+  points: CategoryVolumePoint[];
+}
+
+export function computeVolumeProgressionByCategory(sessions: WorkoutSession[]): CategoryVolumeSeries[] {
+  const sorted = [...sessions].sort((a, b) => a.startedAt.localeCompare(b.startedAt));
+
+  const categoryMap = new Map<string, {
+    categoryName: string;
+    weeks: Map<string, number>;
+  }>();
+
+  for (const session of sorted) {
+    const weekKey = getISOWeekKey(new Date(session.startedAt));
+    const { totalWeight } = calculateWorkoutTotals(session);
+
+    let cat = categoryMap.get(session.categoryId);
+    if (!cat) {
+      cat = { categoryName: session.categoryName, weeks: new Map() };
+      categoryMap.set(session.categoryId, cat);
+    }
+    cat.weeks.set(weekKey, (cat.weeks.get(weekKey) || 0) + totalWeight);
+  }
+
+  const result: CategoryVolumeSeries[] = [];
+  for (const [categoryId, cat] of categoryMap) {
+    const weekEntries = Array.from(cat.weeks.entries()).sort(([a], [b]) => a.localeCompare(b));
+    if (weekEntries.length < 2) continue;
+
+    result.push({
+      categoryId,
+      categoryName: cat.categoryName,
+      points: weekEntries.map(([weekKey, value]) => ({
+        weekKey,
+        label: "v" + weekKey.split("-W")[1],
+        value: Math.round(value),
+      })),
+    });
+  }
+
+  return result;
+}
+
 // ── Per-event progression ─────────────────────────────────
 
 export interface EventPoint {
@@ -559,6 +628,107 @@ export function computeExerciseInsights(
     exerciseVarietyScore: recentExercises.size,
     categoryBalance,
   };
+}
+
+// ── Category Strength Index ────────────────────────────────
+
+export interface StrengthIndexPoint {
+  monthKey: string;
+  label: string;
+  value: number; // relative %, 100 = baseline (first recorded month)
+}
+
+export interface CategoryStrengthSeries {
+  categoryId: string;
+  categoryName: string;
+  points: StrengthIndexPoint[];
+}
+
+export interface StrengthIndexResult {
+  series: CategoryStrengthSeries[];
+}
+
+export function computeCategoryStrengthIndex(sessions: WorkoutSession[]): StrengthIndexResult {
+  const sorted = [...sessions].sort((a, b) => a.startedAt.localeCompare(b.startedAt));
+
+  // Per-exercise: track best metric per week
+  // metric = best e1RM for weighted, max reps for bodyweight
+  type ExEntry = {
+    categoryId: string;
+    categoryName: string;
+    isBodyweight: boolean;
+    weeks: Map<string, number>; // weekKey → best metric
+  };
+  const exerciseMap = new Map<string, ExEntry>();
+
+  for (const session of sorted) {
+    const weekKey = getISOWeekKey(new Date(session.startedAt));
+    for (const log of session.exerciseLogs) {
+      let entry = exerciseMap.get(log.exerciseId);
+      if (!entry) {
+        entry = {
+          categoryId: session.categoryId,
+          categoryName: session.categoryName,
+          isBodyweight: log.isBodyweight,
+          weeks: new Map(),
+        };
+        exerciseMap.set(log.exerciseId, entry);
+      }
+
+      let bestMetric = entry.weeks.get(weekKey) || 0;
+      for (const set of log.sets) {
+        const metric = log.isBodyweight
+          ? set.reps
+          : set.weight * (1 + set.reps / 30);
+        if (metric > bestMetric) bestMetric = metric;
+      }
+      entry.weeks.set(weekKey, bestMetric);
+    }
+  }
+
+  // Compute relative values per exercise — include all exercises with ≥ 1 week of data
+  // so every category with sessions across ≥ 2 different weeks is represented
+  const categoryBuckets = new Map<string, {
+    categoryName: string;
+    weeks: Map<string, number[]>;
+  }>();
+
+  for (const entry of exerciseMap.values()) {
+    if (entry.weeks.size < 1) continue;
+
+    const sortedWeeks = Array.from(entry.weeks.entries()).sort(([a], [b]) => a.localeCompare(b));
+    const baseline = sortedWeeks[0][1];
+    if (baseline <= 0) continue;
+
+    for (const [weekKey, metric] of sortedWeeks) {
+      const relative = (metric / baseline) * 100;
+
+      let cat = categoryBuckets.get(entry.categoryId);
+      if (!cat) {
+        cat = { categoryName: entry.categoryName, weeks: new Map() };
+        categoryBuckets.set(entry.categoryId, cat);
+      }
+      const arr = cat.weeks.get(weekKey) || [];
+      arr.push(relative);
+      cat.weeks.set(weekKey, arr);
+    }
+  }
+
+  // Build per-category series — show if category spans ≥ 2 distinct weeks
+  const series: CategoryStrengthSeries[] = [];
+  for (const [categoryId, cat] of categoryBuckets) {
+    const weekEntries = Array.from(cat.weeks.entries()).sort(([a], [b]) => a.localeCompare(b));
+    if (weekEntries.length < 2) continue;
+
+    const points: StrengthIndexPoint[] = weekEntries.map(([weekKey, values]) => {
+      const avg = values.reduce((a, b) => a + b, 0) / values.length;
+      return { monthKey: weekKey, label: "v" + weekKey.split("-W")[1], value: Math.round(avg) };
+    });
+
+    series.push({ categoryId, categoryName: cat.categoryName, points });
+  }
+
+  return { series };
 }
 
 // ── Fun / Motivational ─────────────────────────────────────

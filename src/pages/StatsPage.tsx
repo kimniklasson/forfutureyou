@@ -6,6 +6,8 @@ import { StatsPersonalRecords } from "../components/stats/StatsPersonalRecords";
 import { StatsStreaks } from "../components/stats/StatsStreaks";
 import { StatsSessionOverview } from "../components/stats/StatsSessionOverview";
 import { StatsOverviewCards } from "../components/stats/StatsOverviewCards";
+import { StatsStrengthTrend } from "../components/stats/StatsStrengthTrend";
+import { StatsVolumeTrend } from "../components/stats/StatsVolumeTrend";
 import { FadeInOnScroll } from "../components/ui/FadeInOnScroll";
 import * as stats from "../utils/statistics";
 
@@ -31,7 +33,6 @@ export function StatsPage() {
     return stats.computeExerciseInsights(sessions, allExercises);
   }, [sessions, categories]);
 
-  // Stabil färgmappning: kategorins index i categories-arrayen (drag-ordning) → färg
   const categoryNameToIndex = useMemo(() => {
     const map = new Map<string, number>();
     categories.forEach((c, i) => map.set(c.name, i));
@@ -42,7 +43,6 @@ export function StatsPage() {
 
   return (
     <div className="flex flex-col gap-10">
-      {/* Page header */}
       <div className="flex flex-col items-center text-center">
         <span className="text-[20px] font-bold leading-[1.22]">Statistik</span>
         <span className="text-[20px] leading-[1.22] opacity-50">
@@ -57,7 +57,13 @@ export function StatsPage() {
       ) : (
         <>
           <FadeInOnScroll>
-            <StatsOverviewCards stats={sessionStats} insights={insights} categoryNameToIndex={categoryNameToIndex} />
+            <div className="flex flex-col gap-2">
+              <StatsOverviewCards stats={sessionStats} insights={insights} categoryNameToIndex={categoryNameToIndex} />
+              <div className="flex gap-2">
+                <StatsStrengthTrend sessions={sessions} categoryNameToIndex={categoryNameToIndex} />
+                <StatsVolumeTrend sessions={sessions} categoryNameToIndex={categoryNameToIndex} />
+              </div>
+            </div>
           </FadeInOnScroll>
           <FadeInOnScroll>
             <StatsPersonalRecords prs={prs} />

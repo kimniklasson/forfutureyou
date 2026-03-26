@@ -8,6 +8,8 @@ interface Props {
 }
 
 import { getCategoryColor } from "../../utils/categoryColors";
+import { IconInfo } from "../ui/icons";
+import { InfoModal } from "../ui/InfoModal";
 
 // ── SVG helpers ──────────────────────────────────────────────
 const SIZE = 156;
@@ -37,8 +39,9 @@ const CARD_CLS = "flex-1 rounded-card p-4 flex flex-col items-center gap-3 borde
 
 // ── Intensity Ring ───────────────────────────────────────────
 
-export function IntensityCard({ score, label = "Snittintensitet" }: { score: number; label?: string }) {
+export function IntensityCard({ score, label = "Snittintensitet", infoTitle, infoDescription }: { score: number; label?: string; infoTitle?: string; infoDescription?: string }) {
   const [animated, setAnimated] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
   useEffect(() => {
     const t = setTimeout(() => setAnimated(true), 80);
     return () => clearTimeout(t);
@@ -70,9 +73,23 @@ export function IntensityCard({ score, label = "Snittintensitet" }: { score: num
           <span className="text-[20px] font-bold tabular-nums">{intensity}</span>
         </div>
       </div>
-      <span className="text-[12px] font-medium uppercase tracking-wider opacity-50">
-        {label}
-      </span>
+      <div className="flex items-center gap-1.5">
+        <button
+          onClick={() => setInfoOpen(true)}
+          className="opacity-40 hover:opacity-70 transition-opacity"
+        >
+          <IconInfo size={13} />
+        </button>
+        <span className="text-[12px] font-medium uppercase tracking-wider opacity-50">
+          {label}
+        </span>
+      </div>
+      <InfoModal
+        isOpen={infoOpen}
+        onClose={() => setInfoOpen(false)}
+        title={infoTitle ?? "Snittintensitet"}
+        description={infoDescription ?? "Visar hur tungt du i snitt lyfter jämfört med din maxstyrka, över alla pass. 100 = maximal ansträngning, de flesta landar på 60–80."}
+      />
     </div>
   );
 }
@@ -91,6 +108,7 @@ interface Segment {
 function CategoryCard({ insights, categoryNameToIndex }: { insights: ExerciseInsight; categoryNameToIndex: Map<string, number> }) {
   const [animated, setAnimated] = useState(false);
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
+  const [infoOpen, setInfoOpen] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -196,9 +214,25 @@ function CategoryCard({ insights, categoryNameToIndex }: { insights: ExerciseIns
       </div>
 
       {/* Label — always same size/style, text swaps on selection */}
-      <span className="text-[12px] font-medium uppercase tracking-wider opacity-50">
-        {activeSegment ? activeSegment.categoryName : "Passfördelning"}
-      </span>
+      <div className="flex items-center gap-1.5">
+        {!activeSegment && (
+          <button
+            onClick={(e) => { e.stopPropagation(); setInfoOpen(true); }}
+            className="opacity-40 hover:opacity-70 transition-opacity"
+          >
+            <IconInfo size={13} />
+          </button>
+        )}
+        <span className="text-[12px] font-medium uppercase tracking-wider opacity-50">
+          {activeSegment ? activeSegment.categoryName : "Passfördelning"}
+        </span>
+      </div>
+      <InfoModal
+        isOpen={infoOpen}
+        onClose={() => setInfoOpen(false)}
+        title="Passfördelning"
+        description="Visar hur dina träningspass fördelar sig mellan olika kategorier. Tryck på ett segment för att se exakt andel."
+      />
     </div>
   );
 }

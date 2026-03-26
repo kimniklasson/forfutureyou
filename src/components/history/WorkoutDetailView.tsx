@@ -254,7 +254,7 @@ export function WorkoutDetailView() {
 
       {/* Summary row */}
       <div className="flex gap-3">
-        <IntensityCard score={intensity.score} label="Intensitet" />
+        <IntensityCard score={intensity.score} label="Intensitet" infoTitle="Intensitet" infoDescription="Visar hur tungt du lyfte i förhållande till din maxstyrka. 100 betyder att du lyfte på max hela passet – de flesta tränar runt 60–80." />
 
         <div className="flex-1 rounded-card border border-black/10 dark:border-white/10 p-6 flex flex-col justify-between">
           {(() => {
@@ -267,7 +267,7 @@ export function WorkoutDetailView() {
               { label: "Snittvila", value: avgRestMs > 0
                   ? `${Math.floor(avgRestMs / 60000)}:${String(Math.floor((avgRestMs % 60000) / 1000)).padStart(2, "0")}`
                   : "–",                                                      t: trend(avgRestMs, prevAvgRestMs, true) },
-              ...(showCalories && calories > 0 ? [{ label: "Kalorier", value: `${calories} kcal`, t: trend(calories, prevCalories) }] : []),
+              ...(showCalories && calories > 0 ? [{ label: "KCAL", value: `${calories}`, t: trend(calories, prevCalories) }] : []),
             ];
             return rows.map(({ label, value, t }, i) => (
               <div key={label} className={`flex items-center justify-between gap-2 ${i > 0 ? "pt-2" : ""} ${i < rows.length - 1 ? "pb-2 border-b border-black/10 dark:border-white/10" : ""}`}>
