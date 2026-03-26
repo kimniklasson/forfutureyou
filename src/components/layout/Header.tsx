@@ -5,6 +5,13 @@ import { IconArrowLeft, IconPlus } from "../ui/icons";
 // Top-level routes that live in the bottom nav — no back arrow here
 const TOP_LEVEL = ["/", "/profile", "/history", "/stats", "/login", "/signup"];
 
+const BLUR_LAYERS = [
+  { blur: "16px", stop: "25%" },
+  { blur: "12px", stop: "50%" },
+  { blur: "8px",  stop: "75%" },
+  { blur: "4px",  stop: "100%" },
+];
+
 export function Header() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -17,11 +24,31 @@ export function Header() {
 
   return (
     <div className="fixed top-0 left-0 right-0 z-40 pointer-events-none">
-      <div className="mx-auto max-w-[600px] pointer-events-auto">
+      <div className="mx-auto max-w-[600px] relative">
+
+        {/* Progressive blur layers */}
+        {BLUR_LAYERS.map(({ blur, stop }) => (
+          <div
+            key={blur}
+            className="absolute inset-x-0 top-0"
+            style={{
+              bottom: "-16px",
+              backdropFilter: `blur(${blur})`,
+              WebkitBackdropFilter: `blur(${blur})`,
+              maskImage: `linear-gradient(to bottom, black 0%, transparent ${stop})`,
+              WebkitMaskImage: `linear-gradient(to bottom, black 0%, transparent ${stop})`,
+            }}
+          />
+        ))}
+
+        {/* Gradient overlay */}
         <div
-          className="flex items-center gap-2 px-6 pt-6 pb-10 justify-center"
-          style={{ background: "var(--header-bg)" }}
-        >
+          className="absolute inset-x-0 top-0"
+          style={{ bottom: "-16px", background: "var(--header-bg)" }}
+        />
+
+        {/* Nav content */}
+        <div className="relative z-10 pointer-events-auto flex items-center gap-2 px-6 pt-6 pb-10 justify-center">
           {/* Left — back arrow, hidden on top-level to keep header height stable */}
           <div className="flex-1 flex items-center gap-1">
             <IconButton
@@ -44,6 +71,7 @@ export function Header() {
             )}
           </div>
         </div>
+
       </div>
     </div>
   );

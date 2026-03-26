@@ -26,14 +26,14 @@
 
 /* CSS custom properties that change per theme */
 :root {
-  --header-bg: linear-gradient(to bottom, white 50%, rgba(255, 255, 255, 0));
+  --header-bg: linear-gradient(to bottom, rgba(255, 255, 255, 0.85) 30%, rgba(255, 255, 255, 0));
   --footer-bg: linear-gradient(to top, rgba(255, 255, 255, 0.97) 25%, rgba(255, 255, 255, 0) 100%);
   --nav-solid: white;
 }
 
 [data-theme=dark] {
   --color-card: #1c1c1e;
-  --header-bg: linear-gradient(to bottom, #111111 50%, rgba(17, 17, 17, 0));
+  --header-bg: linear-gradient(to bottom, rgba(17, 17, 17, 0.85) 30%, rgba(17, 17, 17, 0));
   --footer-bg: linear-gradient(to top, rgba(17, 17, 17, 0.95) 25%, rgba(17, 17, 17, 0) 100%);
   --nav-solid: #111111;
   color-scheme: dark;
@@ -261,4 +261,22 @@ body {
 
 [data-theme=dark] .modal-footer-fade {
   background: linear-gradient(to top, #1c1c1e 50%, rgba(28, 28, 30, 0));
+}
+
+/* Set rest dots */
+.set-rest-dots {
+  background-image: radial-gradient(circle, rgba(0,0,0,0.1) 1px, transparent 1px);
+  background-size: 4px 4px;
+}
+[data-theme=dark] .set-rest-dots {
+  background-image: radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px);
+}
+
+/* Exercise rest dots */
+.exercise-rest-dots {
+  background-image: radial-gradient(circle, rgba(218,165,32,0.35) 1px, transparent 1px);
+  background-size: 4px 4px;
+}
+[data-theme=dark] .exercise-rest-dots {
+  background-image: radial-gradient(circle, rgba(218,165,32,0.5) 1px, transparent 1px);
 }
