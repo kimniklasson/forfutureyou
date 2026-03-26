@@ -1,9 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import type { Category } from "../../types/models";
 import { SwipeActions } from "../ui/SwipeToDelete";
+import { getCategoryColor } from "../../utils/categoryColors";
 
 interface CategoryListItemProps {
   category: Category;
+  colorIndex: number;
   onDelete: (id: string) => void;
   onDuplicate: (id: string) => void;
   hasActiveSession?: boolean;
@@ -26,6 +28,7 @@ function formatLastSession(isoDate: string): string {
 
 export function CategoryListItem({
   category,
+  colorIndex,
   onDelete,
   onDuplicate,
   hasActiveSession,
@@ -39,6 +42,7 @@ export function CategoryListItem({
   const navigate = useNavigate();
   const exerciseCount = category.exercises.length;
   const lastSessionLabel = lastSessionDate ? formatLastSession(lastSessionDate) : null;
+  const accentColor = getCategoryColor(colorIndex);
 
   return (
     <div
@@ -67,8 +71,14 @@ export function CategoryListItem({
             .join(" ")}
           onClick={() => !isDragging && navigate(`/category/${category.id}`)}
         >
+          {/* Color accent border */}
+          <div
+            className="self-stretch rounded-full shrink-0"
+            style={{ width: 4, backgroundColor: accentColor }}
+          />
+
           {/* Name + exercise count */}
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex-1 flex flex-col min-w-0" style={{ paddingLeft: 8 }}>
             <p className="font-bold text-[15px] leading-[18px]">
               {category.name}
             </p>

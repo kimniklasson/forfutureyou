@@ -1,13 +1,9 @@
 import type { ExerciseInsight } from "../../utils/statistics";
+import { CATEGORY_COLORS } from "../../utils/categoryColors";
 
 interface Props {
   insights: ExerciseInsight;
 }
-
-const CATEGORY_COLORS = [
-  "#FFD900", "#6366f1", "#ef4444", "#22c55e", "#f97316", "#06b6d4",
-  "#a855f7", "#ec4899", "#84cc16",
-];
 
 export function StatsExerciseInsights({ insights }: Props) {
   const totalSessions = insights.categoryBalance.reduce((sum, c) => sum + c.sessionCount, 0);
