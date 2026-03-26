@@ -19,7 +19,7 @@ export function Header() {
     <div className="fixed top-0 left-0 right-0 z-40 pointer-events-none">
       <div className="mx-auto max-w-[600px] pointer-events-auto">
         <div
-          className="flex items-center gap-2 px-6 py-8 justify-center"
+          className="flex items-center gap-2 px-6 pt-6 pb-10 justify-center"
           style={{ background: "var(--header-bg)" }}
         >
           {/* Left — back arrow, hidden on top-level to keep header height stable */}

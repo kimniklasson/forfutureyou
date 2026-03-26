@@ -119,7 +119,7 @@ export function WorkoutBarChart({ sessions }: Props) {
           >
             {/* Sliding indicator */}
             <div
-              className="absolute top-[6px] bottom-[6px] rounded-full bg-[#FFD900]"
+              className="absolute top-[6px] bottom-[6px] rounded-full bg-black dark:bg-white"
               style={{
                 width: BTN_WIDTH,
                 left: 6,
@@ -131,13 +131,8 @@ export function WorkoutBarChart({ sessions }: Props) {
               <button
                 key={v}
                 onClick={() => handleViewChange(v)}
-                className="relative z-10 py-[4px] text-[12px] font-bold tracking-wide"
-                style={{
-                  width: BTN_WIDTH,
-                  color: view === v ? "#000" : undefined,
-                  opacity: view === v ? 1 : 0.4,
-                  transition: "opacity 0.2s, color 0.2s",
-                }}
+                className={`relative z-10 py-[4px] text-[12px] font-bold tracking-wide transition-opacity ${view === v ? "text-white dark:text-black opacity-100" : "opacity-40"}`}
+                style={{ width: BTN_WIDTH }}
               >
                 {v === "months" ? "MÅNAD" : "VECKA"}
               </button>

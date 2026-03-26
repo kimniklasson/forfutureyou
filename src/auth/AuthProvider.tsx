@@ -18,6 +18,7 @@ export interface AuthContextType {
   signInWithGoogle: () => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   updateName: (name: string) => Promise<{ error: string | null }>;
+  updatePassword: (currentPassword: string, newPassword: string) => Promise<{ error: string | null }>;
   deleteAccount: () => Promise<{ error: string | null }>;
 }
 
@@ -109,6 +110,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error?.message ?? null };
   };
 
+  const updatePassword = async (currentPassword: string, newPassword: string) => {
+    if (!user?.email) return { error: "Ingen användare inloggad." };
+    // Verify current password by re-authenticating
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: currentPassword,
+    });
+    if (signInError) return { error: "Fel nuvarande lösenord." };
+    // Update to new password
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    return { error: error?.message ?? null };
+  };
+
   const deleteAccount = async () => {
     const userId = user?.id;
     if (!userId) return { error: "Ingen användare inloggad." };
@@ -141,7 +155,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, session, loading, displayName, signUp, signIn, signInWithGoogle, signOut, updateName, deleteAccount }}
+      value={{ user, session, loading, displayName, signUp, signIn, signInWithGoogle, signOut, updateName, updatePassword, deleteAccount }}
     >
       {children}
     </AuthContext.Provider>
