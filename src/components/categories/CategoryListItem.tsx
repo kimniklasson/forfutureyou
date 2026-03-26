@@ -73,7 +73,7 @@ export function CategoryListItem({
         >
           {/* Color accent border */}
           <div
-            className="self-stretch rounded-full shrink-0"
+            className="self-stretch shrink-0"
             style={{ width: 4, backgroundColor: accentColor }}
           />
 
