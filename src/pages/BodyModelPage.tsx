@@ -24,14 +24,15 @@ function easeInOut(t: number): number {
 }
 
 // Male is at negative X (~-1.5 center), Female at positive X (~+1.5 center)
+// Target X shifted slightly left from geometry center to visually align with the centered logo
 const HOME: Record<Gender, { pos: THREE.Vector3; target: THREE.Vector3 }> = {
   male: {
-    pos: new THREE.Vector3(-1.5, 4.4, 13),
-    target: new THREE.Vector3(-1.5, 4.4, 0),
+    pos: new THREE.Vector3(-1.7, 4.4, 13),
+    target: new THREE.Vector3(-1.7, 4.4, 0),
   },
   female: {
-    pos: new THREE.Vector3(1.5, 4.4, 13),
-    target: new THREE.Vector3(1.5, 4.4, 0),
+    pos: new THREE.Vector3(1.7, 4.4, 13),
+    target: new THREE.Vector3(1.7, 4.4, 0),
   },
 }
 
@@ -47,18 +48,18 @@ function makeDot(id: string, label: string, wx: number, wy: number, wz: number):
 
 const DOTS: Record<Gender, BodyDot[]> = {
   male: [
-    makeDot('chest', 'Bröst', -1.5, 7.0, 0.5),
-    makeDot('left-arm', 'Vänster arm', -0.2, 5.8, 0.3),
-    makeDot('right-arm', 'Höger arm', -2.8, 5.8, 0.3),
-    makeDot('left-leg', 'Vänster ben', -1.15, 1.8, 0.2),
-    makeDot('right-leg', 'Höger ben', -1.85, 1.8, 0.2),
+    makeDot('chest', 'Bröst', -1.7, 7.0, 0.5),
+    makeDot('left-arm', 'Vänster arm', -0.45, 5.8, 0.3),
+    makeDot('right-arm', 'Höger arm', -2.95, 5.8, 0.3),
+    makeDot('left-leg', 'Vänster ben', -1.3, 1.8, 0.2),
+    makeDot('right-leg', 'Höger ben', -2.2, 1.8, 0.2),
   ],
   female: [
-    makeDot('chest', 'Bröst', 1.5, 7.0, 0.5),
-    makeDot('left-arm', 'Vänster arm', 2.8, 5.8, 0.3),
-    makeDot('right-arm', 'Höger arm', 0.2, 5.8, 0.3),
-    makeDot('left-leg', 'Vänster ben', 1.85, 1.8, 0.2),
-    makeDot('right-leg', 'Höger ben', 1.15, 1.8, 0.2),
+    makeDot('chest', 'Bröst', 1.7, 7.0, 0.5),
+    makeDot('left-arm', 'Vänster arm', 2.55, 5.8, 0.3),
+    makeDot('right-arm', 'Höger arm', 0.45, 5.8, 0.3),
+    makeDot('left-leg', 'Vänster ben', 1.3, 1.8, 0.2),
+    makeDot('right-leg', 'Höger ben', 0.8, 1.8, 0.2),
   ],
 }
 
@@ -304,40 +305,33 @@ export function BodyModelPage() {
               cursor: 'pointer',
             }}
           >
-            <div style={{ position: 'relative', width: 18, height: 18 }}>
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: -5,
-                  borderRadius: '50%',
-                  background: 'rgba(99,179,237,0.2)',
-                  animation: 'pulse 2s ease-in-out infinite',
-                }}
-              />
-              <div
-                style={{
-                  width: 18,
-                  height: 18,
-                  borderRadius: '50%',
-                  background: '#63b3ed',
-                  border: '2.5px solid rgba(255,255,255,0.9)',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
-                  position: 'relative',
-                  zIndex: 1,
-                }}
-              />
+            <div
+              style={{
+                width: 24,
+                height: 24,
+                borderRadius: '50%',
+                background: 'rgba(255, 217, 0, 0.7)',
+                backdropFilter: 'blur(6px)',
+                WebkitBackdropFilter: 'blur(6px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#000' }} />
             </div>
             <span
               style={{
-                color: '#333',
-                fontSize: 10,
+                color: '#000',
+                fontSize: 15,
                 fontWeight: 500,
-                letterSpacing: '0.2px',
+                fontFamily: 'var(--font-sans)',
                 whiteSpace: 'nowrap',
-                background: 'rgba(255,255,255,0.85)',
-                padding: '2px 6px',
-                borderRadius: 4,
-                boxShadow: '0 1px 4px rgba(0,0,0,0.12)',
+                background: 'rgba(255,255,255,0.5)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                padding: '4px 10px',
+                borderRadius: 20,
               }}
             >
               {dot.label}
@@ -413,11 +407,6 @@ export function BodyModelPage() {
         @keyframes bodyPageEnter {
           from { transform: translateY(100%); }
           to { transform: translateY(0); }
-        }
-        @keyframes pulse {
-          0% { transform: scale(0.8); opacity: 0.6; }
-          50% { transform: scale(1.5); opacity: 0.15; }
-          100% { transform: scale(0.8); opacity: 0.6; }
         }
         @keyframes spin {
           to { transform: rotate(360deg); }
