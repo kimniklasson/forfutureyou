@@ -266,7 +266,7 @@ export function MuscleGroupPicker({ value, onChange }: MuscleGroupPickerProps) {
       {value.length > 0 && !showAdd && (
         <button
           onClick={() => setShowAdd(true)}
-          className="self-start text-[12px] font-bold uppercase tracking-wider opacity-50 transition-transform active:scale-[0.93] flex items-center gap-1.5"
+          className="self-start text-[12px] font-bold uppercase tracking-wider opacity-50 transition-transform active:scale-[0.93] flex items-center gap-1.5 mt-2"
         >
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
             <path d="M6 1V11M1 6H11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
