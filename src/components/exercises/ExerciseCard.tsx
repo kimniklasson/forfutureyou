@@ -125,9 +125,10 @@ export function ExerciseCard({
   const handleSave = async () => {
     setShowSettings(false);
     setSaving(true);
-    if (nameHasChanged) {
-      await onRename(exercise.id, editName.trim());
-    }
+    await Promise.all([
+      nameHasChanged ? onRename(exercise.id, editName.trim()) : Promise.resolve(),
+      muscleGroupsChanged ? updateExercise(exercise.id, { muscleGroups }) : Promise.resolve(),
+    ]);
     setSaving(false);
   };
 
@@ -136,9 +137,8 @@ export function ExerciseCard({
     await loadCategories();
   };
 
-  const handleMuscleGroupsChange = async (assignments: MuscleGroupAssignment[]) => {
+  const handleMuscleGroupsChange = (assignments: MuscleGroupAssignment[]) => {
     setMuscleGroups(assignments);
-    await updateExercise(exercise.id, { muscleGroups: assignments });
   };
 
   const settingsModal = createPortal(
