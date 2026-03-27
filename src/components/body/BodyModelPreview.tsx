@@ -54,7 +54,7 @@ export function BodyModelPreview({ sex }: { sex: Sex }) {
     const renderer = new THREE.WebGLRenderer({ antialias: true })
     renderer.setSize(w, h)
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-    renderer.setClearColor(0xffffff)
+    renderer.setClearColor(0xf5f5f5)
     renderer.toneMapping = THREE.ACESFilmicToneMapping
     renderer.toneMappingExposure = 1.0
     container.appendChild(renderer.domElement)

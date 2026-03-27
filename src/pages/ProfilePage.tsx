@@ -227,7 +227,7 @@ export function ProfilePage() {
         <button
           type="button"
           onClick={() => navigate('/body')}
-          className="border border-black/10 dark:border-white/20 rounded-card flex overflow-hidden w-full text-left bg-[#f5f5f5] dark:bg-white/5"
+          className="rounded-card flex overflow-hidden w-full text-left bg-[#f5f5f5] dark:bg-white/5"
           style={{ height: 136 }}
         >
           <div className="flex-1 flex flex-col justify-between pl-6 pt-6 pb-6">
