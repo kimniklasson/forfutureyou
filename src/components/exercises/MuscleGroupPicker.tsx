@@ -258,59 +258,54 @@ export function MuscleGroupPicker({ value, onChange }: MuscleGroupPickerProps) {
       {/* Add panel */}
       {showAdd && (
         <div ref={addContainerRef} className="flex flex-col gap-2">
-          {/* Existing group pills — black bg, white text, trash inside */}
-          {availableGroups.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {availableGroups.map((g) => (
-                <div
-                  key={g.id}
-                  className="rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center gap-3 pl-3 pr-1 py-1"
+          {/* Create new input with existing group pills inside */}
+          <div className="border border-black/10 dark:border-white/20 rounded-card px-6 pt-4 pb-6 flex flex-col gap-6">
+            <div className="flex items-center">
+              <input
+                ref={createInputRef}
+                type="text"
+                placeholder="Skapa ny muskelgrupp..."
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && canCreate) handleCreate();
+                  if (e.key === "Escape") { setShowAdd(false); setNewName(""); }
+                }}
+                className="flex-1 text-[15px] bg-transparent outline-none"
+              />
+              {canCreate && (
+                <button
+                  onMouseDown={(e) => { e.preventDefault(); handleCreate(); }}
+                  className="text-[12px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-button bg-black dark:bg-white text-white dark:text-black ml-2 transition-transform active:scale-[0.93] shrink-0"
                 >
-                  <button
-                    onMouseDown={(e) => { e.preventDefault(); handleAddGroup(g.id, g.name); }}
-                    className="text-[15px] font-medium leading-none"
-                  >
-                    {g.name}
-                  </button>
-                  <button
-                    onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); setConfirmDeleteId(g.id); }}
-                    className="w-4 h-4 rounded-full bg-white flex items-center justify-center shrink-0 transition-transform active:scale-90"
-                  >
-                    <IconTrash size={9} className="text-red-500" />
-                  </button>
-                </div>
-              ))}
+                  Skapa
+                </button>
+              )}
             </div>
-          )}
-
-          {/* Create new input */}
-          <div className="border border-black/10 dark:border-white/20 rounded-card flex items-center pl-6 pr-4 py-3">
-            <input
-              ref={createInputRef}
-              type="text"
-              placeholder="Skapa ny muskelgrupp..."
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && canCreate) handleCreate();
-                if (e.key === "Escape") { setShowAdd(false); setNewName(""); }
-              }}
-              className="flex-1 text-[15px] bg-transparent outline-none"
-            />
-            {canCreate && (
-              <button
-                onMouseDown={(e) => { e.preventDefault(); handleCreate(); }}
-                className="text-[12px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-button bg-black dark:bg-white text-white dark:text-black ml-2 transition-transform active:scale-[0.93] shrink-0"
-              >
-                Skapa
-              </button>
+            {/* Existing group pills */}
+            {availableGroups.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {availableGroups.map((g) => (
+                  <div
+                    key={g.id}
+                    className="rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center gap-3 pl-3 pr-[6px] py-[6px]"
+                  >
+                    <button
+                      onMouseDown={(e) => { e.preventDefault(); handleAddGroup(g.id, g.name); }}
+                      className="text-[15px] font-medium leading-none"
+                    >
+                      {g.name}
+                    </button>
+                    <button
+                      onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); setConfirmDeleteId(g.id); }}
+                      className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center shrink-0 transition-transform active:scale-90"
+                    >
+                      <IconTrash size={11} className="text-white" />
+                    </button>
+                  </div>
+                ))}
+              </div>
             )}
-            <button
-              onClick={() => { setShowAdd(false); setNewName(""); }}
-              className="text-black/30 dark:text-white/30 transition-transform active:scale-[0.93] ml-2 shrink-0"
-            >
-              <CloseIcon />
-            </button>
           </div>
         </div>
       )}
