@@ -1,10 +1,13 @@
 import { useState } from "react";
+import type { MuscleGroupAssignment } from "../../types/models";
+import { MuscleGroupPicker } from "./MuscleGroupPicker";
 
 export interface ExerciseFormData {
   name: string;
   baseReps: number;
   baseWeight: number;
   isBodyweight: boolean;
+  muscleGroups: MuscleGroupAssignment[];
 }
 
 interface ExerciseFormFieldsProps {
@@ -22,6 +25,9 @@ export function ExerciseFormFields({
   const [baseReps, setBaseReps] = useState(initialData?.baseReps?.toString() ?? "8");
   const [baseWeight, setBaseWeight] = useState(initialData?.baseWeight?.toString() ?? "50");
   const [isBodyweight, setIsBodyweight] = useState(initialData?.isBodyweight ?? false);
+  const [muscleGroups, setMuscleGroups] = useState<MuscleGroupAssignment[]>(
+    initialData?.muscleGroups ?? []
+  );
 
   const canSubmit = name.trim().length > 0 && baseReps.length > 0 && baseWeight.length > 0;
 
@@ -32,6 +38,7 @@ export function ExerciseFormFields({
       baseReps: parseInt(baseReps, 10) || 0,
       baseWeight: parseFloat(baseWeight) || 0,
       isBodyweight,
+      muscleGroups,
     });
   };
 
@@ -115,6 +122,9 @@ export function ExerciseFormFields({
           </div>
         </button>
       </div>
+
+      {/* Muscle Groups */}
+      <MuscleGroupPicker value={muscleGroups} onChange={setMuscleGroups} />
 
       {/* Submit */}
       <button

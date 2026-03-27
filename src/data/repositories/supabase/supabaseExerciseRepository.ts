@@ -1,6 +1,14 @@
 import { supabase } from "../../../lib/supabase";
-import type { Exercise } from "../../../types/models";
+import type { Exercise, MuscleGroupAssignment } from "../../../types/models";
 import type { ExerciseRepository } from "../../types";
+
+interface DbMuscleGroupJoin {
+  percentage: number;
+  muscle_group: {
+    id: string;
+    name: string;
+  };
+}
 
 interface DbExercise {
   id: string;
@@ -9,7 +17,10 @@ interface DbExercise {
   base_reps: number;
   base_weight: number;
   is_bodyweight: boolean;
+  exercise_muscle_groups: DbMuscleGroupJoin[];
 }
+
+const EXERCISE_SELECT = "*, exercise_muscle_groups(percentage, muscle_group:muscle_groups(id, name))";
 
 function mapExercise(db: DbExercise): Exercise {
   return {
@@ -18,6 +29,13 @@ function mapExercise(db: DbExercise): Exercise {
     baseReps: db.base_reps,
     baseWeight: db.base_weight,
     isBodyweight: db.is_bodyweight,
+    muscleGroups: (db.exercise_muscle_groups ?? []).map(
+      (emg): MuscleGroupAssignment => ({
+        muscleGroupId: emg.muscle_group.id,
+        muscleGroupName: emg.muscle_group.name,
+        percentage: emg.percentage,
+      })
+    ),
   };
 }
 
@@ -27,11 +45,26 @@ async function getUserId(): Promise<string> {
   return user.id;
 }
 
+async function syncMuscleGroups(exerciseId: string, muscleGroups: MuscleGroupAssignment[]): Promise<void> {
+  // Delete all existing assignments, then re-insert
+  await supabase.from("exercise_muscle_groups").delete().eq("exercise_id", exerciseId);
+
+  if (muscleGroups.length > 0) {
+    const rows = muscleGroups.map((mg) => ({
+      exercise_id: exerciseId,
+      muscle_group_id: mg.muscleGroupId,
+      percentage: mg.percentage,
+    }));
+    const { error } = await supabase.from("exercise_muscle_groups").insert(rows);
+    if (error) throw error;
+  }
+}
+
 export const supabaseExerciseRepository: ExerciseRepository = {
   async getAll() {
     const { data, error } = await supabase
       .from("global_exercises")
-      .select("*")
+      .select(EXERCISE_SELECT)
       .order("name", { ascending: true });
 
     if (error) throw error;
@@ -50,11 +83,25 @@ export const supabaseExerciseRepository: ExerciseRepository = {
         base_weight: data.baseWeight,
         is_bodyweight: data.isBodyweight,
       })
-      .select()
+      .select(EXERCISE_SELECT)
       .single();
 
     if (error) throw error;
-    return mapExercise(result as DbExercise);
+    const exercise = mapExercise(result as DbExercise);
+
+    if (data.muscleGroups && data.muscleGroups.length > 0) {
+      await syncMuscleGroups(exercise.id, data.muscleGroups);
+      // Reload to get the joined muscle groups
+      const { data: reloaded, error: reloadError } = await supabase
+        .from("global_exercises")
+        .select(EXERCISE_SELECT)
+        .eq("id", exercise.id)
+        .single();
+      if (reloadError) throw reloadError;
+      return mapExercise(reloaded as DbExercise);
+    }
+
+    return exercise;
   },
 
   async update(id, data) {
@@ -64,14 +111,25 @@ export const supabaseExerciseRepository: ExerciseRepository = {
     if (data.baseWeight !== undefined) updateData.base_weight = data.baseWeight;
     if (data.isBodyweight !== undefined) updateData.is_bodyweight = data.isBodyweight;
 
-    const { data: result, error } = await supabase
+    if (Object.keys(updateData).length > 0) {
+      const { error } = await supabase
+        .from("global_exercises")
+        .update(updateData)
+        .eq("id", id);
+      if (error) throw error;
+    }
+
+    if (data.muscleGroups !== undefined) {
+      await syncMuscleGroups(id, data.muscleGroups);
+    }
+
+    const { data: result, error: fetchError } = await supabase
       .from("global_exercises")
-      .update(updateData)
+      .select(EXERCISE_SELECT)
       .eq("id", id)
-      .select()
       .single();
 
-    if (error) throw error;
+    if (fetchError) throw fetchError;
     return mapExercise(result as DbExercise);
   },
 

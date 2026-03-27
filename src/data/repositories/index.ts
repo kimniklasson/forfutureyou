@@ -1,9 +1,11 @@
-import type { CategoryRepository, ExerciseRepository, SessionRepository } from "../types";
+import type { CategoryRepository, ExerciseRepository, MuscleGroupRepository, SessionRepository } from "../types";
 import { categoryRepository as localCategoryRepo } from "./categoryRepository";
 import { exerciseRepository as localExerciseRepo } from "./exerciseRepository";
+import { muscleGroupRepository as localMuscleGroupRepo } from "./muscleGroupRepository";
 import { sessionRepository as localSessionRepo } from "./sessionRepository";
 import { supabaseCategoryRepository } from "./supabase/supabaseCategoryRepository";
 import { supabaseExerciseRepository } from "./supabase/supabaseExerciseRepository";
+import { supabaseMuscleGroupRepository } from "./supabase/supabaseMuscleGroupRepository";
 import { supabaseSessionRepository } from "./supabase/supabaseSessionRepository";
 import { supabase } from "../../lib/supabase";
 
@@ -25,6 +27,10 @@ export function getCategoryRepository(): CategoryRepository {
 
 export function getExerciseRepository(): ExerciseRepository {
   return isAuthenticated ? supabaseExerciseRepository : localExerciseRepo;
+}
+
+export function getMuscleGroupRepository(): MuscleGroupRepository {
+  return isAuthenticated ? supabaseMuscleGroupRepository : localMuscleGroupRepo;
 }
 
 export function getSessionRepository(): SessionRepository {

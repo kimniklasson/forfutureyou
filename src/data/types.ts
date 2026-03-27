@@ -1,9 +1,16 @@
-import type { Category, Exercise, WorkoutSession } from "../types/models";
+import type { Category, Exercise, MuscleGroup, WorkoutSession } from "../types/models";
+
+export interface MuscleGroupRepository {
+  getAll(): Promise<MuscleGroup[]>;
+  create(name: string): Promise<MuscleGroup>;
+  update(id: string, name: string): Promise<MuscleGroup>;
+  delete(id: string): Promise<void>;
+}
 
 export interface ExerciseRepository {
   getAll(): Promise<Exercise[]>;
-  create(data: Pick<Exercise, "name" | "baseReps" | "baseWeight" | "isBodyweight">): Promise<Exercise>;
-  update(id: string, data: Partial<Pick<Exercise, "name" | "baseReps" | "baseWeight" | "isBodyweight">>): Promise<Exercise>;
+  create(data: Pick<Exercise, "name" | "baseReps" | "baseWeight" | "isBodyweight" | "muscleGroups">): Promise<Exercise>;
+  update(id: string, data: Partial<Pick<Exercise, "name" | "baseReps" | "baseWeight" | "isBodyweight" | "muscleGroups">>): Promise<Exercise>;
   delete(id: string): Promise<void>;
 }
 

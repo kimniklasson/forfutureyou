@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { IconCheck } from "../ui/icons";
 import { Modal } from "../ui/Modal";
-import type { Exercise } from "../../types/models";
+import type { Exercise, MuscleGroupAssignment } from "../../types/models";
 import { useSessionStore } from "../../stores/useSessionStore";
 import { useExerciseStore } from "../../stores/useExerciseStore";
 import { useCategoryStore } from "../../stores/useCategoryStore";
+import { MuscleGroupPicker } from "./MuscleGroupPicker";
 import { RepWeightAdjuster } from "./RepWeightAdjuster";
 import { ExerciseSetDisplay } from "./ExerciseSetDisplay";
 import { usePBTracker } from "../../hooks/usePBTracker";
@@ -55,10 +56,14 @@ export function ExerciseCard({
   const [showSettings, setShowSettings] = useState(false);
   const [editName, setEditName] = useState(exercise.name);
   const [savingName, setSavingName] = useState(false);
+  const [muscleGroups, setMuscleGroups] = useState<MuscleGroupAssignment[]>(exercise.muscleGroups);
 
   useEffect(() => {
-    if (!showSettings) setEditName(exercise.name);
-  }, [exercise.name, showSettings]);
+    if (!showSettings) {
+      setEditName(exercise.name);
+      setMuscleGroups(exercise.muscleGroups);
+    }
+  }, [exercise.name, exercise.muscleGroups, showSettings]);
 
   const { updateExercise } = useExerciseStore();
   const { loadCategories } = useCategoryStore();
@@ -97,6 +102,7 @@ export function ExerciseCard({
         exercise.id,
         exercise.name,
         exercise.isBodyweight,
+        exercise.muscleGroups.map((mg) => ({ name: mg.muscleGroupName, percentage: mg.percentage })),
         adjustment.currentReps,
         adjustment.currentWeight
       );
@@ -125,6 +131,11 @@ export function ExerciseCard({
   const handleBodyweightToggle = async () => {
     await updateExercise(exercise.id, { isBodyweight: !exercise.isBodyweight });
     await loadCategories();
+  };
+
+  const handleMuscleGroupsChange = async (assignments: MuscleGroupAssignment[]) => {
+    setMuscleGroups(assignments);
+    await updateExercise(exercise.id, { muscleGroups: assignments });
   };
 
   const settingsModal = createPortal(
@@ -176,6 +187,9 @@ export function ExerciseCard({
             )}
           </div>
         </button>
+
+        {/* Muscle groups */}
+        <MuscleGroupPicker value={muscleGroups} onChange={handleMuscleGroupsChange} />
       </div>
     </Modal>,
     document.body

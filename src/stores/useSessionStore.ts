@@ -4,6 +4,7 @@ import type {
   WorkoutSession,
   ExerciseAdjustment,
   ActiveSetInfo,
+  MuscleGroupAssignment,
 } from "../types/models";
 import { getSessionRepository } from "../data/repositories";
 import { useHistoryStore } from "./useHistoryStore";
@@ -32,6 +33,7 @@ interface SessionState {
     exerciseId: string,
     exerciseName: string,
     isBodyweight: boolean,
+    muscleGroups: Array<{ name: string; percentage: number }>,
     reps: number,
     weight: number
   ) => void;
@@ -106,6 +108,7 @@ export const useSessionStore = create<SessionState>()(
                 activeSet.exerciseId,
                 log.exerciseName,
                 log.isBodyweight,
+                log.muscleGroups,
                 adj.currentReps,
                 adj.currentWeight
               );
@@ -120,7 +123,7 @@ export const useSessionStore = create<SessionState>()(
         });
       },
 
-      logSet: (exerciseId, exerciseName, isBodyweight, reps, weight) => {
+      logSet: (exerciseId, exerciseName, isBodyweight, muscleGroups, reps, weight) => {
         const { activeSession, activeSet } = get();
         if (!activeSession) return;
 
@@ -155,7 +158,7 @@ export const useSessionStore = create<SessionState>()(
         } else {
           updatedLogs = [
             ...activeSession.exerciseLogs,
-            { exerciseId, exerciseName, isBodyweight, sets: [newSet] },
+            { exerciseId, exerciseName, isBodyweight, muscleGroups, sets: [newSet] },
           ];
         }
 

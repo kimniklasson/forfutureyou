@@ -20,6 +20,7 @@ interface DbExerciseLog {
   exercise_id: string;
   exercise_name: string;
   is_bodyweight: boolean;
+  muscle_groups: Array<{ name: string; percentage: number }>;
   workout_sets: DbWorkoutSet[];
 }
 
@@ -48,6 +49,7 @@ function mapLog(db: DbExerciseLog): ExerciseLog {
     exerciseId: db.exercise_id,
     exerciseName: db.exercise_name,
     isBodyweight: db.is_bodyweight,
+    muscleGroups: db.muscle_groups ?? [],
     sets: (db.workout_sets || []).map(mapSet).sort((a, b) => a.setNumber - b.setNumber),
   };
 }
@@ -249,6 +251,7 @@ export const supabaseSessionRepository: SessionRepository = {
               exercise_id: log.exerciseId,
               exercise_name: log.exerciseName,
               is_bodyweight: log.isBodyweight,
+              muscle_groups: log.muscleGroups ?? [],
             })
             .select("id")
             .single();

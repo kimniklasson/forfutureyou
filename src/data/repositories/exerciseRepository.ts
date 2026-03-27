@@ -5,7 +5,9 @@ import { getItem, setItem } from "../storage";
 const STORAGE_KEY = "global-exercises";
 
 function loadExercises(): Exercise[] {
-  return getItem<Exercise[]>(STORAGE_KEY) ?? [];
+  const raw = getItem<Exercise[]>(STORAGE_KEY) ?? [];
+  // Migration: backfill muscleGroups for exercises created before this feature
+  return raw.map((e) => ({ ...e, muscleGroups: e.muscleGroups ?? [] }));
 }
 
 function saveExercises(exercises: Exercise[]): void {
@@ -25,6 +27,7 @@ export const exerciseRepository: ExerciseRepository = {
       baseReps: data.baseReps,
       baseWeight: data.baseWeight,
       isBodyweight: data.isBodyweight,
+      muscleGroups: data.muscleGroups ?? [],
     };
     exercises.push(newExercise);
     saveExercises(exercises);

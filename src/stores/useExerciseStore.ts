@@ -7,11 +7,11 @@ interface ExerciseState {
   exercises: Exercise[];
   loadExercises: () => Promise<void>;
   createExercise: (
-    data: Pick<Exercise, "name" | "baseReps" | "baseWeight" | "isBodyweight">
+    data: Pick<Exercise, "name" | "baseReps" | "baseWeight" | "isBodyweight" | "muscleGroups">
   ) => Promise<Exercise>;
   updateExercise: (
     id: string,
-    data: Partial<Pick<Exercise, "name" | "baseReps" | "baseWeight" | "isBodyweight">>
+    data: Partial<Pick<Exercise, "name" | "baseReps" | "baseWeight" | "isBodyweight" | "muscleGroups">>
   ) => Promise<Exercise>;
   deleteExercise: (id: string) => Promise<void>;
   getExerciseById: (id: string) => Exercise | undefined;

@@ -35,6 +35,7 @@ export function EditExerciseModal({
           baseReps: exercise.baseReps,
           baseWeight: exercise.baseWeight,
           isBodyweight: exercise.isBodyweight,
+          muscleGroups: exercise.muscleGroups,
         }}
         onSubmit={handleSubmit}
         submitLabel="Spara"

@@ -1,6 +1,14 @@
 import { supabase } from "../../../lib/supabase";
-import type { Category, CategoryExercise } from "../../../types/models";
+import type { Category, CategoryExercise, MuscleGroupAssignment } from "../../../types/models";
 import type { CategoryRepository } from "../../types";
+
+interface DbMuscleGroupJoin {
+  percentage: number;
+  muscle_group: {
+    id: string;
+    name: string;
+  };
+}
 
 interface DbGlobalExercise {
   id: string;
@@ -8,6 +16,7 @@ interface DbGlobalExercise {
   base_reps: number;
   base_weight: number;
   is_bodyweight: boolean;
+  exercise_muscle_groups: DbMuscleGroupJoin[];
 }
 
 interface DbCategoryExerciseJoin {
@@ -32,6 +41,13 @@ function mapCategory(db: DbCategory): Category {
       baseReps: ce.exercise.base_reps,
       baseWeight: ce.exercise.base_weight,
       isBodyweight: ce.exercise.is_bodyweight,
+      muscleGroups: (ce.exercise.exercise_muscle_groups ?? []).map(
+        (emg): MuscleGroupAssignment => ({
+          muscleGroupId: emg.muscle_group.id,
+          muscleGroupName: emg.muscle_group.name,
+          percentage: emg.percentage,
+        })
+      ),
       sortOrder: ce.sort_order,
     }))
     .sort((a, b) => a.sortOrder - b.sortOrder);
@@ -46,7 +62,7 @@ function mapCategory(db: DbCategory): Category {
   };
 }
 
-const CATEGORY_SELECT = "*, category_exercises(sort_order, exercise:global_exercises(*))";
+const CATEGORY_SELECT = "*, category_exercises(sort_order, exercise:global_exercises(*, exercise_muscle_groups(percentage, muscle_group:muscle_groups(id, name))))";
 
 async function getUserId(): Promise<string> {
   const { data: { user } } = await supabase.auth.getUser();
