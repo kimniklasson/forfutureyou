@@ -308,26 +308,10 @@ export function BodyModelPage() {
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: 5,
               transition: 'opacity 0.2s',
               cursor: 'pointer',
             }}
           >
-            <div
-              style={{
-                width: 16,
-                height: 16,
-                borderRadius: '50%',
-                background: 'rgba(0, 0, 0, 0.5)',
-                backdropFilter: 'blur(6px)',
-                WebkitBackdropFilter: 'blur(6px)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#fff' }} />
-            </div>
             <span
               style={{
                 color: '#000',
