@@ -44,11 +44,6 @@ export function MuscleGroupPicker({ value, onChange }: MuscleGroupPickerProps) {
     }
   }, [editingId]);
 
-  useEffect(() => {
-    if (showAdd) {
-      setTimeout(() => { createInputRef.current?.focus(); }, 50);
-    }
-  }, [showAdd]);
 
   useEffect(() => {
     if (!showAdd) return;
@@ -284,6 +279,7 @@ export function MuscleGroupPicker({ value, onChange }: MuscleGroupPickerProps) {
               <input
                 ref={createInputRef}
                 type="text"
+                autoFocus
                 placeholder="Skapa ny muskelgrupp..."
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
