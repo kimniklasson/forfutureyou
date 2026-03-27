@@ -315,8 +315,8 @@ export function BodyModelPage() {
           >
             <div
               style={{
-                width: 24,
-                height: 24,
+                width: 16,
+                height: 16,
                 borderRadius: '50%',
                 background: 'rgba(0, 0, 0, 0.5)',
                 backdropFilter: 'blur(6px)',
@@ -326,7 +326,7 @@ export function BodyModelPage() {
                 justifyContent: 'center',
               }}
             >
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff' }} />
+              <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#fff' }} />
             </div>
             <span
               style={{
