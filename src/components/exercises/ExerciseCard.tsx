@@ -189,7 +189,9 @@ export function ExerciseCard({
         </button>
 
         {/* Muscle groups */}
-        <MuscleGroupPicker value={muscleGroups} onChange={handleMuscleGroupsChange} />
+        <div className="mt-4">
+          <MuscleGroupPicker value={muscleGroups} onChange={handleMuscleGroupsChange} />
+        </div>
       </div>
     </Modal>,
     document.body
