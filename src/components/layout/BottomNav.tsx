@@ -3,10 +3,10 @@ import { IconHome, IconProfile, IconSessions, IconStats } from "../ui/icons";
 import { useSessionStore } from "../../stores/useSessionStore";
 
 const NAV_ITEMS = [
-  { path: "/", Icon: IconHome, label: "Hem" },
-  { path: "/history", Icon: IconSessions, label: "Historik" },
-  { path: "/stats", Icon: IconStats, label: "Statistik" },
-  { path: "/profile", Icon: IconProfile, label: "Profil" },
+  { path: "/", Icon: IconHome, label: "Hem", subPaths: [] as string[] },
+  { path: "/history", Icon: IconSessions, label: "Historik", subPaths: [] as string[] },
+  { path: "/stats", Icon: IconStats, label: "Statistik", subPaths: [] as string[] },
+  { path: "/profile", Icon: IconProfile, label: "Profil", subPaths: ["/body"] },
 ];
 
 const BLUR_LAYERS = [
@@ -53,10 +53,10 @@ export function BottomNav() {
 
         {/* Nav icons — z-10 so they sit above the blur layers, unaffected */}
         <div className="relative z-10 flex items-end justify-around px-6 pb-10 pt-16">
-          {NAV_ITEMS.map(({ path, Icon, label }) => {
+          {NAV_ITEMS.map(({ path, Icon, label, subPaths }) => {
             const isActive = path === "/"
               ? location.pathname === "/" || location.pathname.startsWith("/category")
-              : location.pathname.startsWith(path);
+              : location.pathname.startsWith(path) || subPaths.some(sp => location.pathname.startsWith(sp));
             return (
               <button
                 key={path}

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthProvider";
 import { AuthGuard } from "./auth/AuthGuard";
+import { BodyModelPage } from "./pages/BodyModelPage";
 import { LoginPage } from "./pages/LoginPage";
 import { SignUpPage } from "./pages/SignUpPage";
 import { SetNamePage } from "./pages/SetNamePage";
@@ -21,6 +22,9 @@ function App() {
       <ThemeProvider>
         <BrowserRouter>
           <Routes>
+            {/* Body model test page (standalone) */}
+            <Route path="/body" element={<BodyModelPage />} />
+
             {/* Public routes */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignUpPage />} />
