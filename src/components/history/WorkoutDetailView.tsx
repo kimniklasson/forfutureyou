@@ -126,6 +126,8 @@ export function WorkoutDetailView() {
     loadSessions();
   }, [loadSessions]);
 
+  // All useMemo hooks must come before early return to keep hook order stable
+
   // Compute PB flags for each exercise in this session
   const pbMap = useMemo(() => {
     const map = new Map<string, Map<string, "weight" | "reps">>();
@@ -135,6 +137,27 @@ export function WorkoutDetailView() {
     }
     return map;
   }, [session, allSessions]);
+
+  // Kategorigfärg — hämtas direkt från kategorimodellens colorIndex
+  const categoryColor = useMemo(() => {
+    if (!session) return getCategoryColor(0);
+    const cat = categories.find((c) => c.id === session.categoryId);
+    if (cat) return getCategoryColor(cat.colorIndex);
+    // Fallback om kategorin raderats: first-seen-ordning bland alla pass
+    const seen = new Map<string, number>();
+    for (const s of allSessions) {
+      if (!seen.has(s.categoryId)) seen.set(s.categoryId, seen.size);
+    }
+    return getCategoryColor(seen.get(session.categoryId) ?? 0);
+  }, [categories, allSessions, session]);
+
+  // Previous session of same category for trend comparison
+  const prevSession = useMemo(() => {
+    if (!session) return null;
+    return allSessions
+      .filter((s) => s.categoryId === session.categoryId && s.id !== session.id && s.startedAt < session.startedAt)
+      .sort((a, b) => b.startedAt.localeCompare(a.startedAt))[0] ?? null;
+  }, [allSessions, session]);
 
   if (!session) {
     return <p className="text-center opacity-50 pt-10">Träningspass hittades inte.</p>;
@@ -148,25 +171,6 @@ export function WorkoutDetailView() {
   const intensity = calculateIntensity(session, userWeight);
   const restData = calculateRestTimes(session);
   const calories = calculateCalories(session, userWeight, userAge, userSex, intensity.score);
-
-  // Kategorigfärg — hämtas direkt från kategorimodellens colorIndex
-  const categoryColor = useMemo(() => {
-    const cat = categories.find((c) => c.id === session.categoryId);
-    if (cat) return getCategoryColor(cat.colorIndex);
-    // Fallback om kategorin raderats: first-seen-ordning bland alla pass
-    const seen = new Map<string, number>();
-    for (const s of allSessions) {
-      if (!seen.has(s.categoryId)) seen.set(s.categoryId, seen.size);
-    }
-    return getCategoryColor(seen.get(session.categoryId) ?? 0);
-  }, [categories, allSessions, session.categoryId]);
-
-  // Previous session of same category for trend comparison
-  const prevSession = useMemo(() => {
-    return allSessions
-      .filter((s) => s.categoryId === session.categoryId && s.id !== session.id && s.startedAt < session.startedAt)
-      .sort((a, b) => b.startedAt.localeCompare(a.startedAt))[0] ?? null;
-  }, [allSessions, session]);
 
   const prevTotals  = prevSession ? calculateWorkoutTotals(prevSession, userWeight)   : null;
   const prevIntens  = prevSession ? calculateIntensity(prevSession, userWeight)        : null;
@@ -189,16 +193,10 @@ export function WorkoutDetailView() {
     return                     <span style={ARROW_STYLE} className="text-red-500">&#x2198;</span>;
   }
 
-  // Map exerciseId → current name from categories (handles renames)
-  const currentExerciseNames = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const cat of categories) {
-      for (const ex of cat.exercises) {
-        map.set(ex.id, ex.name);
-      }
-    }
-    return map;
-  }, [categories]);
+  // Plain variable — no hook, so doesn't affect hook order
+  const currentExerciseNames = new Map(
+    categories.flatMap((cat) => cat.exercises.map((ex) => [ex.id, ex.name] as const))
+  );
 
   const save = (updated: WorkoutSession) => updateSession(updated);
 
