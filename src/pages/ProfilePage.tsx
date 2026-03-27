@@ -232,9 +232,9 @@ export function ProfilePage() {
         >
           <div className="flex-1 flex flex-col justify-between pl-6 pt-6 pb-6">
             <p className="text-[15px] font-medium leading-snug opacity-80">
-              Lägg till och följ<br />dina mått
+              Lägg till och följ<br />din måttutveckling
             </p>
-            <IconArrowLeft size={20} className="opacity-50 rotate-180" />
+            <IconArrowLeft size={16} className="rotate-180" />
           </div>
           <div className="flex-shrink-0 self-center" style={{ width: 160, height: 210 }}>
             <BodyModelPreview sex={userSex} />
