@@ -335,7 +335,7 @@ export function BodyModelPage() {
                 fontWeight: 500,
                 fontFamily: 'var(--font-sans)',
                 whiteSpace: 'nowrap',
-                background: 'rgba(255,255,255,0.5)',
+                background: 'rgba(245,245,245,0.85)',
                 backdropFilter: 'blur(8px)',
                 WebkitBackdropFilter: 'blur(8px)',
                 padding: '4px 10px',
