@@ -42,6 +42,12 @@ export function MuscleGroupPicker({ value, onChange }: MuscleGroupPickerProps) {
   }, [editingId]);
 
   useEffect(() => {
+    if (showAdd) {
+      setTimeout(() => { createInputRef.current?.focus(); }, 50);
+    }
+  }, [showAdd]);
+
+  useEffect(() => {
     if (!showAdd) return;
     function handleClick(e: MouseEvent) {
       if (addContainerRef.current && !addContainerRef.current.contains(e.target as Node)) {
