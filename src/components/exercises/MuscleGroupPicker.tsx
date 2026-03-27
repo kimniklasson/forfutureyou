@@ -275,7 +275,7 @@ export function MuscleGroupPicker({ value, onChange }: MuscleGroupPickerProps) {
         <div ref={addContainerRef} className="flex flex-col gap-2">
           {/* Create new input with existing group pills inside */}
           <div className="border border-black/10 dark:border-white/20 rounded-card p-4 flex flex-col gap-6">
-            <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2">
               <input
                 ref={createInputRef}
                 type="text"
@@ -287,12 +287,12 @@ export function MuscleGroupPicker({ value, onChange }: MuscleGroupPickerProps) {
                   if (e.key === "Enter" && canCreate) handleCreate();
                   if (e.key === "Escape") { setShowAdd(false); setNewName(""); }
                 }}
-                className="w-full text-[15px] bg-transparent outline-none ml-2"
+                className="flex-1 min-w-0 text-[15px] bg-transparent outline-none ml-2"
               />
               {canCreate && (
                 <button
                   onMouseDown={(e) => { e.preventDefault(); handleCreate(); }}
-                  className="text-[12px] font-bold uppercase tracking-wider px-3 py-2 rounded-button bg-black dark:bg-white text-white dark:text-black transition-transform active:scale-[0.93] w-full"
+                  className="text-[12px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-button bg-black dark:bg-white text-white dark:text-black transition-transform active:scale-[0.93] shrink-0"
                 >
                   Skapa
                 </button>
