@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BodyModelPreview } from "../components/body/BodyModelPreview";
-import { IconLogout, IconTrash } from "../components/ui/icons";
+import { IconLogout, IconTrash, IconChevronRight } from "../components/ui/icons";
 import { useAuth } from "../auth/useAuth";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { Modal } from "../components/ui/Modal";
@@ -227,13 +227,14 @@ export function ProfilePage() {
         <button
           type="button"
           onClick={() => navigate('/body')}
-          className="border border-black/10 dark:border-white/20 rounded-card flex items-center pl-6 overflow-hidden w-full text-left"
+          className="border border-black/10 dark:border-white/20 rounded-card flex overflow-hidden w-full text-left"
           style={{ height: 136 }}
         >
-          <div className="flex-1 py-4">
+          <div className="flex-1 flex flex-col justify-between pl-6 pt-6 pb-6">
             <p className="text-[15px] font-medium leading-snug opacity-80">
               Lägg till och följ<br />dina mått
             </p>
+            <IconChevronRight size={20} className="opacity-50" />
           </div>
           <div className="flex-shrink-0" style={{ width: 160, height: 210 }}>
             <BodyModelPreview sex={userSex} />
