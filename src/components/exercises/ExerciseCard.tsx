@@ -119,6 +119,8 @@ export function ExerciseCard({
   };
 
   const nameHasChanged = editName.trim() !== exercise.name && editName.trim().length > 0;
+  const muscleGroupsChanged = JSON.stringify(muscleGroups) !== JSON.stringify(exercise.muscleGroups);
+  const hasChanges = nameHasChanged || muscleGroupsChanged;
 
   const handleSave = async () => {
     setShowSettings(false);
@@ -179,12 +181,14 @@ export function ExerciseCard({
         </div>
 
         {/* Save button */}
-        <button
-          onClick={handleSave}
-          className="mt-4 w-full py-4 px-6 rounded-button text-[12px] font-bold uppercase tracking-wider bg-black dark:bg-white text-white dark:text-black transition-transform active:scale-[0.97]"
-        >
-          Spara
-        </button>
+        {hasChanges && (
+          <button
+            onClick={handleSave}
+            className="mt-4 w-full py-4 px-6 rounded-button text-[12px] font-bold uppercase tracking-wider bg-black dark:bg-white text-white dark:text-black transition-transform active:scale-[0.97]"
+          >
+            Spara
+          </button>
+        )}
       </div>
     </Modal>,
     document.body
