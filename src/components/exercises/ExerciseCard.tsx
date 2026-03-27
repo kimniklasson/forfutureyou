@@ -59,11 +59,11 @@ export function ExerciseCard({
   const [muscleGroups, setMuscleGroups] = useState<MuscleGroupAssignment[]>(exercise.muscleGroups);
 
   useEffect(() => {
-    if (!showSettings) {
+    if (!showSettings && !saving) {
       setEditName(exercise.name);
       setMuscleGroups(exercise.muscleGroups);
     }
-  }, [exercise.name, exercise.muscleGroups, showSettings]);
+  }, [exercise.name, exercise.muscleGroups, showSettings, saving]);
 
   const { updateExercise } = useExerciseStore();
   const { loadCategories } = useCategoryStore();
