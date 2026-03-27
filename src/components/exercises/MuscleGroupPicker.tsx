@@ -17,14 +17,6 @@ function MinusIcon() {
   );
 }
 
-function PlusCircleIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <circle cx="9" cy="9" r="8" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M9 5.5V12.5M5.5 9H12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
 
 
 export function MuscleGroupPicker({ value, onChange }: MuscleGroupPickerProps) {
@@ -257,7 +249,6 @@ export function MuscleGroupPicker({ value, onChange }: MuscleGroupPickerProps) {
           onClick={() => setShowAdd(true)}
           className="border border-dashed border-black/20 dark:border-white/20 rounded-card px-6 py-4 w-full flex items-center gap-3 text-black/40 dark:text-white/40 transition-transform active:scale-[0.93]"
         >
-          <PlusCircleIcon />
           <span className="text-[15px]">Lägg till muskelgrupp</span>
         </button>
       )}
