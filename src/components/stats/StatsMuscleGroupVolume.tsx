@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { WorkoutSession } from "../../types/models";
 import { computeMuscleGroupVolume } from "../../utils/statistics";
 
@@ -14,6 +14,19 @@ const periods = [
 
 export function StatsMuscleGroupVolume({ sessions, userWeight }: Props) {
   const [periodDays, setPeriodDays] = useState<number | null>(null);
+  const [visible, setVisible] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const result = useMemo(
     () => computeMuscleGroupVolume(sessions, userWeight, periodDays),
@@ -24,9 +37,9 @@ export function StatsMuscleGroupVolume({ sessions, userWeight }: Props) {
     return (
       <div className="flex flex-col gap-2">
         <span className="text-[12px] font-bold uppercase tracking-wider opacity-50">
-          Reps per muskelgrupp
+          Mest tränade muskelgrupper
         </span>
-        <div className="bg-card rounded-card p-4">
+        <div className="rounded-card p-6 border border-black/10">
           <p className="text-[13px] opacity-50">
             Tilldela muskelgrupper till dina övningar för att se fördelningen.
           </p>
@@ -38,10 +51,10 @@ export function StatsMuscleGroupVolume({ sessions, userWeight }: Props) {
   const maxReps = result.groups[0]?.totalReps || 1;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div ref={containerRef} className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
         <span className="text-[12px] font-bold uppercase tracking-wider opacity-50">
-          Reps per muskelgrupp
+          Mest tränade muskelgrupper
         </span>
         <div className="flex gap-1">
           {periods.map((p) => (
@@ -60,34 +73,36 @@ export function StatsMuscleGroupVolume({ sessions, userWeight }: Props) {
         </div>
       </div>
 
-      <div className="bg-card rounded-card p-4 flex flex-col gap-2.5">
+      <div className="rounded-card p-6 border border-black/10 flex flex-col gap-[2px]">
         {result.groups.map((group, i) => {
           const widthPct = (group.totalReps / maxReps) * 100;
-          const opacity = 1 - (i / Math.max(result.groups.length - 1, 1)) * 0.6;
 
           return (
-            <div key={group.muscleGroupName} className="flex items-center gap-3">
-              <span className="text-[13px] opacity-70 w-[90px] shrink-0 truncate">
-                {group.muscleGroupName}
-              </span>
-              <div className="flex-1 h-3 rounded-full bg-white/5 overflow-hidden">
-                <div
-                  className="h-full rounded-full transition-all duration-700 ease-out"
-                  style={{
-                    width: `${widthPct}%`,
-                    backgroundColor: "#FFD900",
-                    opacity,
-                    animationDelay: `${i * 0.05}s`,
-                  }}
-                />
+            <div
+              key={group.muscleGroupName}
+              className="relative w-full rounded-[4px] overflow-hidden"
+              style={{ background: "#f5f5f5" }}
+            >
+              <div
+                className="absolute inset-y-0 left-0 rounded-[4px] transition-all ease-out"
+                style={{
+                  width: visible ? `${widthPct}%` : "0%",
+                  backgroundColor: "#FFD900",
+                  transitionDuration: "600ms",
+                  transitionDelay: visible ? `${i * 40}ms` : "0ms",
+                }}
+              />
+              <div className="relative flex items-center justify-between py-[4px] px-[8px]">
+                <span className="text-[13px] font-medium text-black/70 truncate">
+                  {group.muscleGroupName}
+                </span>
+                <span className="text-[12px] tabular-nums text-black shrink-0 ml-2">
+                  {group.percentage}%
+                </span>
               </div>
-              <span className="text-[12px] tabular-nums opacity-50 shrink-0 text-right">
-                {group.percentage}%
-              </span>
             </div>
           );
         })}
-
       </div>
     </div>
   );
