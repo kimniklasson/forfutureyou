@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { IconClose } from "./icons";
 import { Z } from "../../utils/zIndex";
+import { acquireScrollLock, releaseScrollLock } from "../../utils/scrollLock";
 
 interface Props {
   isOpen: boolean;
@@ -13,13 +14,13 @@ interface Props {
 export function InfoModal({ isOpen, onClose, title, description }: Props) {
   useEffect(() => {
     if (!isOpen) return;
-    document.body.style.overflow = "hidden";
+    acquireScrollLock();
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", handler);
     return () => {
-      document.body.style.overflow = "";
+      releaseScrollLock();
       document.removeEventListener("keydown", handler);
     };
   }, [isOpen, onClose]);

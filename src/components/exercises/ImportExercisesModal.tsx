@@ -5,6 +5,7 @@ import { useCategoryStore } from "../../stores/useCategoryStore";
 import { IconClose, IconTrash } from "../ui/icons";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
 import { IMPORT_EXERCISES, COMMON } from "../../constants/ui-strings";
+import { acquireScrollLock, releaseScrollLock } from "../../utils/scrollLock";
 
 interface ImportExercisesModalProps {
   isOpen: boolean;
@@ -50,12 +51,10 @@ export function ImportExercisesModal({
       setPendingChanges(new Map());
       setNewName("");
       setClosing(false);
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
+      acquireScrollLock();
     }
     return () => {
-      document.body.style.overflow = "";
+      if (isOpen) releaseScrollLock();
     };
   }, [isOpen]);
 

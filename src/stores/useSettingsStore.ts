@@ -54,22 +54,27 @@ export const useSettingsStore = create<SettingsState>()(
       ...DEFAULTS,
 
       setAppearance: (appearance) => {
+        if (get().appearance === appearance) return;
         set({ appearance });
         syncToSupabase({ appearance });
       },
       setUserWeight: (userWeight) => {
+        if (get().userWeight === userWeight) return;
         set({ userWeight });
         syncToSupabase({ userWeight });
       },
       setUserAge: (userAge) => {
+        if (get().userAge === userAge) return;
         set({ userAge });
         syncToSupabase({ userAge });
       },
       setUserSex: (userSex) => {
+        if (get().userSex === userSex) return;
         set({ userSex });
         syncToSupabase({ userSex });
       },
       setShowCalories: (showCalories) => {
+        if (get().showCalories === showCalories) return;
         set({ showCalories });
         syncToSupabase({ showCalories });
       },

@@ -216,7 +216,10 @@ export const useSessionStore = create<SessionState>()(
           console.error("Failed to save finished session:", e);
         }
 
-        await useHistoryStore.getState().loadSessions();
+        // Reload history in the background — don't block the UI
+        useHistoryStore.getState().loadSessions().catch((e) => {
+          console.error("Failed to reload history:", e);
+        });
 
         return finishedSession;
       },

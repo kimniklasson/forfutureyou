@@ -20,3 +20,11 @@ export const Z = {
   MODAL: 70,
   CRITICAL_CONFIRM: 200,
 } as const;
+
+/** Progressive blur layers used by Header and BottomNav for edge fade effects. */
+export const BLUR_LAYERS = [
+  { blur: "16px", stop: "25%" },
+  { blur: "12px", stop: "50%" },
+  { blur: "8px",  stop: "75%" },
+  { blur: "4px",  stop: "100%" },
+] as const;

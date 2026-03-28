@@ -80,7 +80,7 @@ export function StatsSessionOverview({ stats }: Props) {
         onMouseUp={onMouseUp}
         onMouseLeave={onMouseUp}
       >
-        <div style={{ minWidth: 24, flexShrink: 0 }} />
+        <div className="min-w-6 shrink-0" />
         {cards.map((card, i) => (
           <div
             key={card.label}
@@ -92,11 +92,11 @@ export function StatsSessionOverview({ stats }: Props) {
             }}
           >
             <span className="text-[20px] font-bold">{card.value}</span>
-            <div style={{ height: 40 }} />
+            <div className="h-10" />
             <span className="text-[12px] uppercase tracking-wider">{card.label}</span>
           </div>
         ))}
-        <div style={{ minWidth: 24, flexShrink: 0 }} />
+        <div className="min-w-6 shrink-0" />
       </div>
     </div>
   );

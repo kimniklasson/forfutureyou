@@ -1,5 +1,5 @@
 import type { WorkoutSession } from "../types/models";
-import { calculateWorkoutTotals, calculateIntensity, calculateRestTimes, calculateCalories } from "./calculations";
+import { calculateWorkoutTotals, calculateIntensity, calculateRestTimes, calculateCalories, getSessionDurationMs } from "./calculations";
 import type { Sex } from "../stores/useSettingsStore";
 import { computeHistoricalPBs } from "./personalBest";
 import { DAY_NAMES } from "../constants/ui-strings";
@@ -81,13 +81,6 @@ export interface FunStats {
 
 const SWEDISH_DAYS = [...DAY_NAMES];
 
-function getSessionDurationMs(session: WorkoutSession): number {
-  if (!session.finishedAt) return 0;
-  const start = new Date(session.startedAt).getTime();
-  const end = new Date(session.finishedAt).getTime();
-  return Math.max(0, end - start - (session.pausedDuration || 0));
-}
-
 function getISOWeekKey(date: Date): string {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
   d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
@@ -96,7 +89,7 @@ function getISOWeekKey(date: Date): string {
   return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, "0")}`;
 }
 
-function getMonthKey(date: Date): string {
+function getMonthKeyFromDate(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
 
@@ -173,6 +166,55 @@ export function computeExercisePRs(sessions: WorkoutSession[]): ExercisePR[] {
   }
 
   return result.sort((a, b) => b.maxWeight - a.maxWeight);
+}
+
+/** Compute PR for a single exercise — avoids iterating all exercises. */
+export function computeSingleExercisePR(exerciseId: string, sessions: WorkoutSession[]): ExercisePR | null {
+  let exerciseName = "";
+  let isBodyweight = false;
+  let maxWeight = 0;
+  let maxRepsAtMaxWeight = 0;
+  let maxRepsBodyweight = 0;
+  let bestRepsForEpley = 0;
+  let bestWeightForEpley = 0;
+  let found = false;
+
+  for (const session of sessions) {
+    for (const log of session.exerciseLogs) {
+      if (log.exerciseId !== exerciseId) continue;
+      found = true;
+      exerciseName = log.exerciseName;
+      isBodyweight = log.isBodyweight;
+
+      for (const set of log.sets) {
+        if (set.weight > maxWeight) {
+          maxWeight = set.weight;
+          maxRepsAtMaxWeight = set.reps;
+        } else if (set.weight === maxWeight && set.reps > maxRepsAtMaxWeight) {
+          maxRepsAtMaxWeight = set.reps;
+        }
+
+        const est = set.weight * (1 + set.reps / 30);
+        const currentBest = bestWeightForEpley * (1 + bestRepsForEpley / 30);
+        if (est > currentBest) {
+          bestWeightForEpley = set.weight;
+          bestRepsForEpley = set.reps;
+        }
+
+        if (log.isBodyweight && set.reps > maxRepsBodyweight) {
+          maxRepsBodyweight = set.reps;
+        }
+      }
+    }
+  }
+
+  if (!found) return null;
+
+  const estimated1RM = bestWeightForEpley > 0
+    ? Math.round(bestWeightForEpley * (1 + bestRepsForEpley / 30) * 10) / 10
+    : 0;
+
+  return { exerciseId, exerciseName, isBodyweight, maxWeight, maxRepsAtMaxWeight, estimated1RM, maxRepsBodyweight };
 }
 
 export function computeVolumeRecord(sessions: WorkoutSession[]): SessionRecord | null {
@@ -261,7 +303,7 @@ export function computeVolumeProgression(sessions: WorkoutSession[]): MonthlyPoi
 
   for (const session of sessions) {
     const { totalWeight } = calculateWorkoutTotals(session);
-    const monthKey = getMonthKey(new Date(session.startedAt));
+    const monthKey = getMonthKeyFromDate(new Date(session.startedAt));
     monthMap.set(monthKey, (monthMap.get(monthKey) || 0) + totalWeight);
   }
 
@@ -424,7 +466,7 @@ export function computeStreaks(sessions: WorkoutSession[]): StreakInfo {
     const d = new Date(s.startedAt);
     const wk = getISOWeekKey(d);
     weekCounts.set(wk, (weekCounts.get(wk) || 0) + 1);
-    const mk = getMonthKey(d);
+    const mk = getMonthKeyFromDate(d);
     monthCounts.set(mk, (monthCounts.get(mk) || 0) + 1);
     dayCounts[d.getDay()]++;
   }

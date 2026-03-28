@@ -2,19 +2,13 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { IconHome, IconProfile, IconSessions, IconStats } from "../ui/icons";
 import { useSessionStore } from "../../stores/useSessionStore";
 import { NAV } from "../../constants/ui-strings";
+import { BLUR_LAYERS } from "../../utils/zIndex";
 
 const NAV_ITEMS = [
   { path: "/", Icon: IconHome, label: NAV.HOME, subPaths: [] as string[] },
   { path: "/history", Icon: IconSessions, label: NAV.HISTORY, subPaths: [] as string[] },
   { path: "/stats", Icon: IconStats, label: NAV.STATISTICS, subPaths: [] as string[] },
   { path: "/profile", Icon: IconProfile, label: NAV.PROFILE, subPaths: ["/body"] },
-];
-
-const BLUR_LAYERS = [
-  { blur: "16px", stop: "25%" },
-  { blur: "12px", stop: "50%" },
-  { blur: "8px",  stop: "75%" },
-  { blur: "4px",  stop: "100%" },
 ];
 
 export function BottomNav() {

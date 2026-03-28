@@ -33,10 +33,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loadData = useCallback(async () => {
     try {
       await migrateLocalDataToSupabase();
-      await useExerciseStore.getState().loadExercises();
-      await useCategoryStore.getState().loadCategories();
-      await useHistoryStore.getState().loadSessions();
-      await useSettingsStore.getState().loadFromSupabase();
+      await Promise.all([
+        useExerciseStore.getState().loadExercises(),
+        useCategoryStore.getState().loadCategories(),
+        useHistoryStore.getState().loadSessions(),
+        useSettingsStore.getState().loadFromSupabase(),
+      ]);
     } catch (e) {
       console.error("Failed to load data:", e);
     }

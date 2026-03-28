@@ -2,16 +2,10 @@ import { useNavigate, useLocation, useMatch } from "react-router-dom";
 import { IconButton } from "../ui/IconButton";
 import { IconArrowLeft, IconPlus } from "../ui/icons";
 import { EXERCISES } from "../../constants/ui-strings";
+import { BLUR_LAYERS } from "../../utils/zIndex";
 
 // Top-level routes that live in the bottom nav — no back arrow here
 const TOP_LEVEL = ["/", "/profile", "/history", "/stats", "/login", "/signup"];
-
-const BLUR_LAYERS = [
-  { blur: "16px", stop: "25%" },
-  { blur: "12px", stop: "50%" },
-  { blur: "8px",  stop: "75%" },
-  { blur: "4px",  stop: "100%" },
-];
 
 export function Header() {
   const navigate = useNavigate();

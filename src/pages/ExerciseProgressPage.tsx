@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useHistoryStore } from "../stores/useHistoryStore";
 import { useSettingsStore } from "../stores/useSettingsStore";
-import { computeExercisePRs, computeEventProgression, computeEventVolume } from "../utils/statistics";
+import { computeSingleExercisePR, computeEventProgression, computeEventVolume } from "../utils/statistics";
 import { StatsLineChart } from "../components/stats/StatsLineChart";
 import { IconArrowLeft } from "../components/ui/icons";
 import { MONTH_NAMES, PROGRESS, TIME, EXERCISES } from "../constants/ui-strings";
@@ -18,8 +18,7 @@ export function ExerciseProgressPage() {
     loadSessions();
   }, [loadSessions]);
 
-  const prs = useMemo(() => computeExercisePRs(sessions), [sessions]);
-  const pr = prs.find((p) => p.exerciseId === exerciseId);
+  const pr = useMemo(() => exerciseId ? computeSingleExercisePR(exerciseId, sessions) : null, [exerciseId, sessions]);
 
   const isBodyweight = pr?.isBodyweight ?? false;
 
