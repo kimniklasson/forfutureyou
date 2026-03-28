@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Header } from '../components/layout/Header'
 import { SharedForFutureYou } from '../components/layout/SharedForFutureYou'
 import { BottomNav } from '../components/layout/BottomNav'
@@ -26,7 +26,7 @@ function useIsDark() {
     return () => mq.removeEventListener('change', handler)
   }, [appearance])
   if (appearance === 'mörkt') return true
-  if (appearance === 'ljust') return false
+  if (appearance === 'ljus') return false
   return systemDark
 }
 import { splitGeometryByX } from '../utils/bodyGeometry'
@@ -185,7 +185,7 @@ export function BodyModelPage() {
   const isDraggingRef = useRef(false)
   const lastXRef = useRef(0)
   const totalDragRef = useRef(0)  // cumulative px drag since dot opened
-  const moveDragRef = useRef<(clientX: number) => void>()
+  const moveDragRef = useRef<((clientX: number) => void) | undefined>(undefined)
 
   // Always-fresh drag handler (captures latest state setters via closure)
   moveDragRef.current = (clientX: number) => {
@@ -479,7 +479,7 @@ export function BodyModelPage() {
   // Ticks span a wide angle range; only those whose current angle falls in
   // [0, π] (the visible semicircle) are rendered.
   // Angular distance from π/2 (top/centre) drives height and opacity.
-  const tickLines: JSX.Element[] = []
+  const tickLines: React.ReactElement[] = []
   for (let i = 0; i < NUM_TICKS; i++) {
     // Spread ticks symmetrically across a wide range so dragging left/right
     // always brings new ticks into view.

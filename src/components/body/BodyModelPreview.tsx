@@ -24,7 +24,7 @@ function useIsDark() {
     return () => mq.removeEventListener('change', handler)
   }, [appearance])
   if (appearance === 'mörkt') return true
-  if (appearance === 'ljust') return false
+  if (appearance === 'ljus') return false
   return systemDark
 }
 
